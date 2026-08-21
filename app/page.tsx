@@ -247,54 +247,62 @@ function Portfolio() {
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.2 : 0 }}
-          className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-center max-[420px]:gap-4">
-          <div className="relative min-w-0">
+          className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-stretch max-[680px]:gap-5 max-[420px]:mt-7 max-[420px]:flex-col max-[420px]:pt-5 max-[420px]:pb-1">
+          <div className="relative min-w-0 w-full">
             <span className="pointer-events-none absolute -inset-x-3 -inset-y-4 -z-[1] bg-[linear-gradient(90deg,var(--color-ink)_0%,var(--color-ink)_62%,transparent_100%)] max-[680px]:-inset-x-2 max-[420px]:inset-x-[-6px] max-[420px]:bg-[linear-gradient(to_top,var(--color-ink)_0%,var(--color-ink)_78%,transparent_100%)]" aria-hidden="true" />
-            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] text-paper [text-shadow:0_1px_16px_rgba(11,13,12,0.9)] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:max-w-none max-[420px]:text-[15px]">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
-            <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="Stack utama">
+            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] text-paper [text-shadow:0_1px_16px_rgba(11,13,12,0.9)] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:mb-4 max-[420px]:max-w-none max-[420px]:text-[15px] max-[420px]:leading-[1.35]">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
+            <div
+              className="mb-5 grid grid-cols-2 gap-2 min-[681px]:mb-5 min-[681px]:flex min-[681px]:flex-wrap min-[681px]:items-center max-[420px]:mb-4"
+              aria-label="Stack utama"
+            >
               {[
                 ["java", "Java"],
                 ["springboot", "Spring"],
                 ["react", "React"],
                 ["typescript", "TypeScript"],
               ].map(([icon, label]) => (
-                <span key={label} className="inline-flex min-h-11 items-center gap-2 border border-paper/25 bg-ink px-3 text-[10px] tracking-[0.1em] uppercase">
-                  <TechIcon name={icon} className="size-3.5 text-acid" />
+                <span
+                  key={label}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 border border-paper/25 bg-ink px-3 text-[10px] tracking-[0.1em] uppercase min-[681px]:justify-start"
+                >
+                  <TechIcon name={icon} className="size-3.5 shrink-0 text-acid" />
                   {label}
                 </span>
               ))}
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-[11px] tracking-[0.09em] uppercase max-[420px]:flex-col max-[420px]:items-stretch">
-              <Magnetic className="max-[420px]:w-full [&_a]:w-full">
+            <div className="flex flex-col gap-2.5 text-[11px] tracking-[0.09em] uppercase min-[681px]:flex-row min-[681px]:flex-wrap min-[681px]:items-center min-[681px]:gap-3">
+              <Magnetic className="w-full min-[681px]:w-auto [&_a]:w-full">
                 <a
-                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-ink hover:text-acid"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-ink hover:text-acid min-[681px]:w-auto"
                   href="#work"
                   data-cursor
                 >
                   Lihat proyek <span aria-hidden="true">↓</span>
                 </a>
               </Magnetic>
-              <Magnetic className="max-[420px]:w-full [&_button]:w-full">
-                <button
-                  type="button"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
-                  onClick={openCvPreview}
-                  data-cursor
-                >
-                  Lihat CV
-                </button>
-              </Magnetic>
-              <Magnetic className="max-[420px]:w-full [&_a]:w-full">
-                <a
-                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
-                  href={githubUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  data-cursor
-                >
-                  <SocialIcon name="github" className="size-3.5" /> GitHub <span aria-hidden="true">↗</span>
-                </a>
-              </Magnetic>
+              <div className="grid grid-cols-2 gap-2.5 min-[681px]:contents">
+                <Magnetic className="w-full min-[681px]:w-auto [&_button]:w-full">
+                  <button
+                    type="button"
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink min-[681px]:w-auto"
+                    onClick={openCvPreview}
+                    data-cursor
+                  >
+                    Lihat CV
+                  </button>
+                </Magnetic>
+                <Magnetic className="w-full min-[681px]:w-auto [&_a]:w-full">
+                  <a
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink min-[681px]:w-auto"
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    data-cursor
+                  >
+                    <SocialIcon name="github" className="size-3.5" /> GitHub <span aria-hidden="true">↗</span>
+                  </a>
+                </Magnetic>
+              </div>
             </div>
           </div>
           <Magnetic className="max-[680px]:hidden">

@@ -241,7 +241,25 @@
    sit in normal flow. Motion 11+ sets independent `translate` / `scale` /
    `rotate` instead of the `transform` shorthand, so all four have to be
    killed — otherwise later cards sit at translateY(108%) over the next section. */
+@media (max-width: 767px), (pointer: coarse) {
+  .frontend-pin {
+    display: none !important;
+    height: auto !important;
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  #frontend {
+    height: auto !important;
+  }
+}
+
 @media (max-width: 767px) {
+  .frontend-pin {
+    display: none !important;
+    height: auto !important;
+  }
+
   .project-card,
   .project-art-motion {
     transform: none !important;
