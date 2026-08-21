@@ -23,10 +23,10 @@ export async function generateMetadata(): Promise<Metadata> {
     requestHeaders.get("x-forwarded-proto") ??
     (host.startsWith("localhost") ? "http" : "https");
   const origin = `${protocol}://${host}`;
-  const title = "Fajar — Creative Developer";
+  const title = "Fajar Rafsan — Java Back-End Engineer";
   const description =
-    "Portofolio Fajar, creative developer dan digital designer dari Jakarta.";
-  const imageUrl = new URL("/og.png", origin).toString();
+    "Portofolio Fajar Rafsan, Java Back-End Engineer yang berfokus pada Spring Boot, microservices, REST API, PostgreSQL, dan Redis.";
+  const imageUrl = new URL("/og-v2.png", origin).toString();
 
   return {
     metadataBase: new URL(origin),
@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       type: "website",
       locale: "id_ID",
-      images: [{ url: imageUrl, width: 1792, height: 922, alt: "Fajar — Ide yang bergerak" }],
+      images: [{ url: imageUrl, width: 1792, height: 922, alt: "Fajar Rafsan — Java Back-End Engineer" }],
     },
     twitter: {
       card: "summary_large_image",
