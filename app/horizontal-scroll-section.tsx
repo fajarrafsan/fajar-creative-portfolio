@@ -8,6 +8,7 @@ import {
   useScroll,
   useTransform,
 } from "motion/react";
+import { InkParticles } from "./ink-particles";
 import { FrontEndGraph } from "./system-graph";
 import { TechIcon } from "./tech-icons";
 
@@ -160,10 +161,11 @@ export function HorizontalScrollSection({
           mode === "pin"
             ? "sticky top-0 flex h-[100svh] flex-col overflow-hidden"
             : mode === "swipe"
-              ? "flex min-h-[100svh] flex-col"
-              : "flex flex-col px-[3vw] py-[clamp(72px,10vw,140px)] max-[680px]:px-[18px] max-[420px]:px-3.5"
+              ? "relative flex min-h-[100svh] flex-col overflow-hidden"
+              : "relative flex flex-col overflow-hidden px-[3vw] py-[clamp(72px,10vw,140px)] max-[680px]:px-[18px] max-[420px]:px-3.5"
         }
       >
+        <InkParticles seed={20260823} className="z-0" />
         <header className="relative z-[2] flex shrink-0 items-center justify-between gap-3 px-[3vw] pt-[max(7.5rem,calc(env(safe-area-inset-top)+5.75rem))] pb-5 max-[680px]:px-[18px] max-[680px]:pt-[max(6.5rem,calc(env(safe-area-inset-top)+5rem))] max-[420px]:gap-2 max-[420px]:px-3.5">
           <p className="m-0 min-w-0 truncate text-[11px] tracking-[0.1em] text-acid uppercase">{kicker}</p>
           <p
@@ -178,7 +180,7 @@ export function HorizontalScrollSection({
         </header>
 
         {mode === "swipe" ? (
-          <>
+          <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
             {heading ? (
               <h2
                 id={headingId}
@@ -201,9 +203,9 @@ export function HorizontalScrollSection({
                 ))}
               </div>
             </div>
-          </>
+          </div>
         ) : mode === "stack" ? (
-          <>
+          <div className="relative z-[1]">
             {heading ? (
               <h2
                 id={headingId}
@@ -220,9 +222,9 @@ export function HorizontalScrollSection({
                 ))}
               </motion.div>
             </div>
-          </>
+          </div>
         ) : (
-          <div className="grid min-h-0 flex-1 grid-cols-[minmax(240px,0.92fr)_minmax(280px,1.15fr)] items-stretch gap-x-8 px-0">
+          <div className="relative z-[1] grid min-h-0 flex-1 grid-cols-[minmax(240px,0.92fr)_minmax(280px,1.15fr)] items-stretch gap-x-8 px-0">
             <div className="flex min-h-0 min-w-0 flex-col justify-center gap-6 py-4">
               {heading ? (
                 <h2

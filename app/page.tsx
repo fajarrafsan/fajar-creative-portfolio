@@ -27,6 +27,8 @@ import {
 } from "./motion";
 import { HorizontalScrollSection } from "./horizontal-scroll-section";
 import { HeroGraph } from "./hero-graph";
+import { InkParticles } from "./ink-particles";
+import { BackgroundPaths } from "../components/ui/background-paths";
 import { ProfileCopy, ProfilePortrait } from "./profile-portrait";
 import { ProjectStack } from "./project-stack";
 import { SiteHeader } from "./site-header";
@@ -183,7 +185,7 @@ export default function Home() {
 
 function Portfolio() {
   const heroRef = useRef<HTMLElement>(null);
-  const { gridY, systemRotate, systemY, systemScale } = useHeroParallax(heroRef);
+  const { gridY, systemRotate, systemY } = useHeroParallax(heroRef);
   const introReady = useIntroReady();
 
   return (
@@ -196,14 +198,18 @@ function Portfolio() {
       <SiteHeader />
       <CvPreview />
 
-      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col justify-end overflow-hidden px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:min-h-[900px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-6 max-[420px]:min-h-svh max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-5" id="top" aria-labelledby="hero-title">
-        <motion.div
-          className="hero-grid absolute inset-x-0 -inset-y-[15%] -z-[2] will-change-transform bg-[image:linear-gradient(rgba(240,239,232,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.25)_1px,transparent_1px)] bg-[size:25vw_25vw] max-[1000px]:bg-[size:50vw_50vw]"
-          style={{ y: gridY }}
-          aria-hidden="true"
-        />
-        <div className="pointer-events-none absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_78%_22%,rgba(216,255,62,0.12),transparent_28%),radial-gradient(circle_at_18%_80%,rgba(57,124,255,0.08),transparent_26%),linear-gradient(to_bottom,rgba(11,13,12,0.2),#0b0d0c_92%)]" aria-hidden="true" />
-        <HeroGraph rotate={systemRotate} y={systemY} scale={systemScale} />
+      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col justify-end overflow-x-clip px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:min-h-[900px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-6 max-[420px]:min-h-svh max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-5" id="top" aria-labelledby="hero-title">
+        <div className="pointer-events-none absolute inset-0 -z-[2] overflow-hidden" aria-hidden="true">
+          <motion.div
+            className="hero-grid absolute inset-x-0 -inset-y-[15%] will-change-transform bg-[image:linear-gradient(rgba(240,239,232,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.25)_1px,transparent_1px)] bg-[size:25vw_25vw] max-[1000px]:bg-[size:50vw_50vw]"
+            style={{ y: gridY }}
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+          <BackgroundPaths active={introReady} />
+        </div>
+        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_78%_18%,rgba(216,255,62,0.1),transparent_32%)]" aria-hidden="true" />
+        <HeroGraph rotate={systemRotate} y={systemY} />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -217,7 +223,7 @@ function Portfolio() {
           <p className="m-0 text-right leading-[1.35] max-[420px]:text-left">Java · Spring · React · TypeScript<br />© 2026</p>
         </motion.div>
 
-        <h1 id="hero-title" className="font-display relative z-[1] m-0 text-[clamp(66px,11.4vw,182px)] leading-[0.77] font-[770] tracking-[-0.086em] uppercase max-[1000px]:text-[clamp(62px,16.4vw,126px)] max-[1000px]:leading-[0.79] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
+        <h1 id="hero-title" className="font-display relative z-[1] m-0 text-[clamp(66px,11.4vw,182px)] leading-[0.77] font-[770] tracking-[-0.086em] uppercase [text-shadow:0_0_28px_rgba(11,13,12,0.8)] max-[1000px]:text-[clamp(62px,16.4vw,126px)] max-[1000px]:leading-[0.79] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
           {[
             ["FULL", "block overflow-hidden pr-[0.08em]"],
             ["STACK", "block overflow-hidden pr-[0.08em] pl-[13.7vw] text-acid max-[1000px]:pl-[7vw] max-[420px]:pl-[4vw]"],
@@ -242,8 +248,9 @@ function Portfolio() {
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.2 : 0 }}
           className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-center max-[420px]:gap-4">
-          <div className="min-w-0">
-            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:max-w-none max-[420px]:text-[15px]">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
+          <div className="relative min-w-0">
+            <span className="pointer-events-none absolute -inset-x-3 -inset-y-4 -z-[1] bg-[linear-gradient(90deg,var(--color-ink)_0%,var(--color-ink)_62%,transparent_100%)] max-[680px]:-inset-x-2 max-[420px]:inset-x-[-6px] max-[420px]:bg-[linear-gradient(to_top,var(--color-ink)_0%,var(--color-ink)_78%,transparent_100%)]" aria-hidden="true" />
+            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] text-paper [text-shadow:0_1px_16px_rgba(11,13,12,0.9)] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:max-w-none max-[420px]:text-[15px]">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
             <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="Stack utama">
               {[
                 ["java", "Java"],
@@ -251,7 +258,7 @@ function Portfolio() {
                 ["react", "React"],
                 ["typescript", "TypeScript"],
               ].map(([icon, label]) => (
-                <span key={label} className="inline-flex min-h-11 items-center gap-2 border border-paper/20 px-3 text-[10px] tracking-[0.1em] uppercase">
+                <span key={label} className="inline-flex min-h-11 items-center gap-2 border border-paper/25 bg-ink px-3 text-[10px] tracking-[0.1em] uppercase">
                   <TechIcon name={icon} className="size-3.5 text-acid" />
                   {label}
                 </span>
@@ -260,7 +267,7 @@ function Portfolio() {
             <div className="flex flex-wrap items-center gap-3 text-[11px] tracking-[0.09em] uppercase max-[420px]:flex-col max-[420px]:items-stretch">
               <Magnetic className="max-[420px]:w-full [&_a]:w-full">
                 <a
-                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-transparent hover:text-acid"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-ink hover:text-acid"
                   href="#work"
                   data-cursor
                 >
@@ -270,7 +277,7 @@ function Portfolio() {
               <Magnetic className="max-[420px]:w-full [&_button]:w-full">
                 <button
                   type="button"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
                   onClick={openCvPreview}
                   data-cursor
                 >
@@ -279,7 +286,7 @@ function Portfolio() {
               </Magnetic>
               <Magnetic className="max-[420px]:w-full [&_a]:w-full">
                 <a
-                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
                   href={githubUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -291,7 +298,7 @@ function Portfolio() {
             </div>
           </div>
           <Magnetic className="max-[680px]:hidden">
-            <a className="circle-link grid size-[62px] shrink-0 place-items-center rounded-full border border-paper text-[22px] transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink" href="#work" aria-label="Gulir ke proyek pilihan">
+            <a className="circle-link grid size-[62px] shrink-0 place-items-center rounded-full border border-paper bg-ink text-[22px] transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink" href="#work" aria-label="Gulir ke proyek pilihan">
               <span aria-hidden="true">↓</span>
             </a>
           </Magnetic>
@@ -329,6 +336,7 @@ function Portfolio() {
       </section>
 
       <section className="system-showcase relative grid grid-cols-[0.82fr_1.18fr] items-center gap-[5vw] overflow-hidden bg-ink bg-[image:radial-gradient(circle_at_70%_50%,rgba(57,124,255,0.12),transparent_34%)] px-[3vw] py-[clamp(110px,11vw,176px)] min-[1001px]:max-[1200px]:grid-cols-[minmax(0,0.9fr)_minmax(500px,1.1fr)] min-[1001px]:max-[1200px]:gap-[3vw] max-[1000px]:grid-cols-1 max-[1000px]:py-[110px] max-[680px]:px-[18px] max-[420px]:px-3.5 max-[420px]:py-16" id="architecture" aria-labelledby="system-title">
+        <InkParticles className="z-0" />
         <div className="system-copy relative z-[5]">
           <SectionLabel index="02" label="Motion architecture" />
           <p className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">Backend in motion</p>

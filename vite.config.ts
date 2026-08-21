@@ -1,5 +1,6 @@
 import { sites } from "@openai/sites-vite-plugin";
 import vinext from "vinext";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 
@@ -44,6 +45,11 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    resolve: {
+      alias: {
+        "@": fileURLToPath(new URL(".", import.meta.url)),
+      },
+    },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,

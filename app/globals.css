@@ -119,6 +119,33 @@
   font-feature-settings: "ss01", "cv01";
 }
 
+@keyframes hero-path-flow {
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+
+.hero-path-flow {
+  animation: hero-path-flow 20s linear infinite;
+}
+
+@keyframes architecture-mote {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.22;
+  }
+  50% {
+    transform: translate3d(var(--mote-x, 8px), var(--mote-y, -18px), 0);
+    opacity: 0.78;
+  }
+}
+
+.architecture-mote.is-live {
+  animation: architecture-mote var(--mote-dur, 12s) ease-in-out infinite;
+  animation-delay: var(--mote-delay, 0s);
+}
+
 @layer base {
   html {
     background: var(--color-ink);
@@ -258,6 +285,9 @@
 
   .hero-grid,
   .hero-system,
+  .hero-paths,
+  .hero-path-flow,
+  .architecture-mote,
   .marquee-track {
     animation: none !important;
     transform: none !important;

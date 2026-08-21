@@ -21,10 +21,10 @@ type Node = {
 };
 
 const nodes: Node[] = [
-  { id: "java", label: "Java", sub: "SE / EE", icon: "java", x: 155, y: 500, flow: "in" },
-  { id: "spring", label: "Spring", sub: "Boot API", icon: "springboot", x: 500, y: 150, flow: "in" },
-  { id: "react", label: "React", sub: "19 SPA", icon: "react", x: 845, y: 500, flow: "out" },
-  { id: "ts", label: "TypeScript", sub: "Contracts", icon: "typescript", x: 500, y: 850, flow: "out" },
+  { id: "java", label: "Java", sub: "SE / EE", icon: "java", x: 220, y: 500, flow: "in" },
+  { id: "spring", label: "Spring", sub: "Boot API", icon: "springboot", x: 500, y: 220, flow: "in" },
+  { id: "react", label: "React", sub: "19 SPA", icon: "react", x: 780, y: 500, flow: "out" },
+  { id: "ts", label: "TypeScript", sub: "Contracts", icon: "typescript", x: 500, y: 780, flow: "out" },
 ];
 
 function clamp(value: number, min: number, max: number) {
@@ -55,14 +55,13 @@ const pct = (v: number) => `${(v / 10).toFixed(2)}%`;
 type HeroGraphProps = {
   rotate?: MotionValue<number>;
   y?: MotionValue<string>;
-  scale?: MotionValue<number>;
 };
 
-export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
+export function HeroGraph({ rotate, y }: HeroGraphProps) {
   const reduced = Boolean(useReducedMotion());
   const introReady = useIntroReady();
   const finePointer = useMediaQuery("(pointer: fine)");
-  const tilt = finePointer && !reduced;
+  const tilt = finePointer && !reduced && introReady;
   const rootRef = useRef<HTMLDivElement>(null);
   const rotateX = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
   const rotateY = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
@@ -117,22 +116,19 @@ export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
   }, [tilt, rotateX, rotateY]);
 
   return (
-    <motion.div
+    <div
       ref={rootRef}
-      className="hero-system pointer-events-none absolute top-[10%] -right-[1vw] z-0 size-[clamp(320px,42vw,700px)] origin-center will-change-transform max-[1000px]:top-[18%] max-[1000px]:right-[-18vw] max-[1000px]:size-[70vw] max-[680px]:top-[16%] max-[680px]:right-[-12vw] max-[680px]:size-[78vw] max-[420px]:top-[6%] max-[420px]:right-[-4%] max-[420px]:size-[min(86vw,276px)]"
-      style={{ rotate, y, scale }}
+      className="hero-system pointer-events-none absolute top-[max(72px,6%)] right-[3vw] z-0 w-[min(46vw,700px)] aspect-square max-[1000px]:top-[12%] max-[1000px]:right-[18px] max-[1000px]:w-[min(64vw,560px)] max-[680px]:top-[10%] max-[680px]:w-[min(78vw,440px)] max-[420px]:top-[88px] max-[420px]:right-3.5 max-[420px]:w-[min(88vw,300px)]"
       aria-hidden="true"
     >
-      <div className="size-full [perspective:1200px]">
-        <motion.div
-          className="relative size-full origin-center [transform-style:preserve-3d]"
-          style={tilt ? { rotateX: tiltX, rotateY: tiltY } : undefined}
-        >
+      <motion.div className="size-full origin-center will-change-transform" style={{ rotate, y }}>
+        <div className="relative size-full">
           <motion.div
             variants={graphParent}
             initial="hidden"
             animate={introReady ? "shown" : "hidden"}
-            className="relative size-full"
+            className="absolute inset-[2%] origin-center"
+            style={tilt ? { rotateX: tiltX, rotateY: tiltY } : undefined}
           >
             <div className="absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.12)_1px,transparent_1px)] bg-[size:16%_16%] opacity-70" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(216,255,62,0.16),transparent_52%)]" />
@@ -236,8 +232,8 @@ export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
               </motion.div>
             ))}
           </motion.div>
-        </motion.div>
-      </div>
-    </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
 }

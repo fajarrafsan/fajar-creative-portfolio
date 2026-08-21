@@ -129,7 +129,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
 
       <motion.div
         className="relative z-[3] flex h-full flex-col justify-between px-[3vw] pt-[max(28px,env(safe-area-inset-top))] pb-[max(28px,env(safe-area-inset-bottom))] max-[680px]:px-[18px] max-[420px]:px-3.5"
-        exit={{ opacity: 0, filter: reduced ? "none" : "blur(8px)" }}
+        exit={{ opacity: 0 }}
         transition={{ duration: reduced ? 0.2 : 0.32, ease }}
       >
         <div className="flex items-center justify-between gap-4 pt-2 text-[11px] tracking-[0.16em] uppercase">
@@ -247,16 +247,14 @@ export function IntroGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     lockPageScroll(true);
-    const hold = reduced ? 480 : 2680;
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const hold = prefersReduced ? 480 : 2680;
     const timer = window.setTimeout(() => {
       setReady(true);
       setOpen(false);
     }, hold);
-    return () => {
-      window.clearTimeout(timer);
-      lockPageScroll(false);
-    };
-  }, [reduced]);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   return (
     <IntroReadyContext.Provider value={ready}>

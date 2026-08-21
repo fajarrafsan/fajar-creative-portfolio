@@ -293,7 +293,7 @@ export function SystemGraph() {
       coreTitle="SPRING"
       coreSub="BOOT"
       nodes={backendNodes}
-      className="w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:mx-auto max-[1000px]:mt-[50px]"
+      className="relative z-[3] w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:mx-auto max-[1000px]:mt-[50px]"
       ariaLabel="Diagram arsitektur: klien, gateway, autentikasi, service, data, cache, events, dan pembayaran mengelilingi inti Spring Boot"
     />
   );
