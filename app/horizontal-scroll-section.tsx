@@ -80,11 +80,10 @@ export function HorizontalScrollSection({
   const x = useTransform(scrollYProgress, [0, 1], [0, -travel]);
 
   useLayoutEffect(() => {
-    if (mode !== "pin") {
-      setTravel(0);
-      setTrackHeight(null);
-      return;
-    }
+    // Stale measurements from a previous pin phase are harmless outside it:
+    // `x`, pane width, and track height are only consumed while mode is "pin",
+    // and re-entering pin re-runs this effect (mode is a dependency).
+    if (mode !== "pin") return;
 
     const viewport = stickyRef.current;
     const strip = stripRef.current;

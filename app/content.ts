@@ -8,7 +8,7 @@ export const email = "fajar.rafsan02@gmail.com";
 export const profileName = "Fajar Rafsan";
 export const profileRole = "Fullstack Developer";
 export const profileLocation = "Bandung, ID";
-export const profilePhotoSrc = "/profile.jpg";
+export const profilePhotoSrc = "/profile.jpeg";
 
 export const profileAbout = [
   "Saya merancang sistem ujung ke ujung: API Java/Spring yang andal di belakang, interface React 19 / TypeScript yang jelas di depan.",
@@ -37,6 +37,7 @@ export const projects = [
     ],
     variant: "anistream",
     mark: "ANI",
+    cover: "/projects/anistream.png",
     demo: "https://anistreasm-fe-nine.vercel.app",
     links: [
       ["Front-end", "https://github.com/fajarrafsan02-bit/ANISTREASM-FE"],
@@ -57,6 +58,7 @@ export const projects = [
     ],
     variant: "roomly",
     mark: "RML",
+    cover: null,
     demo: null,
     links: [
       ["Front-end", "https://github.com/fajarrafsan02-bit/RoomlyHotel"],
@@ -77,6 +79,7 @@ export const projects = [
     ],
     variant: "glowmarket",
     mark: "GLW",
+    cover: null,
     demo: "https://projek-react.vercel.app",
     links: [
       ["Front-end", "https://github.com/fajarrafsan02-bit/GLOWMARKET"],
@@ -224,7 +227,7 @@ export const frontendArchitecture = {
 };
 
 export const artThemes: Record<string, string> = {
-  anistream: "bg-[#191e47] text-[#a894ff]",
+  anistream: "bg-[#0b0d12] text-[#e11d2e]",
   roomly: "bg-[#174846] text-acid",
   glowmarket: "bg-[#f06a3f] text-[#27180d]",
 };

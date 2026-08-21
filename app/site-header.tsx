@@ -42,9 +42,14 @@ function BandungClock() {
         minute: "2-digit",
         hour12: false,
       }).format(new Date());
-    setTime(format());
+    // First tick is deferred a frame so the effect body stays free of
+    // synchronous setState; SSR keeps rendering the `--:--` placeholder.
+    const frame = requestAnimationFrame(() => setTime(format()));
     const timer = window.setInterval(() => setTime(format()), 30_000);
-    return () => window.clearInterval(timer);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearInterval(timer);
+    };
   }, []);
 
   if (!time) {
@@ -195,7 +200,7 @@ export function SiteHeader() {
                 target="_blank"
                 rel="noreferrer"
               >
-                <SocialIcon name="linkedin" className="size-3.5" aria-hidden="true" />
+                <SocialIcon name="linkedin" className="size-3.5" />
                 LinkedIn <span aria-hidden="true">↗</span>
               </a>
             </Magnetic>

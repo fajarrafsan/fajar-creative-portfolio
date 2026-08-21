@@ -59,9 +59,12 @@ export async function generateMetadata(): Promise<Metadata> {
       googleBot: { index: true, follow: true, "max-image-preview": "large" },
     },
     icons: {
-      icon: "/favicon.svg",
-      shortcut: "/favicon.svg",
-      apple: "/favicon.svg",
+      icon: [
+        { url: "/favicon.ico", sizes: "32x32", type: "image/x-icon" },
+        { url: "/icon", sizes: "32x32", type: "image/png" },
+      ],
+      shortcut: "/favicon.ico",
+      apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
     },
     openGraph: {
       title,
@@ -80,6 +83,12 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+
+const FAVICON_SVG =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="#d8ff3e"/><path fill="#0b0d0c" fill-rule="evenodd" d="M3.6 6.4h11.1v3.6H7.4v3.3h6.1v3.5H7.4V25.6H3.6V6.4Zm11.8 19.2L18.3 6.4h2.5L17.9 25.6h-2.5Zm6.1-19.2h6.2c2.2 0 3.6 1.4 3.6 3.5 0 1.55-.9 2.75-2.35 3.25L31.2 25.6h-3.35l-2.95-8.05h-1.4V25.6H21.5V6.4Zm2.8 3.45v3.55h2.45c.75 0 1.15-.5 1.15-1.8s-.4-1.75-1.15-1.75H24.3Z"/></svg>`,
+  );
 
 const personSchema = {
   "@context": "https://schema.org",
@@ -122,6 +131,10 @@ export default function RootLayout({
   return (
     <html lang="id" suppressHydrationWarning>
       <head>
+        <link rel="icon" href={FAVICON_SVG} type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href="/icon" type="image/png" sizes="32x32" />
+        <link rel="apple-touch-icon" href="/apple-icon" sizes="180x180" />
         <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" href="/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         {/* If the bundle never hydrates, Motion's server-rendered opacity:0

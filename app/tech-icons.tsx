@@ -52,3 +52,32 @@ export function SocialIcon({ name, className }: IconProps & { name: "github" | "
     </svg>
   );
 }
+
+/** External-link arrow. Square caps, no unicode glyph, so it stays sharp at any size. */
+export function ArrowOut({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true" focusable="false">
+      <path
+        d="M7 17 17 7M8 7h9v9"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
+  );
+}
+
+export function Chevron({ dir, className }: IconProps & { dir: "left" | "right" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true" focusable="false">
+      <path
+        d={dir === "left" ? "M14.5 5.5 8 12l6.5 6.5" : "M9.5 5.5 16 12l-6.5 6.5"}
+        stroke="currentColor"
+        strokeWidth="2.75"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
+  );
+}

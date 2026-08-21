@@ -14,6 +14,7 @@ import {
   profileAbout,
   profileLocation,
   profileName,
+  profilePhotoSrc,
   profileRole,
   profileSkills,
   profileStats,
@@ -27,7 +28,6 @@ import {
   profileWord,
   useMediaQuery,
 } from "./motion";
-import { profilePhotoSrc } from "./profile-photo";
 import { TechIcon } from "./tech-icons";
 
 const headline = [

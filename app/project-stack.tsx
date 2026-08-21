@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from "motion/react";
+import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { artThemes, projects, type Project } from "./content";
 import { useMediaQuery } from "./motion";
+import { ArrowOut, Chevron } from "./tech-icons";
 
 /**
  * The stack is a tall scroll track with a sticky viewport inside it. Each card
@@ -58,6 +59,7 @@ function ProjectCard({
   const t = timings(index, total);
   const isFirst = index === 0;
   const isLast = index === total - 1;
+  const reduced = Boolean(useReducedMotion());
 
   // Incoming card rises from below, rests, then lifts a little and shrinks away.
   // The middle case needs both `enterEnd` and `exitStart` so it holds at 0%
@@ -135,35 +137,66 @@ function ProjectCard({
         aria-hidden="true"
       >
         <motion.div
-          className="project-art-motion absolute -inset-[8%] grid place-items-center transition-[filter] duration-300 will-change-transform group-hover/art:saturate-[1.16]"
+          className={`project-art-motion absolute grid place-items-center transition-[filter] duration-300 will-change-transform group-hover/art:saturate-[1.16] ${
+            project.cover ? "inset-0" : "-inset-[8%]"
+          }`}
           style={{ scale: artScale }}
         >
-          {project.variant === "anistream" && (
+          {project.cover ? (
             <>
-              <span className="absolute z-[1] aspect-square w-[62%] rounded-full border-[34px] border-current" />
-              <span className="absolute z-[2] h-0 w-0 translate-x-[10px] border-y-[45px] border-l-[72px] border-y-transparent border-l-paper" />
+              <img
+                src={project.cover}
+                alt=""
+                className="absolute inset-0 size-full object-cover object-[center_18%]"
+              />
+              <span className="absolute inset-0 bg-linear-to-t from-ink/55 via-transparent to-ink/25" />
+              <motion.span
+                className="absolute top-1/2 left-[3.5%] z-[4] grid size-12 place-items-center rounded-full border border-paper/35 bg-ink/70 text-paper max-[680px]:size-10"
+                style={{ y: "-50%" }}
+                animate={reduced ? undefined : { x: [0, -8, 0] }}
+                transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Chevron dir="left" className="size-5 max-[680px]:size-4" />
+              </motion.span>
+              <motion.span
+                className="absolute top-1/2 right-[3.5%] z-[4] grid size-12 place-items-center rounded-full bg-[#e11d2e] text-paper max-[680px]:size-10"
+                style={{ y: "-50%" }}
+                animate={reduced ? undefined : { x: [0, 8, 0] }}
+                transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Chevron dir="right" className="size-5 max-[680px]:size-4" />
+              </motion.span>
+            </>
+          ) : (
+            <>
+              {project.variant === "anistream" && (
+                <>
+                  <span className="absolute z-[1] aspect-square w-[62%] rounded-full border-[34px] border-current" />
+                  <span className="absolute z-[2] h-0 w-0 translate-x-[10px] border-y-[45px] border-l-[72px] border-y-transparent border-l-paper" />
+                </>
+              )}
+              {project.variant === "roomly" && (
+                <>
+                  <span className="absolute inset-[18%_24%] z-[1] rounded-[50%_50%_4px_4px] border-2 border-current" />
+                  <span className="absolute z-[1] h-[84%] w-[18%] rotate-[23deg] bg-paper/75 mix-blend-screen" />
+                </>
+              )}
+              {project.variant === "glowmarket" && (
+                <>
+                  <span className="absolute z-[1] aspect-square w-[55%] rounded-full border-2 border-current shadow-[inset_0_0_0_55px_rgba(255,235,158,0.22)]" />
+                  <span className="absolute z-[1] h-[18%] w-[82%] rotate-[-19deg] rounded-full border-2 border-current" />
+                </>
+              )}
+              <span className="art-disc absolute z-[1] aspect-square w-[44%] rounded-full bg-current opacity-15" />
+              <span className="art-line-a absolute z-[3] h-px w-[122%] rotate-[19deg] bg-current" />
+              <span className="art-line-b absolute z-[3] h-px w-[122%] rotate-[-24deg] bg-current" />
+              <span className="art-window-one absolute left-[14%] z-[2] h-[58%] w-[28%] rotate-[10deg] border border-current" />
+              <span className="art-window-two absolute right-[12%] z-[2] h-[30%] w-[38%] rotate-[-8deg] border border-current" />
+              <strong className="font-display absolute bottom-[11.5%] left-[11.5%] z-[4] text-[clamp(88px,15vw,235px)] leading-[0.78] font-[820] tracking-[-0.13em] max-[680px]:text-[27vw]">
+                {project.mark}
+              </strong>
             </>
           )}
-          {project.variant === "roomly" && (
-            <>
-              <span className="absolute inset-[18%_24%] z-[1] rounded-[50%_50%_4px_4px] border-2 border-current" />
-              <span className="absolute z-[1] h-[84%] w-[18%] rotate-[23deg] bg-paper/75 mix-blend-screen" />
-            </>
-          )}
-          {project.variant === "glowmarket" && (
-            <>
-              <span className="absolute z-[1] aspect-square w-[55%] rounded-full border-2 border-current shadow-[inset_0_0_0_55px_rgba(255,235,158,0.22)]" />
-              <span className="absolute z-[1] h-[18%] w-[82%] rotate-[-19deg] rounded-full border-2 border-current" />
-            </>
-          )}
-          <span className="art-disc absolute z-[1] aspect-square w-[44%] rounded-full bg-current opacity-15" />
-          <span className="art-line-a absolute z-[3] h-px w-[122%] rotate-[19deg] bg-current" />
-          <span className="art-line-b absolute z-[3] h-px w-[122%] rotate-[-24deg] bg-current" />
-          <span className="art-window-one absolute left-[14%] z-[2] h-[58%] w-[28%] rotate-[10deg] border border-current" />
-          <span className="art-window-two absolute right-[12%] z-[2] h-[30%] w-[38%] rotate-[-8deg] border border-current" />
-          <strong className="font-display absolute bottom-[11.5%] left-[11.5%] z-[4] text-[clamp(88px,15vw,235px)] leading-[0.78] font-[820] tracking-[-0.13em] max-[680px]:text-[27vw]">
-            {project.mark}
-          </strong>
         </motion.div>
         <span className="absolute inset-[3.5%_2.75%] z-[5] border border-current/25" />
         <i className="absolute top-[4.5%] left-[2.75%] z-[6] text-[clamp(16px,1.8vw,26px)] leading-none font-light not-italic">
@@ -179,14 +212,16 @@ function ProjectCard({
             <i className="h-px w-6 shrink-0 bg-current not-italic" aria-hidden="true" />
             {project.type}
           </p>
-          <h3 className="font-display mb-3 flex items-baseline gap-3 text-[clamp(44px,5.6vw,88px)] leading-[0.84] font-bold tracking-[-0.07em] max-[680px]:text-[clamp(40px,12vw,60px)]">
+          <h3 className="font-display mb-3 flex items-center gap-3 text-[clamp(44px,5.6vw,88px)] leading-[0.84] font-bold tracking-[-0.07em] max-[680px]:text-[clamp(40px,12vw,60px)]">
             {project.title}
-            <span
-              className="hidden size-[0.58em] shrink-0 translate-y-[0.04em] place-items-center border-2 border-current text-[0.42em] transition-transform duration-300 group-hover/art:rotate-45 md:grid"
+            <motion.span
+              className="hidden size-[0.42em] shrink-0 place-items-center border-2 border-current p-[0.09em] md:grid"
               aria-hidden="true"
+              animate={reduced ? undefined : { x: [0, 4, 0], y: [0, -4, 0] }}
+              transition={{ duration: 1.35, repeat: Infinity, ease: "easeInOut" }}
             >
-              ↗
-            </span>
+              <ArrowOut className="size-full" />
+            </motion.span>
           </h3>
           <p className="mb-3.5 line-clamp-3 max-w-[640px] text-[15px] leading-[1.55] text-[#4c4d46] md:mb-3 md:[@media(max-height:820px)]:line-clamp-2">
             {project.note}
@@ -237,12 +272,14 @@ function ProjectCard({
                   />
                   Live demo
                 </span>
-                <span
-                  className="relative transition-transform duration-250 group-hover/live:translate-x-1"
+                <motion.span
+                  className="relative grid size-4 shrink-0 place-items-center"
                   aria-hidden="true"
+                  animate={reduced ? undefined : { x: [0, 4, 0], y: [0, -4, 0] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  ↗
-                </span>
+                  <ArrowOut className="size-3.5" />
+                </motion.span>
               </a>
             )}
             {project.links.map(([label, href], linkIndex) => (
@@ -257,9 +294,14 @@ function ProjectCard({
                   <i className="mr-2.5 not-italic opacity-45">{String(linkIndex + 1).padStart(2, "0")}</i>
                   {label}
                 </span>
-                <span className="pr-2.5 transition-transform duration-250 group-hover/link:translate-x-1" aria-hidden="true">
-                  ↗
-                </span>
+                <motion.span
+                  className="mr-2.5 grid size-4 shrink-0 place-items-center"
+                  aria-hidden="true"
+                  animate={reduced ? undefined : { x: [0, 4, 0], y: [0, -4, 0] }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <ArrowOut className="size-3.5" />
+                </motion.span>
               </a>
             ))}
           </div>

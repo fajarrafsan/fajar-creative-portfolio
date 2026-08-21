@@ -152,20 +152,20 @@ function CopyEmail() {
 
   return (
     <Magnetic>
-    <button
-      type="button"
-      onClick={copy}
-      data-cursor
-      className="group/copy inline-flex min-h-12 cursor-pointer items-center gap-3 border border-ink/35 px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:border-ink hover:bg-ink hover:text-acid"
-    >
-      <span className="font-mono normal-case tracking-normal">{email}</span>
-      <span aria-hidden="true" className="text-[11px] opacity-60 transition-opacity duration-200 group-hover/copy:opacity-100">
-        {copied ? "tersalin" : "salin"}
-      </span>
-      <span className="sr-only" role="status">
-        {copied ? "Alamat email tersalin ke papan klip" : ""}
-      </span>
-    </button>
+      <button
+        type="button"
+        onClick={copy}
+        data-cursor
+        className="group/copy inline-flex min-h-12 cursor-pointer items-center gap-3 border border-ink/35 px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:border-ink hover:bg-ink hover:text-acid"
+      >
+        <span className="font-mono normal-case tracking-normal">{email}</span>
+        <span aria-hidden="true" className="text-[11px] opacity-60 transition-opacity duration-200 group-hover/copy:opacity-100">
+          {copied ? "tersalin" : "salin"}
+        </span>
+        <span className="sr-only" role="status">
+          {copied ? "Alamat email tersalin ke papan klip" : ""}
+        </span>
+      </button>
     </Magnetic>
   );
 }
