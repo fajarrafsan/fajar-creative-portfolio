@@ -14,6 +14,9 @@ const description =
 export const viewport: Viewport = {
   themeColor: "#0b0d0c",
   colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -150,7 +153,7 @@ export default function RootLayout({
         <noscript>
           {/* Motion server-renders each element's `initial` state; without JS
               nothing would ever animate it back to visible. */}
-          <style>{`[style*="opacity"]{opacity:1!important;transform:none!important}`}</style>
+          <style>{`[style*="opacity"]{opacity:1!important;transform:none!important}.intro-overlay{display:none!important}`}</style>
         </noscript>
         <a className="skip-link" href="#work">
           Lompat ke konten utama

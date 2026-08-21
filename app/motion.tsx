@@ -134,7 +134,12 @@ export function SmoothScroll() {
   useEffect(() => {
     if (reduced) return;
 
-    const lenis = new Lenis({ duration: 1.05, smoothWheel: true, wheelMultiplier: 0.92 });
+    const lenis = new Lenis({
+      duration: 1.05,
+      smoothWheel: true,
+      wheelMultiplier: 0.92,
+      allowNestedScroll: true,
+    });
     let frame = requestAnimationFrame(function raf(time: number) {
       lenis.raf(time);
       frame = requestAnimationFrame(raf);

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion, useReducedMotion, useSpring, useTransform, type MotionValue } from "motion/react";
 import { graphCore, graphNode, graphParent, useMediaQuery } from "./motion";
 import { TechIcon } from "./tech-icons";
+import { useIntroReady } from "./intro";
 
 const CORE = { x: 500, y: 500, r: 128 };
 const CARD = { w: 240, h: 90 };
@@ -59,6 +60,7 @@ type HeroGraphProps = {
 
 export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
   const reduced = Boolean(useReducedMotion());
+  const introReady = useIntroReady();
   const finePointer = useMediaQuery("(pointer: fine)");
   const tilt = finePointer && !reduced;
   const rootRef = useRef<HTMLDivElement>(null);
@@ -117,7 +119,7 @@ export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
   return (
     <motion.div
       ref={rootRef}
-      className="hero-system pointer-events-none absolute top-[10%] -right-[1vw] z-0 size-[clamp(320px,42vw,700px)] origin-center will-change-transform max-[1000px]:top-[18%] max-[1000px]:right-[-18vw] max-[1000px]:size-[70vw] max-[680px]:top-[22%] max-[680px]:right-[-26vw] max-[680px]:size-[82vw]"
+      className="hero-system pointer-events-none absolute top-[10%] -right-[1vw] z-0 size-[clamp(320px,42vw,700px)] origin-center will-change-transform max-[1000px]:top-[18%] max-[1000px]:right-[-18vw] max-[1000px]:size-[70vw] max-[680px]:top-[16%] max-[680px]:right-[-12vw] max-[680px]:size-[78vw] max-[420px]:top-[6%] max-[420px]:right-[-4%] max-[420px]:size-[min(86vw,276px)]"
       style={{ rotate, y, scale }}
       aria-hidden="true"
     >
@@ -129,7 +131,7 @@ export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
           <motion.div
             variants={graphParent}
             initial="hidden"
-            animate="shown"
+            animate={introReady ? "shown" : "hidden"}
             className="relative size-full"
           >
             <div className="absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.12)_1px,transparent_1px)] bg-[size:16%_16%] opacity-70" />
@@ -207,16 +209,16 @@ export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
               style={{ x: "-50%", y: "-50%" }}
               className="absolute top-1/2 left-1/2 z-[4] flex aspect-square w-[28%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_18px_rgba(216,255,62,0.06),0_0_70px_rgba(216,255,62,0.28)]"
             >
-              <small className="text-[8px] tracking-[0.16em] uppercase">Core</small>
-              <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em]">FULL</strong>
-              <span className="text-[8px] tracking-[0.16em] uppercase">Stack</span>
+              <small className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[7px]">Core</small>
+              <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em] max-[420px]:text-[12px]">FULL</strong>
+              <span className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[7px]">Stack</span>
             </motion.div>
 
             {nodes.map((node) => (
               <motion.div
                 key={node.id}
                 variants={graphNode}
-                className="absolute z-[5] flex h-[min(44px,12%)] w-[min(158px,32%)] items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm"
+                className="absolute z-[5] flex h-[min(44px,9%)] w-[min(158px,24%)] items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm max-[420px]:gap-1 max-[420px]:px-1"
                 style={{
                   left: pct(node.x),
                   top: pct(node.y),
@@ -224,12 +226,12 @@ export function HeroGraph({ rotate, y, scale }: HeroGraphProps) {
                   y: "-50%",
                 }}
               >
-                <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6">
-                  <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3" />
+                <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6 max-[420px]:size-5">
+                  <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3 max-[420px]:size-2.5" />
                 </span>
                 <span className="min-w-0">
-                  <strong className="block truncate text-[12px] leading-none tracking-[-0.03em]">{node.label}</strong>
-                  <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase">{node.sub}</small>
+                  <strong className="block truncate text-[12px] leading-none tracking-[-0.03em] max-[420px]:text-[9px]">{node.label}</strong>
+                  <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase max-[420px]:hidden">{node.sub}</small>
                 </span>
               </motion.div>
             ))}

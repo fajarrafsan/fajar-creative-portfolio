@@ -3,8 +3,13 @@
 import { useRef, useState } from "react";
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { artThemes, projects, type Project } from "./content";
+import glowmarketCover from "./covers/glowmarket.jpg";
 import { useMediaQuery } from "./motion";
 import { ArrowOut, Chevron } from "./tech-icons";
+
+const bundledCovers: Record<string, string> = {
+  glowmarket: typeof glowmarketCover === "string" ? glowmarketCover : glowmarketCover.src,
+};
 
 /**
  * The stack is a tall scroll track with a sticky viewport inside it. Each card
@@ -125,6 +130,8 @@ function ProjectCard({
     isFirst ? [1, 1] : [1.08, 1.08, 1],
   );
 
+  const cover = bundledCovers[project.variant] ?? project.cover;
+
   return (
     <motion.article
       className="project-card group/art relative bg-paper md:absolute md:inset-[112px_0_24px] md:grid md:grid-rows-[minmax(0,1fr)_auto] md:overflow-hidden md:will-change-[transform,clip-path]"
@@ -133,39 +140,58 @@ function ProjectCard({
       {...(inert ? { inert: true } : {})}
     >
       <div
-        className={`project-art relative h-[min(56vw,770px)] min-h-[520px] overflow-hidden md:h-full md:min-h-0 max-[680px]:h-[108vw] max-[680px]:min-h-0 ${artThemes[project.variant]}`}
+        className={`project-art relative h-[min(56vw,770px)] min-h-[520px] overflow-hidden md:h-full md:min-h-0 max-[680px]:h-[108vw] max-[680px]:min-h-0 max-[420px]:h-[100vw] ${artThemes[project.variant]}`}
         aria-hidden="true"
       >
         <motion.div
           className={`project-art-motion absolute grid place-items-center transition-[filter] duration-300 will-change-transform group-hover/art:saturate-[1.16] ${
-            project.cover ? "inset-0" : "-inset-[8%]"
+            cover ? "inset-0" : "-inset-[8%]"
           }`}
           style={{ scale: artScale }}
         >
-          {project.cover ? (
+          {cover ? (
             <>
               <img
-                src={project.cover}
+                src={cover}
                 alt=""
-                className="absolute inset-0 size-full object-cover object-[center_18%]"
+                className={
+                  project.variant === "glowmarket"
+                    ? "absolute inset-0 size-full object-contain object-center"
+                    : "absolute inset-0 size-full object-cover"
+                }
+                style={
+                  project.variant === "glowmarket"
+                    ? undefined
+                    : { objectPosition: project.coverPosition ?? "50% 50%" }
+                }
               />
-              <span className="absolute inset-0 bg-linear-to-t from-ink/55 via-transparent to-ink/25" />
-              <motion.span
-                className="absolute top-1/2 left-[3.5%] z-[4] grid size-12 place-items-center rounded-full border border-paper/35 bg-ink/70 text-paper max-[680px]:size-10"
-                style={{ y: "-50%" }}
-                animate={reduced ? undefined : { x: [0, -8, 0] }}
-                transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Chevron dir="left" className="size-5 max-[680px]:size-4" />
-              </motion.span>
-              <motion.span
-                className="absolute top-1/2 right-[3.5%] z-[4] grid size-12 place-items-center rounded-full bg-[#e11d2e] text-paper max-[680px]:size-10"
-                style={{ y: "-50%" }}
-                animate={reduced ? undefined : { x: [0, 8, 0] }}
-                transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Chevron dir="right" className="size-5 max-[680px]:size-4" />
-              </motion.span>
+              <span
+                className={
+                  project.variant === "glowmarket"
+                    ? "absolute inset-0 bg-linear-to-t from-[#27180d]/28 via-transparent to-[#27180d]/10"
+                    : "absolute inset-0 bg-linear-to-t from-ink/55 via-transparent to-ink/25"
+                }
+              />
+              {project.variant === "anistream" && (
+                <>
+                  <motion.span
+                    className="absolute top-1/2 left-[3.5%] z-[4] grid size-12 place-items-center rounded-full border border-paper/35 bg-ink/70 text-paper max-[680px]:size-10"
+                    style={{ y: "-50%" }}
+                    animate={reduced ? undefined : { x: [0, -8, 0] }}
+                    transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Chevron dir="left" className="size-5 max-[680px]:size-4" />
+                  </motion.span>
+                  <motion.span
+                    className="absolute top-1/2 right-[3.5%] z-[4] grid size-12 place-items-center rounded-full bg-[#e11d2e] text-paper max-[680px]:size-10"
+                    style={{ y: "-50%" }}
+                    animate={reduced ? undefined : { x: [0, 8, 0] }}
+                    transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Chevron dir="right" className="size-5 max-[680px]:size-4" />
+                  </motion.span>
+                </>
+              )}
             </>
           ) : (
             <>
@@ -205,14 +231,14 @@ function ProjectCard({
         <span className="absolute right-[2.75%] bottom-[4.5%] z-[6] size-[9px] bg-current" />
       </div>
 
-      <div className="project-meta grid grid-cols-[40px_minmax(0,1fr)_minmax(212px,0.28fr)] gap-x-6 border-t-2 border-ink pt-4 max-[680px]:grid-cols-[28px_minmax(0,1fr)]">
+      <div className="project-meta grid grid-cols-[40px_minmax(0,1fr)_minmax(212px,0.28fr)] gap-x-6 border-t-2 border-ink pt-4 max-[680px]:grid-cols-[28px_minmax(0,1fr)] max-[420px]:grid-cols-[22px_minmax(0,1fr)] max-[420px]:gap-x-3">
         <span className="pt-1.5 text-[11px] tracking-[0.08em]">{project.number}</span>
         <motion.div className="project-main min-w-0" style={{ opacity: copyOpacity }}>
           <p className="project-type mb-2.5 flex items-center gap-2.5 text-[10px] font-semibold tracking-[0.12em] uppercase">
             <i className="h-px w-6 shrink-0 bg-current not-italic" aria-hidden="true" />
             {project.type}
           </p>
-          <h3 className="font-display mb-3 flex items-center gap-3 text-[clamp(44px,5.6vw,88px)] leading-[0.84] font-bold tracking-[-0.07em] max-[680px]:text-[clamp(40px,12vw,60px)]">
+          <h3 className="font-display mb-3 flex min-w-0 items-center gap-3 text-[clamp(44px,5.6vw,88px)] leading-[0.84] font-bold tracking-[-0.07em] max-[680px]:text-[clamp(36px,11vw,60px)] max-[420px]:text-[clamp(28px,8.8vw,36px)]">
             {project.title}
             <motion.span
               className="hidden size-[0.42em] shrink-0 place-items-center border-2 border-current p-[0.09em] md:grid"

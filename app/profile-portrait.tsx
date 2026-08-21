@@ -160,7 +160,7 @@ export function ProfileCopy() {
 
       <h2
         id="manifesto-title"
-        className="font-display mb-7 max-w-[920px] text-[clamp(40px,5.2vw,82px)] leading-[0.92] font-[560] tracking-[-0.07em] max-[680px]:mb-6 max-[680px]:text-[clamp(36px,11vw,56px)]"
+        className="font-display mb-7 max-w-[920px] text-[clamp(40px,5.2vw,82px)] leading-[0.92] font-[560] tracking-[-0.07em] max-[680px]:mb-6 max-[680px]:text-[clamp(32px,9.6vw,56px)] max-[420px]:text-[clamp(26px,8.2vw,32px)]"
       >
         {headline.map((line, lineIndex) => (
           <span className="block overflow-hidden py-[0.04em] [perspective:700px]" key={line.text}>
@@ -254,11 +254,11 @@ function ProfileStat({ value, label }: { value: string; label: string }) {
   return (
     <motion.article
       ref={ref}
-      className="flex min-h-[150px] flex-col justify-between border-l border-ink/25 px-[18px] pt-2.5 max-[680px]:min-h-[112px] max-[680px]:px-3"
+      className="flex min-h-[150px] flex-col justify-between border-l border-ink/25 px-[18px] pt-2.5 max-[680px]:min-h-[112px] max-[680px]:px-3 max-[420px]:min-h-[96px] max-[420px]:px-2.5"
       whileHover={reduced ? undefined : { y: -4 }}
       transition={{ duration: 0.22, ease }}
     >
-      <strong className="font-display text-[clamp(38px,4.6vw,72px)] leading-[0.8] tracking-[-0.08em] tabular-nums max-[680px]:text-[46px]">
+      <strong className="font-display text-[clamp(38px,4.6vw,72px)] leading-[0.8] tracking-[-0.08em] tabular-nums max-[680px]:text-[46px] max-[420px]:text-[36px]">
         <motion.span>{display}</motion.span>
       </strong>
       <span className="text-[9px] leading-[1.4] tracking-[0.11em] uppercase">{label}</span>

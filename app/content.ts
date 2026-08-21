@@ -38,6 +38,7 @@ export const projects = [
     variant: "anistream",
     mark: "ANI",
     cover: "/projects/anistream.png",
+    coverPosition: "50% 18%",
     demo: "https://anistreasm-fe-nine.vercel.app",
     links: [
       ["Front-end", "https://github.com/fajarrafsan02-bit/ANISTREASM-FE"],
@@ -59,6 +60,7 @@ export const projects = [
     variant: "roomly",
     mark: "RML",
     cover: null,
+    coverPosition: null,
     demo: null,
     links: [
       ["Front-end", "https://github.com/fajarrafsan02-bit/RoomlyHotel"],
@@ -79,7 +81,8 @@ export const projects = [
     ],
     variant: "glowmarket",
     mark: "GLW",
-    cover: null,
+    cover: "/projects/glowmarket.jpg",
+    coverPosition: "50% 58%",
     demo: "https://projek-react.vercel.app",
     links: [
       ["Front-end", "https://github.com/fajarrafsan02-bit/GLOWMARKET"],
@@ -184,6 +187,76 @@ export const experience = [
   },
 ];
 
+export const cvFile = {
+  href: "/cv/CV_Fajar_Rafsan_Tanjung_Java_Backend.pdf",
+  download: "CV_Fajar_Rafsan_Tanjung_Java_Backend.pdf",
+  filename: "CURRICULUM_VITAE_FAJAR_RAFSAN.PDF",
+};
+
+export const cvPhone = "+62 812-8619-6886";
+
+export const cvDocument = {
+  name: "Fajar Rafsan Tanjung",
+  role: "Java Backend Developer",
+  summary:
+    "Java Backend Developer dengan pengalaman proyek memakai Java 21, Spring Boot, PostgreSQL, dan microservices event-driven. Mengembangkan REST API untuk sistem hotel dan e-commerce, plus mengajar Java Fundamental dan OOP.",
+  skills: [
+    {
+      title: "Java Backend",
+      items: ["Java 21", "Spring Boot", "Spring Security", "Spring Data JPA", "Hibernate", "Maven"],
+    },
+    {
+      title: "Microservices & API",
+      items: ["Spring Cloud", "Eureka", "API Gateway", "RabbitMQ", "Redis", "REST / WebSocket"],
+    },
+    {
+      title: "Web, Data & Tools",
+      items: ["React / TypeScript", "Node.js / Express", "PostgreSQL / MySQL", "Flyway", "Docker", "Git / GitHub"],
+    },
+  ],
+  jobs: [
+    {
+      role: "Instruktur Java Fundamental",
+      place: "Program Pemberdayaan Umat Berkelanjutan · Universitas Nasional Pasim",
+      period: "Sep 2025 — Sekarang",
+      summary: "Mengajar Java, algoritma, dan OOP, lalu mendampingi peserta sampai aplikasi CRUD sederhana.",
+      bullets: [
+        "Mengajarkan dasar Java, struktur kontrol, method, array, serta Object-Oriented Programming.",
+        "Menyusun materi, latihan, kuis, UTS, dan UAS untuk mengukur pemahaman peserta.",
+        "Mendampingi pembuatan aplikasi sederhana dengan operasi CRUD dan studi kasus.",
+      ],
+    },
+  ],
+  education: {
+    place: "Universitas Nasional PASIM Bandung",
+    detail: "S1 Akuntansi · IPK 3,64 / 4,00",
+    period: "Sep 2023 — Sekarang",
+  },
+  projects: [
+    {
+      title: "Roomly",
+      stack: "Java Spring Boot & React",
+      year: "2026",
+      detail:
+        "Pemesanan hotel event-driven, 12 modul Spring Boot, Gateway, Eureka, Redis, RabbitMQ, JWT/OTP, Midtrans, invoice PDF.",
+    },
+    {
+      title: "GlowMarket",
+      stack: "Java Spring Boot & React",
+      year: "2026",
+      detail:
+        "REST API e-commerce Java 21: Flyway, JWT/OAuth, Xendit, RajaOngkir, WebSocket, dan 78 tes otomatis JUnit 5 / Mockito.",
+    },
+    {
+      title: "AniStream",
+      stack: "Node.js & React",
+      year: "2026",
+      detail:
+        "REST API service-repository dengan Express, Prisma, Redis, OAuth, plus katalog yang menggabungkan Samehadaku dan AniList.",
+    },
+  ],
+};
+
 export const frontendArchitecture = {
   kicker: "Front-end architecture",
   heading: "Setiap layar punya state. Setiap aksi punya tujuan.",
@@ -229,7 +302,7 @@ export const frontendArchitecture = {
 export const artThemes: Record<string, string> = {
   anistream: "bg-[#0b0d12] text-[#e11d2e]",
   roomly: "bg-[#174846] text-acid",
-  glowmarket: "bg-[#f06a3f] text-[#27180d]",
+  glowmarket: "bg-[#f4eee4] text-[#27180d]",
 };
 
 

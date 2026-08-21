@@ -96,6 +96,12 @@
   font-style: normal;
 }
 
+@media (max-width: 420px) {
+  .stroke-text {
+    -webkit-text-stroke-width: 1px;
+  }
+}
+
 /* Film grain. A single inline feTurbulence tile beats shipping a noise PNG and
    keeps the flat dark panels from reading as plastic. */
 @utility grain {
@@ -116,6 +122,9 @@
 @layer base {
   html {
     background: var(--color-ink);
+    overflow-x: clip;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   body {
@@ -125,6 +134,15 @@
     color: var(--color-paper);
     font-family: var(--font-sans);
     text-rendering: optimizeLegibility;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 
   a {
@@ -177,24 +195,6 @@
   .skip-link:focus-visible {
     transform: translateY(0);
   }
-
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--color-ink);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #2c322d;
-    border: 2px solid var(--color-ink);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-acid);
-  }
 }
 
 /* Failsafe: the head watchdog sets this when hydration never happened, so
@@ -205,14 +205,22 @@
   clip-path: none !important;
 }
 
+.motion-stalled .intro-overlay {
+  display: none !important;
+}
+
 /* Motion writes the scroll-driven card choreography as inline styles, and the
    stacking only makes sense on the pinned desktop stage. Below `md` the cards
-   sit in normal flow, so those inline transforms have to be outranked — which
-   only an `!important` declaration can do. */
+   sit in normal flow. Motion 11+ sets independent `translate` / `scale` /
+   `rotate` instead of the `transform` shorthand, so all four have to be
+   killed — otherwise later cards sit at translateY(108%) over the next section. */
 @media (max-width: 767px) {
   .project-card,
   .project-art-motion {
     transform: none !important;
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
     clip-path: none !important;
   }
 
@@ -280,12 +288,18 @@
     display: block !important;
     overflow: visible !important;
     transform: none !important;
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
     clip-path: none !important;
     opacity: 1 !important;
   }
 
   .project-art-motion {
     transform: none !important;
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
   }
 
   .project-main,
@@ -300,5 +314,12 @@
   .project-art {
     height: min(56vw, 770px) !important;
     min-height: 520px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 680px) {
+  .project-art {
+    height: 100vw !important;
+    min-height: 0 !important;
   }
 }

@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type Ref } from "react";
 import { motion } from "motion/react";
 import {
   capabilities,
+  cvFile,
   email,
   experience,
   frontendArchitecture,
@@ -31,6 +32,8 @@ import { ProjectStack } from "./project-stack";
 import { SiteHeader } from "./site-header";
 import { SystemGraph } from "./system-graph";
 import { SocialIcon, TechIcon } from "./tech-icons";
+import { CvPreview, openCvPreview } from "./cv-preview";
+import { IntroGate, useIntroReady } from "./intro";
 
 function SectionLabel({ index, label }: { index: string; label: string }) {
   return (
@@ -151,14 +154,14 @@ function CopyEmail() {
   };
 
   return (
-    <Magnetic>
+    <Magnetic className="max-[420px]:w-full">
       <button
         type="button"
         onClick={copy}
         data-cursor
-        className="group/copy inline-flex min-h-12 cursor-pointer items-center gap-3 border border-ink/35 px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:border-ink hover:bg-ink hover:text-acid"
+        className="group/copy inline-flex min-h-12 w-full max-w-full cursor-pointer items-center justify-center gap-3 border border-ink/35 px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:border-ink hover:bg-ink hover:text-acid max-[420px]:justify-between max-[420px]:px-3"
       >
-        <span className="font-mono normal-case tracking-normal">{email}</span>
+        <span className="font-mono min-w-0 truncate normal-case tracking-normal">{email}</span>
         <span aria-hidden="true" className="text-[11px] opacity-60 transition-opacity duration-200 group-hover/copy:opacity-100">
           {copied ? "tersalin" : "salin"}
         </span>
@@ -171,19 +174,29 @@ function CopyEmail() {
 }
 
 export default function Home() {
+  return (
+    <IntroGate>
+      <Portfolio />
+    </IntroGate>
+  );
+}
+
+function Portfolio() {
   const heroRef = useRef<HTMLElement>(null);
   const { gridY, systemRotate, systemY, systemScale } = useHeroParallax(heroRef);
+  const introReady = useIntroReady();
 
   return (
-    <main className="relative bg-ink font-sans text-paper">
+    <main className="relative min-w-0 overflow-x-clip bg-ink font-sans text-paper">
       <SmoothScroll />
       <ScrollProgress />
       <CursorGlow />
       <div className="grain" aria-hidden="true" />
 
       <SiteHeader />
+      <CvPreview />
 
-      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col justify-end overflow-hidden px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:min-h-[900px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-6" id="top" aria-labelledby="hero-title">
+      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col justify-end overflow-hidden px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:min-h-[900px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-6 max-[420px]:min-h-svh max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-5" id="top" aria-labelledby="hero-title">
         <motion.div
           className="hero-grid absolute inset-x-0 -inset-y-[15%] -z-[2] will-change-transform bg-[image:linear-gradient(rgba(240,239,232,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.25)_1px,transparent_1px)] bg-[size:25vw_25vw] max-[1000px]:bg-[size:50vw_50vw]"
           style={{ y: gridY }}
@@ -194,20 +207,20 @@ export default function Home() {
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.48 }}
-          className="hero-meta relative z-[1] mb-[clamp(28px,4vh,54px)] flex items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:items-start max-[680px]:mb-auto">
-          <div className="hero-kicker flex items-center gap-3 max-[680px]:max-w-[200px] max-[680px]:leading-[1.35]">
+          animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.12 : 0 }}
+          className="hero-meta relative z-[1] mb-[clamp(28px,4vh,54px)] flex items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:items-start max-[680px]:mb-auto max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
+          <div className="hero-kicker flex items-center gap-3 max-[680px]:max-w-[200px] max-[680px]:leading-[1.35] max-[420px]:max-w-none">
             <span className="status-dot size-[9px] animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
             Open for fullstack opportunities
           </div>
-          <p className="m-0 text-right leading-[1.35]">Java · Spring · React · TypeScript<br />© 2026</p>
+          <p className="m-0 text-right leading-[1.35] max-[420px]:text-left">Java · Spring · React · TypeScript<br />© 2026</p>
         </motion.div>
 
-        <h1 id="hero-title" className="font-display relative z-[1] m-0 text-[clamp(66px,11.4vw,182px)] leading-[0.77] font-[770] tracking-[-0.086em] uppercase max-[1000px]:text-[clamp(62px,16.4vw,126px)] max-[1000px]:leading-[0.79] max-[680px]:text-[clamp(55px,17.4vw,91px)]">
+        <h1 id="hero-title" className="font-display relative z-[1] m-0 text-[clamp(66px,11.4vw,182px)] leading-[0.77] font-[770] tracking-[-0.086em] uppercase max-[1000px]:text-[clamp(62px,16.4vw,126px)] max-[1000px]:leading-[0.79] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
           {[
             ["FULL", "block overflow-hidden pr-[0.08em]"],
-            ["STACK", "block overflow-hidden pr-[0.08em] pl-[13.7vw] text-acid max-[1000px]:pl-[7vw]"],
+            ["STACK", "block overflow-hidden pr-[0.08em] pl-[13.7vw] text-acid max-[1000px]:pl-[7vw] max-[420px]:pl-[4vw]"],
             ["DEVELOPER.", "block overflow-hidden pr-[0.08em]"],
           ].map(([word, maskClass], index) => (
             <span className={maskClass} key={word}>
@@ -216,7 +229,7 @@ export default function Home() {
                 variants={heroLine}
                 custom={index}
                 initial="hidden"
-                animate="shown"
+                animate={introReady ? "shown" : "hidden"}
               >
                 {word}
               </motion.span>
@@ -226,11 +239,11 @@ export default function Home() {
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.58 }}
-          className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-center">
+          animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.2 : 0 }}
+          className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-center max-[420px]:gap-4">
           <div className="min-w-0">
-            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] max-[680px]:max-w-[82%] max-[680px]:text-base">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
+            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:max-w-none max-[420px]:text-[15px]">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
             <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="Stack utama">
               {[
                 ["java", "Java"],
@@ -244,19 +257,29 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-[11px] tracking-[0.09em] uppercase">
-              <Magnetic>
+            <div className="flex flex-wrap items-center gap-3 text-[11px] tracking-[0.09em] uppercase max-[420px]:flex-col max-[420px]:items-stretch">
+              <Magnetic className="max-[420px]:w-full [&_a]:w-full">
                 <a
-                  className="inline-flex min-h-12 items-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-transparent hover:text-acid"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-transparent hover:text-acid"
                   href="#work"
                   data-cursor
                 >
                   Lihat proyek <span aria-hidden="true">↓</span>
                 </a>
               </Magnetic>
-              <Magnetic>
+              <Magnetic className="max-[420px]:w-full [&_button]:w-full">
+                <button
+                  type="button"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
+                  onClick={openCvPreview}
+                  data-cursor
+                >
+                  Lihat CV
+                </button>
+              </Magnetic>
+              <Magnetic className="max-[420px]:w-full [&_a]:w-full">
                 <a
-                  className="inline-flex min-h-12 items-center gap-3 border border-paper/35 px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 border border-paper/35 px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
                   href={githubUrl}
                   target="_blank"
                   rel="noreferrer"
@@ -284,7 +307,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="manifesto relative overflow-hidden bg-paper px-[3vw] py-[clamp(98px,13vw,210px)] text-ink max-[680px]:px-[18px] max-[680px]:pt-[92px] max-[680px]:pb-[110px]" id="profile" aria-labelledby="manifesto-title">
+      <section className="manifesto relative overflow-hidden bg-paper px-[3vw] py-[clamp(98px,13vw,210px)] text-ink max-[680px]:px-[18px] max-[680px]:pt-[92px] max-[680px]:pb-[110px] max-[420px]:px-3.5" id="profile" aria-labelledby="manifesto-title">
         <div
           className="pointer-events-none absolute -top-[18%] -left-[12%] size-[min(720px,58vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.16),transparent_68%)]"
           aria-hidden="true"
@@ -305,11 +328,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="system-showcase relative grid grid-cols-[0.82fr_1.18fr] items-center gap-[5vw] overflow-hidden bg-ink bg-[image:radial-gradient(circle_at_70%_50%,rgba(57,124,255,0.12),transparent_34%)] px-[3vw] py-[clamp(110px,11vw,176px)] min-[1001px]:max-[1200px]:grid-cols-[minmax(0,0.9fr)_minmax(500px,1.1fr)] min-[1001px]:max-[1200px]:gap-[3vw] max-[1000px]:grid-cols-1 max-[1000px]:py-[110px] max-[680px]:px-[18px]" id="architecture" aria-labelledby="system-title">
+      <section className="system-showcase relative grid grid-cols-[0.82fr_1.18fr] items-center gap-[5vw] overflow-hidden bg-ink bg-[image:radial-gradient(circle_at_70%_50%,rgba(57,124,255,0.12),transparent_34%)] px-[3vw] py-[clamp(110px,11vw,176px)] min-[1001px]:max-[1200px]:grid-cols-[minmax(0,0.9fr)_minmax(500px,1.1fr)] min-[1001px]:max-[1200px]:gap-[3vw] max-[1000px]:grid-cols-1 max-[1000px]:py-[110px] max-[680px]:px-[18px] max-[420px]:px-3.5 max-[420px]:py-16" id="architecture" aria-labelledby="system-title">
         <div className="system-copy relative z-[5]">
           <SectionLabel index="02" label="Motion architecture" />
           <p className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">Backend in motion</p>
-          <h2 id="system-title" className="font-display mb-7 max-w-[670px] text-[clamp(46px,5.4vw,88px)] leading-[0.93] font-[560] tracking-[-0.066em] min-[1001px]:max-[1200px]:text-[clamp(44px,4.8vw,62px)] max-[1000px]:max-w-[850px] max-[680px]:text-[clamp(44px,13vw,68px)]">Setiap request punya jalur. Setiap event punya tujuan.</h2>
+          <h2 id="system-title" className="font-display mb-7 max-w-[670px] text-[clamp(46px,5.4vw,88px)] leading-[0.93] font-[560] tracking-[-0.066em] min-[1001px]:max-[1200px]:text-[clamp(44px,4.8vw,62px)] max-[1000px]:max-w-[850px] max-[680px]:text-[clamp(44px,13vw,68px)] max-[420px]:text-[clamp(32px,10vw,44px)]">Setiap request punya jalur. Setiap event punya tujuan.</h2>
           <p className="system-description mb-0 max-w-[480px] leading-[1.5] text-[#aeb0a8]">Visualisasi cara saya memikirkan backend: modular, observable, dan terhubung tanpa kehilangan batas tanggung jawab.</p>
         </div>
 
@@ -323,19 +346,19 @@ export default function Home() {
         panels={frontendArchitecture.panels}
       />
 
-      <section className="work-section bg-paper px-[3vw] py-[clamp(96px,11vw,180px)] text-ink max-[680px]:px-[18px]" id="work" aria-labelledby="work-title">
+      <section className="work-section bg-paper px-[3vw] py-[clamp(96px,11vw,180px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5" id="work" aria-labelledby="work-title">
         <motion.div className="section-heading flex items-end justify-between gap-8 border-b border-ink pb-7 max-[680px]:flex-col max-[680px]:items-start max-[680px]:gap-[52px]" {...reveal}>
           <div className="flex items-center gap-4.5 pb-1 text-[11px] tracking-[0.1em] uppercase">
             <span className="grid size-[38px] place-items-center rounded-full border border-ink">03</span>
             <p className="m-0">Selected repositories / 2026</p>
           </div>
-          <h2 id="work-title" className="font-display m-0 text-[clamp(52px,8vw,132px)] leading-[0.76] font-[650] tracking-[-0.08em] max-[680px]:text-[clamp(54px,17vw,84px)]">Built systems</h2>
+          <h2 id="work-title" className="font-display m-0 text-[clamp(52px,8vw,132px)] leading-[0.76] font-[650] tracking-[-0.08em] max-[680px]:text-[clamp(48px,15vw,84px)] max-[420px]:text-[clamp(36px,11.4vw,48px)]">Built systems</h2>
         </motion.div>
 
         <ProjectStack />
       </section>
 
-      <section className="capabilities relative overflow-hidden bg-ink px-[3vw] py-[clamp(100px,12vw,190px)] text-paper max-[680px]:px-[18px]" id="stack" aria-labelledby="capabilities-title">
+      <section className="capabilities relative overflow-hidden bg-ink px-[3vw] py-[clamp(100px,12vw,190px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5" id="stack" aria-labelledby="capabilities-title">
         <div
           className="pointer-events-none absolute -top-[20%] right-[-8%] size-[min(640px,50vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.1),transparent_68%)]"
           aria-hidden="true"
@@ -343,7 +366,7 @@ export default function Home() {
         <motion.div className="relative mb-[clamp(56px,7vw,96px)] grid grid-cols-[1fr_2.4fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
           <SectionLabel index="04" label="Core stack" />
           <div className="max-[1000px]:mt-10">
-            <h2 id="capabilities-title" className="font-display mb-4 max-w-[18ch] text-[clamp(40px,5vw,72px)] leading-[0.94] font-[540] tracking-[-0.07em] max-[680px]:text-[clamp(36px,11vw,54px)]">
+            <h2 id="capabilities-title" className="font-display mb-4 max-w-[18ch] text-[clamp(40px,5vw,72px)] leading-[0.94] font-[540] tracking-[-0.07em] max-[680px]:text-[clamp(36px,11vw,54px)] max-[420px]:text-[clamp(30px,9.4vw,36px)]">
               Dari endpoint pertama sampai layar.
             </h2>
             <p className="m-0 max-w-[46ch] text-[15px] leading-[1.55] text-[#a7a99f]">
@@ -361,7 +384,7 @@ export default function Home() {
           {capabilities.map((item) => (
             <motion.article
               variants={staggerChild}
-              className="group/cap flex min-h-[240px] flex-col justify-between border border-paper/12 bg-ink-soft/80 p-6 transition-colors duration-200 hover:border-acid max-[680px]:min-h-[220px] max-[680px]:p-5"
+              className="group/cap flex min-h-[240px] flex-col justify-between border border-paper/12 bg-ink-soft/80 p-6 transition-colors duration-200 hover:border-acid max-[680px]:min-h-[220px] max-[680px]:p-5 max-[420px]:min-h-0 max-[420px]:p-4"
               key={item.number}
             >
               <div className="flex items-start justify-between gap-4">
@@ -378,7 +401,7 @@ export default function Home() {
                 </span>
               </div>
               <div>
-                <h3 className="mt-10 mb-3 text-[clamp(26px,2.6vw,36px)] leading-[1.05] font-[590] tracking-[-0.05em]">
+                <h3 className="mt-10 mb-3 text-[clamp(26px,2.6vw,36px)] leading-[1.05] font-[590] tracking-[-0.05em] max-[420px]:mt-8 max-[420px]:text-[22px]">
                   {item.title}
                 </h3>
                 <p className="m-0 max-w-[46ch] text-sm leading-[1.5] text-[#a7a99f]">{item.detail}</p>
@@ -389,7 +412,7 @@ export default function Home() {
       </section>
 
       <section
-        className="toolchain relative overflow-hidden border-t border-paper/10 bg-surface px-[3vw] py-[clamp(96px,11vw,170px)] text-paper max-[680px]:px-[18px]"
+        className="toolchain relative overflow-hidden border-t border-paper/10 bg-surface px-[3vw] py-[clamp(96px,11vw,170px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5"
         id="tech"
         aria-labelledby="toolchain-title"
       >
@@ -403,7 +426,7 @@ export default function Home() {
             <div className="max-[1000px]:mt-10">
               <h2
                 id="toolchain-title"
-                className="font-display mb-4 max-w-[16ch] text-[clamp(36px,4.6vw,64px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.5vw,52px)]"
+                className="font-display mb-4 max-w-[16ch] text-[clamp(36px,4.6vw,64px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.5vw,52px)] max-[420px]:text-[clamp(28px,8.8vw,34px)]"
               >
                 Alat yang saya pakai setiap hari.
               </h2>
@@ -451,13 +474,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="experience bg-paper-deep px-[3vw] py-[clamp(100px,12vw,190px)] text-ink max-[680px]:px-[18px]" id="experience" aria-labelledby="experience-title">
+      <section className="experience bg-paper-deep px-[3vw] py-[clamp(100px,12vw,190px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5" id="experience" aria-labelledby="experience-title">
         <motion.div {...reveal}>
           <SectionLabel index="06" label="Experience & education" />
         </motion.div>
         <motion.div className="experience-heading mt-[clamp(62px,8vw,120px)] mb-[clamp(92px,10vw,150px)] grid grid-cols-[0.8fr_2fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
           <p className="mb-2 text-sm leading-[1.5]">Accounting trained my precision.<br />Engineering gave it a system.</p>
-          <h2 id="experience-title" className="font-display m-0 text-[clamp(50px,7.6vw,122px)] leading-[0.86] font-[560] tracking-[-0.075em] max-[680px]:text-[clamp(47px,13.6vw,72px)]">Belajar dalam.<br /><em className="stroke-text">Mengajar kembali.</em></h2>
+          <h2 id="experience-title" className="font-display m-0 text-[clamp(50px,7.6vw,122px)] leading-[0.86] font-[560] tracking-[-0.075em] max-[680px]:text-[clamp(40px,12.4vw,72px)] max-[420px]:text-[clamp(26px,8.1vw,32px)]">Belajar dalam.<br /><em className="stroke-text">Mengajar kembali.</em></h2>
         </motion.div>
         <div className="experience-list border-t border-ink">
           {experience.map((item, index) => (
@@ -465,7 +488,7 @@ export default function Home() {
               <span className="text-[10px] tracking-[0.1em] uppercase">{String(index + 1).padStart(2, "0")}</span>
               <p className="text-[10px] tracking-[0.1em] uppercase max-[680px]:col-start-2">{item.period}</p>
               <div className="max-[680px]:col-start-2">
-                <h3 className="mb-2 text-[clamp(25px,2.5vw,40px)] leading-none tracking-[-0.05em]">{item.role}</h3>
+                <h3 className="mb-2 text-[clamp(25px,2.5vw,40px)] leading-none tracking-[-0.05em] max-[420px]:text-[22px] max-[420px]:leading-snug">{item.role}</h3>
                 <strong className="text-xs font-[560]">{item.place}</strong>
               </div>
               <p className="mb-0 max-w-[420px] text-sm leading-[1.48] text-[#4c4d46] max-[1000px]:col-start-3 max-[680px]:col-start-2">{item.detail}</p>
@@ -474,17 +497,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="contact relative flex min-h-svh flex-col justify-between overflow-hidden bg-acid px-[3vw] pt-10 pb-[22px] text-ink max-[680px]:min-h-[820px] max-[680px]:px-[18px] max-[680px]:pt-[30px]" id="contact" aria-labelledby="contact-title">
+      <section className="contact relative flex min-h-svh flex-col justify-between overflow-hidden bg-acid px-[3vw] pt-10 pb-[22px] text-ink max-[680px]:min-h-[820px] max-[680px]:px-[18px] max-[680px]:pt-[30px] max-[420px]:min-h-svh max-[420px]:px-3.5" id="contact" aria-labelledby="contact-title">
         <div className="absolute -top-[10vw] -right-[8vw] aspect-square w-[48vw] animate-contact-ring rounded-full border border-ink/25 shadow-[inset_0_0_0_8vw_rgba(11,13,12,0.04),inset_0_0_0_16vw_rgba(11,13,12,0.04)]" aria-hidden="true" />
         <div className="contact-top relative z-[1] flex items-start justify-between gap-[30px] max-[680px]:flex-col">
           <SectionLabel index="07" label="Connect" />
           <p className="m-0 max-w-[480px] text-[clamp(17px,1.5vw,23px)] leading-[1.28]">Terbuka untuk kesempatan fullstack, kolaborasi produk, dan diskusi sistem ujung ke ujung.</p>
         </div>
-        <h2 id="contact-title" className="font-display relative z-[1] my-auto mb-[4vw] text-[clamp(74px,14.2vw,218px)] leading-[0.69] font-[780] tracking-[-0.09em] max-[680px]:text-[clamp(68px,18.8vw,105px)] max-[680px]:leading-[0.72]">LET&apos;S BUILD<br /><em className="stroke-text">RELIABLE.</em></h2>
-        <div className="relative z-[1] mb-6 flex flex-wrap items-center gap-3 max-[680px]:mb-5">
-          <Magnetic>
+        <h2 id="contact-title" className="font-display relative z-[1] my-auto mb-[4vw] text-[clamp(74px,14.2vw,218px)] leading-[0.69] font-[780] tracking-[-0.09em] max-[680px]:text-[clamp(56px,16.5vw,105px)] max-[680px]:leading-[0.72] max-[420px]:text-[clamp(42px,13.2vw,56px)]">LET&apos;S BUILD<br /><em className="stroke-text">RELIABLE.</em></h2>
+        <div className="relative z-[1] mb-6 flex flex-wrap items-center gap-3 max-[680px]:mb-5 max-[420px]:flex-col max-[420px]:items-stretch">
+          <Magnetic className="max-[420px]:w-full [&_a]:w-full">
             <a
-              className="inline-flex min-h-12 items-center gap-3 border border-ink bg-ink px-5 text-[12px] tracking-[0.08em] text-acid uppercase transition-colors duration-200 hover:bg-transparent hover:text-ink"
+              className="inline-flex min-h-12 items-center justify-center gap-3 border border-ink bg-ink px-5 text-[12px] tracking-[0.08em] text-acid uppercase transition-colors duration-200 hover:bg-transparent hover:text-ink"
               href={`mailto:${email}?subject=Peluang%20Fullstack`}
               data-cursor
             >
@@ -492,6 +515,16 @@ export default function Home() {
             </a>
           </Magnetic>
           <CopyEmail />
+          <Magnetic className="max-[420px]:w-full [&_a]:w-full">
+            <a
+              className="inline-flex min-h-12 items-center justify-center gap-3 border border-ink px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:bg-ink hover:text-acid"
+              href={cvFile.href}
+              download={cvFile.download}
+              data-cursor
+            >
+              Unduh CV <span aria-hidden="true">↓</span>
+            </a>
+          </Magnetic>
         </div>
         <div className="social-links relative z-[1] grid grid-cols-2 border-y border-ink max-[680px]:grid-cols-1">
           <a className="contact-link flex min-h-[86px] items-center justify-between px-[22px] text-[clamp(20px,2vw,31px)] tracking-[-0.035em] transition-[background-color,color,padding] duration-250 will-change-transform hover:bg-ink hover:px-[34px] hover:text-acid max-[680px]:min-h-[72px] max-[680px]:px-0 max-[680px]:hover:px-3.5" href={linkedInUrl} target="_blank" rel="noreferrer">
@@ -501,8 +534,8 @@ export default function Home() {
             <span className="flex items-center gap-4"><SocialIcon name="github" className="size-[0.8em] shrink-0" />GitHub</span><span aria-hidden="true">↗</span>
           </a>
         </div>
-        <footer className="relative z-[1] flex justify-between gap-6 pt-5 text-[10px] tracking-[0.1em] uppercase max-[680px]:items-end">
-          <p className="m-0 max-[680px]:max-w-[210px] max-[680px]:leading-[1.45]">© 2026 Fajar Rafsan. Fullstack Developer.</p>
+        <footer className="relative z-[1] flex justify-between gap-6 pt-5 text-[10px] tracking-[0.1em] uppercase max-[680px]:items-end max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
+          <p className="m-0 max-[680px]:max-w-[210px] max-[680px]:leading-[1.45] max-[420px]:max-w-none">© 2026 Fajar Rafsan. Fullstack Developer.</p>
           <a className="-my-2.5 inline-flex shrink-0 items-center py-2.5 transition-opacity duration-200 hover:opacity-60" href="#top">Kembali ke atas ↑</a>
         </footer>
       </section>

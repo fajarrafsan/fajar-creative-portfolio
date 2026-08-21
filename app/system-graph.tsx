@@ -108,7 +108,7 @@ function ArchitectureGraph({
       initial="hidden"
       whileInView="shown"
       viewport={{ once: true, amount: 0.3 }}
-      className={`graph-frame relative isolate aspect-square overflow-hidden border border-paper/25 bg-ink-soft/85 max-[680px]:aspect-[0.86] ${className ?? ""}`}
+      className={`graph-frame relative isolate aspect-square overflow-hidden border border-paper/25 bg-ink-soft/85 ${className ?? ""}`}
       aria-label={ariaLabel}
     >
       <div
@@ -182,10 +182,7 @@ function ArchitectureGraph({
         </g>
 
         {legs.map(({ node, d, from, to }, index) => (
-          <g
-            key={node.id}
-            className={`graph-leg${node.compact ? "" : " max-[680px]:hidden"}`}
-          >
+          <g key={node.id} className="graph-leg">
             <motion.path
               id={`${idPrefix}-leg-${node.id}`}
               className="graph-route"
@@ -225,19 +222,17 @@ function ArchitectureGraph({
         style={{ x: "-50%", y: "-50%" }}
         className="graph-core absolute top-1/2 left-1/2 z-[5] flex aspect-square w-[30%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_24px_rgba(216,255,62,0.05),0_0_90px_rgba(216,255,62,0.2)]"
       >
-        <small className="text-[8px] tracking-[0.14em] uppercase">Core</small>
-        <strong className="my-[3px] -mb-0.5 text-[clamp(18px,2.6vw,42px)] leading-[0.9] tracking-[-0.065em]">
+        <small className="text-[8px] tracking-[0.14em] uppercase max-[420px]:text-[7px]">Core</small>
+        <strong className="my-[3px] -mb-0.5 text-[clamp(18px,2.6vw,42px)] leading-[0.9] tracking-[-0.065em] max-[420px]:text-[13px]">
           {coreTitle}
         </strong>
-        <span className="text-[8px] tracking-[0.14em] uppercase">{coreSub}</span>
+        <span className="text-[8px] tracking-[0.14em] uppercase max-[420px]:text-[7px]">{coreSub}</span>
       </motion.div>
 
       {legs.map(({ node, mid }) => (
         <span
           key={`${node.id}-proto`}
-          className={`absolute z-[4] -translate-x-1/2 -translate-y-1/2 bg-ink/85 px-1.5 py-0.5 text-[8px] leading-none tracking-[0.14em] text-acid/80 uppercase max-[1000px]:hidden${
-            node.compact ? "" : " max-[680px]:hidden"
-          }`}
+          className={`absolute z-[4] -translate-x-1/2 -translate-y-1/2 bg-ink/85 px-1.5 py-0.5 text-[8px] leading-none tracking-[0.14em] text-acid/80 uppercase max-[1000px]:hidden`}
           style={{ left: pct(mid.x), top: pct(mid.y) }}
           aria-hidden="true"
         >
@@ -251,9 +246,9 @@ function ArchitectureGraph({
           <motion.div
             key={node.id}
             variants={graphNode}
-            className={`graph-node absolute z-[6] flex w-(--card-w) h-(--card-h) items-center gap-2 overflow-hidden border bg-ink/95 px-2.5 py-2 transition-colors duration-250 max-[680px]:h-[15%] max-[680px]:w-[44%] max-[680px]:gap-1.5 max-[680px]:px-2 max-[680px]:py-1.5${
-              node.compact ? "" : " max-[680px]:hidden"
-            } ${active ? "border-acid text-acid" : "border-paper/25 hover:border-acid hover:bg-[#171b16]"}`}
+            className={`graph-node absolute z-[6] flex w-(--card-w) h-(--card-h) items-center gap-2 overflow-hidden border bg-ink/95 px-2.5 py-2 transition-colors duration-250 max-[680px]:gap-1 max-[680px]:px-1.5 max-[680px]:py-1 ${
+              active ? "border-acid text-acid" : "border-paper/25 hover:border-acid hover:bg-[#171b16]"
+            }`}
             style={{
               left: pct(node.x),
               top: pct(node.y),
@@ -263,18 +258,18 @@ function ArchitectureGraph({
               y: "-50%",
             } as CSSProperties}
           >
-            <span className="w-5 shrink-0 text-[9px] leading-none text-acid">{node.index}</span>
+            <span className="w-5 shrink-0 text-[9px] leading-none text-acid max-[420px]:hidden">{node.index}</span>
             <div className="min-w-0 flex-1">
-              <strong className="block truncate text-[clamp(12px,1.05vw,16px)] leading-tight tracking-[-0.03em]">
+              <strong className="block truncate text-[clamp(12px,1.05vw,16px)] leading-tight tracking-[-0.03em] max-[420px]:text-[10px]">
                 {node.title}
               </strong>
-              <small className={`mt-0.5 block truncate text-[8px] leading-tight tracking-[0.08em] uppercase ${active ? "text-acid/80" : "text-[#96988f]"}`}>
+              <small className={`mt-0.5 block truncate text-[8px] leading-tight tracking-[0.08em] uppercase max-[420px]:text-[7px] ${active ? "text-acid/80" : "text-[#96988f]"}`}>
                 {node.sub}
               </small>
             </div>
             {node.icon ? (
               <span
-                className={`grid size-7 shrink-0 place-items-center border max-[680px]:size-6 ${
+                className={`grid size-7 shrink-0 place-items-center border max-[680px]:size-6 max-[420px]:hidden ${
                   active ? "border-acid/50 bg-acid/10" : "border-paper/15"
                 }`}
               >

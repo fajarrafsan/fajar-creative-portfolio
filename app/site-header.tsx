@@ -5,6 +5,8 @@ import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScro
 import { githubUrl, linkedInUrl } from "./content";
 import { Magnetic, ease } from "./motion";
 import { SocialIcon } from "./tech-icons";
+import { openCvPreview } from "./cv-preview";
+import { useIntroReady } from "./intro";
 
 const links = [
   { href: "#profile", id: "profile", label: "Profile", index: "01" },
@@ -61,6 +63,7 @@ function BandungClock() {
 
 export function SiteHeader() {
   const reduced = Boolean(useReducedMotion());
+  const introReady = useIntroReady();
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -117,12 +120,12 @@ export function SiteHeader() {
     <>
       <motion.header
         initial={reduced ? false : { y: -28, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.7, ease, delay: 0.08 }}
-        className="site-nav pointer-events-none fixed inset-x-0 top-0 z-[80] px-[3vw] pt-[max(10px,env(safe-area-inset-top))] max-[680px]:px-[18px]"
+        animate={reduced || introReady ? { y: 0, opacity: 1 } : { y: -28, opacity: 0 }}
+        transition={{ duration: 0.7, ease, delay: introReady ? 0.08 : 0 }}
+        className="site-nav pointer-events-none fixed inset-x-0 top-0 z-[80] px-[3vw] pt-[max(10px,env(safe-area-inset-top))] max-[680px]:px-[18px] max-[420px]:px-3"
       >
         <div
-          className={`pointer-events-auto relative flex h-16 items-center justify-between gap-4 overflow-hidden border px-3 text-[11px] tracking-[0.1em] uppercase backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 max-[680px]:h-14 ${
+          className={`pointer-events-auto relative flex h-16 items-center justify-between gap-4 overflow-hidden border px-3 text-[11px] tracking-[0.1em] uppercase backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 max-[680px]:h-14 max-[420px]:gap-2 max-[420px]:px-2 ${
             scrolled
               ? "border-paper/20 bg-ink/90 shadow-[0_18px_50px_rgba(0,0,0,0.38)]"
               : "border-paper/15 bg-ink/62"
@@ -184,6 +187,14 @@ export function SiteHeader() {
               </span>
               <BandungClock />
             </p>
+            <button
+              type="button"
+              className="inline-flex h-11 shrink-0 items-center border border-paper/25 px-3.5 text-paper transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[680px]:px-3 max-[420px]:px-2.5"
+              onClick={openCvPreview}
+              data-cursor
+            >
+              CV
+            </button>
             <a
               className="grid size-11 shrink-0 place-items-center border border-paper/25 text-paper transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[680px]:hidden"
               href={githubUrl}
@@ -255,7 +266,7 @@ export function SiteHeader() {
                       className="flex min-h-16 items-center justify-between gap-6 border-b border-paper/15 py-3"
                       onClick={() => setOpen(false)}
                     >
-                      <span className="font-display text-[clamp(34px,9vw,56px)] leading-none font-[650] tracking-[-0.07em] uppercase">
+                      <span className="font-display text-[clamp(34px,9vw,56px)] leading-none font-[650] tracking-[-0.07em] uppercase max-[420px]:text-[clamp(28px,8.5vw,34px)]">
                         {link.label}
                       </span>
                       <span className="font-mono text-[11px] tracking-[0.16em] text-acid">{link.index}</span>
@@ -269,6 +280,16 @@ export function SiteHeader() {
                 <span className="size-2 rounded-full bg-acid" aria-hidden="true" />
                 Available · Bandung
               </span>
+              <button
+                type="button"
+                className="inline-flex min-h-11 items-center gap-2 border border-paper/25 px-4 text-[11px] tracking-[0.1em] uppercase"
+                onClick={() => {
+                  setOpen(false);
+                  openCvPreview();
+                }}
+              >
+                Lihat CV
+              </button>
               <a
                 className="inline-flex min-h-11 items-center gap-2 border border-paper/25 px-4 text-[11px] tracking-[0.1em] uppercase"
                 href={githubUrl}
