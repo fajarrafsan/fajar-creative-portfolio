@@ -1,540 +1,509 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import type LenisType from "lenis";
+import { useEffect, useLayoutEffect, useRef, useState, type Ref } from "react";
+import { motion } from "motion/react";
+import {
+  capabilities,
+  email,
+  experience,
+  frontendArchitecture,
+  githubUrl,
+  linkedInUrl,
+  marqueeBottom,
+  marqueeTop,
+  stackGroups,
+} from "./content";
+import {
+  CursorGlow,
+  Magnetic,
+  ScrollProgress,
+  SmoothScroll,
+  heroLine,
+  reveal,
+  staggerChild,
+  staggerParent,
+  useHeroParallax,
+} from "./motion";
+import { HorizontalScrollSection } from "./horizontal-scroll-section";
+import { HeroGraph } from "./hero-graph";
+import { ProfileCopy, ProfilePortrait } from "./profile-portrait";
+import { ProjectStack } from "./project-stack";
+import { SiteHeader } from "./site-header";
+import { SystemGraph } from "./system-graph";
+import { SocialIcon, TechIcon } from "./tech-icons";
 
-const linkedInUrl = "https://www.linkedin.com/in/fajar-rafsan-80822b394/";
-const githubUrl = "https://github.com/fajarrafsan02-bit";
+function SectionLabel({ index, label }: { index: string; label: string }) {
+  return (
+    <div className="flex items-center gap-5 text-[11px] uppercase tracking-[0.1em]">
+      <span className="grid size-[38px] shrink-0 place-items-center rounded-full border border-current">
+        {index}
+      </span>
+      <p className="m-0">{label}</p>
+    </div>
+  );
+}
 
-const projects = [
-  {
-    number: "01",
-    title: "ANISTREAM",
-    type: "Full-stack streaming platform",
-    year: "2026",
-    note: "Platform streaming anime dengan katalog, multi-server player, jadwal mingguan, Google OAuth, wishlist, dan watch history.",
-    stack: ["JavaScript", "REST API", "OAuth", "Service Layer"],
-    variant: "anistream",
-    mark: "ANI",
-    links: [
-      ["Front-end", "https://github.com/fajarrafsan02-bit/ANISTREASM-FE"],
-      ["Back-end", "https://github.com/fajarrafsan02-bit/REST-API-ANISTREASM-BE"],
-    ],
-  },
-  {
-    number: "02",
-    title: "ROOMLY",
-    type: "Event-driven hotel booking",
-    year: "2026",
-    note: "Ekosistem reservasi hotel dengan React, microservices Spring Boot, RabbitMQ, JWT, Midtrans, dan invoice PDF.",
-    stack: ["Spring Boot", "RabbitMQ", "Docker", "React + TypeScript"],
-    variant: "roomly",
-    mark: "RML",
-    links: [
-      ["Front-end", "https://github.com/fajarrafsan02-bit/RoomlyHotel"],
-      ["Microservices API", "https://github.com/fajarrafsan02-bit/REST-API-Hotel-Booking"],
-    ],
-  },
-  {
-    number: "03",
-    title: "GLOWMARKET",
-    type: "Commerce & financial system",
-    year: "2026",
-    note: "E-commerce perhiasan dengan pembayaran Xendit, ongkir RajaOngkir, WebSocket chat, loyalty points, dan double-entry accounting.",
-    stack: ["Spring Boot 4", "PostgreSQL", "WebSocket", "React 19"],
-    variant: "glowmarket",
-    mark: "GLW",
-    links: [
-      ["Front-end", "https://github.com/fajarrafsan02-bit/GLOWMARKET"],
-      ["REST API", "https://github.com/fajarrafsan02-bit/REST-API-GLOWMARKET"],
-    ],
-  },
-];
+function MarqueeSequence({
+  words,
+  muted,
+  seqRef,
+}: {
+  words: string[];
+  muted: boolean;
+  seqRef?: Ref<HTMLDivElement>;
+}) {
+  return (
+    <div ref={seqRef} className="flex shrink-0 items-center">
+      {words.map((word) => (
+        <span className="flex shrink-0 items-center" key={word}>
+          <span className="px-[2vw]">{word}</span>
+          <i className={`text-[0.55em] not-italic ${muted ? "text-acid" : "text-java"}`} aria-hidden="true">
+            ●
+          </i>
+        </span>
+      ))}
+    </div>
+  );
+}
 
-const capabilities = [
-  ["01", "Java & Spring Boot", "RESTful API, clean service layer, JWT, dan backend yang mudah dikembangkan."],
-  ["02", "Microservices", "Eureka, API Gateway, RabbitMQ, Docker, dan arsitektur event-driven."],
-  ["03", "Data & performance", "PostgreSQL, MySQL, Redis, transaksi, caching, dan konsistensi data."],
-  ["04", "Full-stack delivery", "React, TypeScript, Tailwind, integrasi payment, dan real-time features."],
-];
+/**
+ * Seamless ticker: each half is filled until it is wider than the viewport,
+ * then the track is duplicated. A -50% translate then lands on the same glyphs.
+ */
+function MarqueeTrack({
+  words,
+  reverse = false,
+  muted = false,
+}: {
+  words: string[];
+  reverse?: boolean;
+  muted?: boolean;
+}) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const seqRef = useRef<HTMLDivElement>(null);
+  const [loops, setLoops] = useState(4);
+  const size = muted
+    ? "text-[clamp(11px,1.05vw,15px)] font-[620] tracking-[0.12em]"
+    : "text-[clamp(18px,2vw,31px)] font-[760] tracking-[-0.04em]";
 
-const experience = [
-  {
-    period: "JAN 2026 — SEKARANG",
-    role: "Java Fundamentals Instructor",
-    place: "Universitas Nasional Pasim",
-    detail: "Memimpin kelas Java fundamental, OOP, live coding, debugging, serta proyek mini terstruktur.",
-  },
-  {
-    period: "SEP 2025 — AGU 2026",
-    role: "Accounting Assistant",
-    place: "Universitas Nasional Pasim",
-    detail: "Mengajar kelas responsi akuntansi, menyusun materi, studi kasus, dan evaluasi untuk mahasiswa.",
-  },
-  {
-    period: "2023 — 2026",
-    role: "S1 Akuntansi · IPK 3.71",
-    place: "Universitas Nasional Pasim",
-    detail: "Memperdalam software engineering melalui pelatihan intensif Java Backend Development.",
-  },
-];
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    const sequence = seqRef.current;
+    if (!viewport || !sequence) return;
 
-export default function Home() {
-  const rootRef = useRef<HTMLElement>(null);
-  const cursorRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const root = rootRef.current;
-    const cursor = cursorRef.current;
-    if (!root) return;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const finePointer = window.matchMedia("(pointer: fine)").matches;
-    let disposed = false;
-    let animationFrame = 0;
-    let lenisInstance: LenisType | undefined;
-    let gsapContext: { revert: () => void } | undefined;
-    const listenerCleanups: Array<() => void> = [];
-
-    const moveCursor = (event: PointerEvent) => {
-      if (!cursor) return;
-      cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+    const update = () => {
+      const seqWidth = sequence.getBoundingClientRect().width;
+      const viewWidth = viewport.getBoundingClientRect().width;
+      if (seqWidth < 1 || viewWidth < 1) return;
+      setLoops(Math.max(2, Math.ceil(viewWidth / seqWidth) + 1));
     };
 
-    if (finePointer && cursor) {
-      window.addEventListener("pointermove", moveCursor, { passive: true });
-      root.classList.add("has-custom-cursor");
-      root.querySelectorAll<HTMLElement>("[data-cursor]").forEach((element) => {
-        const enter = () => cursor.classList.add("is-active");
-        const leave = () => cursor.classList.remove("is-active");
-        element.addEventListener("pointerenter", enter);
-        element.addEventListener("pointerleave", leave);
-        listenerCleanups.push(() => {
-          element.removeEventListener("pointerenter", enter);
-          element.removeEventListener("pointerleave", leave);
-        });
-      });
-    }
-
-    if (!reduceMotion) {
-      Promise.all([import("gsap"), import("gsap/ScrollTrigger"), import("lenis")]).then(
-        ([gsapModule, scrollModule, lenisModule]) => {
-          if (disposed) return;
-
-          const gsap = gsapModule.gsap;
-          const ScrollTrigger = scrollModule.ScrollTrigger;
-          const Lenis = lenisModule.default;
-          gsap.registerPlugin(ScrollTrigger);
-
-          const lenis = new Lenis({
-            duration: 1.05,
-            smoothWheel: true,
-            wheelMultiplier: 0.92,
-          });
-          lenisInstance = lenis;
-          lenis.on("scroll", ScrollTrigger.update);
-
-          const raf = (time: number) => {
-            lenis.raf(time);
-            animationFrame = requestAnimationFrame(raf);
-          };
-          animationFrame = requestAnimationFrame(raf);
-
-          gsapContext = gsap.context(() => {
-            gsap.from(".hero-word", {
-              yPercent: 112,
-              rotate: 2,
-              duration: 1.05,
-              stagger: 0.09,
-              ease: "power4.out",
-              delay: 0.08,
-            });
-            gsap.from(".hero-meta, .hero-foot", {
-              opacity: 0,
-              y: 20,
-              duration: 0.65,
-              stagger: 0.1,
-              ease: "power3.out",
-              delay: 0.48,
-            });
-
-            gsap.to(".hero-system", {
-              rotate: 72,
-              yPercent: 24,
-              scale: 1.08,
-              ease: "none",
-              scrollTrigger: {
-                trigger: ".hero",
-                start: "top top",
-                end: "bottom top",
-                scrub: 1,
-              },
-            });
-            gsap.to(".hero-grid", {
-              backgroundPosition: "8vw 10vw",
-              ease: "none",
-              scrollTrigger: {
-                trigger: ".hero",
-                start: "top top",
-                end: "bottom top",
-                scrub: 1.2,
-              },
-            });
-            gsap.to(".scroll-progress", {
-              scaleX: 1,
-              transformOrigin: "left center",
-              ease: "none",
-              scrollTrigger: { start: 0, end: "max", scrub: 0.2 },
-            });
-
-            gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
-              gsap.from(element, {
-                opacity: 0,
-                y: 48,
-                duration: 0.72,
-                ease: "power3.out",
-                scrollTrigger: {
-                  trigger: element,
-                  start: "top 87%",
-                  once: true,
-                },
-              });
-            });
-
-            gsap.utils.toArray<HTMLElement>(".project-card").forEach((card) => {
-              const art = card.querySelector(".project-art-motion");
-              if (!art) return;
-              gsap.fromTo(
-                art,
-                { yPercent: -7, rotate: -1 },
-                {
-                  yPercent: 7,
-                  rotate: 1,
-                  ease: "none",
-                  scrollTrigger: {
-                    trigger: card,
-                    start: "top bottom",
-                    end: "bottom top",
-                    scrub: 0.85,
-                  },
-                },
-              );
-            });
-
-            gsap.matchMedia().add("(min-width: 1001px)", () => {
-              const projectCards = gsap.utils.toArray<HTMLElement>(".project-card");
-
-              projectCards.slice(0, -1).forEach((card, index) => {
-                const nextCard = projectCards[index + 1];
-
-                gsap.to(card, {
-                  scale: 0.96 + index * 0.01,
-                  filter: "brightness(0.78) saturate(0.82)",
-                  ease: "none",
-                  scrollTrigger: {
-                    trigger: nextCard,
-                    start: "top 82%",
-                    end: `top ${100 + index * 12}px`,
-                    scrub: 0.85,
-                    invalidateOnRefresh: true,
-                  },
-                });
-              });
-            });
-
-            const graphTimeline = gsap.timeline({
-              scrollTrigger: {
-                trigger: ".graph-frame",
-                start: "top 82%",
-                end: "bottom 34%",
-                scrub: 0.75,
-              },
-            });
-            graphTimeline
-              .from(".graph-core", { scale: 0.7, opacity: 0, ease: "power3.out" })
-              .from(".graph-route", { scaleX: 0, transformOrigin: "left center", stagger: 0.06 }, "<0.08")
-              .from(".graph-node", { scale: 0.82, opacity: 0, stagger: 0.06, ease: "power3.out" }, "<0.04")
-              .to(".graph-orbit", { rotate: 80, ease: "none" }, 0);
-
-            gsap.from(".capability-row", {
-              xPercent: -6,
-              opacity: 0,
-              stagger: 0.07,
-              duration: 0.72,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: ".capabilities-list",
-                start: "top 78%",
-                once: true,
-              },
-            });
-
-            root.querySelectorAll<HTMLElement>(".magnetic").forEach((element) => {
-              const xTo = gsap.quickTo(element, "x", { duration: 0.38, ease: "elastic.out(1, 0.4)" });
-              const yTo = gsap.quickTo(element, "y", { duration: 0.38, ease: "elastic.out(1, 0.4)" });
-              const move = (event: PointerEvent) => {
-                const bounds = element.getBoundingClientRect();
-                xTo((event.clientX - bounds.left - bounds.width / 2) * 0.2);
-                yTo((event.clientY - bounds.top - bounds.height / 2) * 0.2);
-              };
-              const reset = () => {
-                xTo(0);
-                yTo(0);
-              };
-              element.addEventListener("pointermove", move);
-              element.addEventListener("pointerleave", reset);
-              listenerCleanups.push(() => {
-                element.removeEventListener("pointermove", move);
-                element.removeEventListener("pointerleave", reset);
-              });
-            });
-          }, root);
-
-          ScrollTrigger.refresh();
-        },
-      );
-    }
-
-    return () => {
-      disposed = true;
-      window.removeEventListener("pointermove", moveCursor);
-      listenerCleanups.forEach((cleanup) => cleanup());
-      cancelAnimationFrame(animationFrame);
-      lenisInstance?.destroy();
-      gsapContext?.revert();
-    };
-  }, []);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(viewport);
+    observer.observe(sequence);
+    void document.fonts?.ready.then(update);
+    return () => observer.disconnect();
+  }, [words, muted]);
 
   return (
-    <main ref={rootRef}>
-      <div className="scroll-progress" aria-hidden="true" />
-      <div className="cursor-glow" ref={cursorRef} aria-hidden="true">
-        <span>VIEW</span>
-      </div>
-
-      <header className="site-nav">
-        <a className="brand magnetic" href="#top" aria-label="Fajar Rafsan — kembali ke atas">
-          F<span aria-hidden="true">/</span>R
-        </a>
-        <p className="nav-location">Java Back-End Engineer<br />Bandung, ID</p>
-        <nav aria-label="Navigasi utama">
-          <a href="#work">Projects</a>
-          <a href="#profile">Profile</a>
-          <a href="#stack">Stack</a>
-          <a className="nav-cta magnetic" href={linkedInUrl} target="_blank" rel="noreferrer">
-            LinkedIn <span aria-hidden="true">↗</span>
-          </a>
-        </nav>
-      </header>
-
-      <section className="hero" id="top" aria-labelledby="hero-title">
-        <div className="hero-grid" aria-hidden="true" />
-        <div className="hero-system" aria-hidden="true">
-          <span className="system-ring system-ring-one" />
-          <span className="system-ring system-ring-two" />
-          <span className="system-axis system-axis-x" />
-          <span className="system-axis system-axis-y" />
-          <span className="system-node system-node-one" />
-          <span className="system-node system-node-two" />
-          <span className="system-node system-node-three" />
-          <span className="system-packet system-packet-one" />
-          <span className="system-packet system-packet-two" />
-          <strong>JAVA</strong>
-        </div>
-
-        <div className="hero-meta">
-          <div className="hero-kicker">
-            <span className="status-dot" aria-hidden="true" />
-            Open for backend opportunities
+    <div ref={viewportRef} className="overflow-hidden">
+      <div
+        className={`marquee-track font-display flex w-max items-center whitespace-nowrap will-change-transform ${size} ${
+          reverse ? "animate-marquee-reverse" : "animate-marquee"
+        }`}
+      >
+        {[0, 1].map((copy) => (
+          <div className="flex shrink-0 items-center" key={copy} aria-hidden={copy === 1 ? true : undefined}>
+            {Array.from({ length: loops }, (_, index) => (
+              <MarqueeSequence
+                key={index}
+                words={words}
+                muted={muted}
+                seqRef={copy === 0 && index === 0 ? seqRef : undefined}
+              />
+            ))}
           </div>
-          <p>Spring Boot / Microservices / API<br />© 2026</p>
-        </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-        <h1 id="hero-title">
-          <span className="word-mask"><span className="hero-word">JAVA</span></span>
-          <span className="word-mask hero-indent"><span className="hero-word">BACK-END</span></span>
-          <span className="word-mask"><span className="hero-word">ENGINEER.</span></span>
+function CopyEmail() {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 2200);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+    } catch {
+      // Clipboard can be blocked (insecure origin, denied permission); the
+      // mailto fallback below still gets the visitor where they need to go.
+      window.location.href = `mailto:${email}`;
+    }
+  };
+
+  return (
+    <Magnetic>
+    <button
+      type="button"
+      onClick={copy}
+      data-cursor
+      className="group/copy inline-flex min-h-12 cursor-pointer items-center gap-3 border border-ink/35 px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:border-ink hover:bg-ink hover:text-acid"
+    >
+      <span className="font-mono normal-case tracking-normal">{email}</span>
+      <span aria-hidden="true" className="text-[11px] opacity-60 transition-opacity duration-200 group-hover/copy:opacity-100">
+        {copied ? "tersalin" : "salin"}
+      </span>
+      <span className="sr-only" role="status">
+        {copied ? "Alamat email tersalin ke papan klip" : ""}
+      </span>
+    </button>
+    </Magnetic>
+  );
+}
+
+export default function Home() {
+  const heroRef = useRef<HTMLElement>(null);
+  const { gridY, systemRotate, systemY, systemScale } = useHeroParallax(heroRef);
+
+  return (
+    <main className="relative bg-ink font-sans text-paper">
+      <SmoothScroll />
+      <ScrollProgress />
+      <CursorGlow />
+      <div className="grain" aria-hidden="true" />
+
+      <SiteHeader />
+
+      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col justify-end overflow-hidden px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:min-h-[900px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-6" id="top" aria-labelledby="hero-title">
+        <motion.div
+          className="hero-grid absolute inset-x-0 -inset-y-[15%] -z-[2] will-change-transform bg-[image:linear-gradient(rgba(240,239,232,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.25)_1px,transparent_1px)] bg-[size:25vw_25vw] max-[1000px]:bg-[size:50vw_50vw]"
+          style={{ y: gridY }}
+          aria-hidden="true"
+        />
+        <div className="pointer-events-none absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_78%_22%,rgba(216,255,62,0.12),transparent_28%),radial-gradient(circle_at_18%_80%,rgba(57,124,255,0.08),transparent_26%),linear-gradient(to_bottom,rgba(11,13,12,0.2),#0b0d0c_92%)]" aria-hidden="true" />
+        <HeroGraph rotate={systemRotate} y={systemY} scale={systemScale} />
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.48 }}
+          className="hero-meta relative z-[1] mb-[clamp(28px,4vh,54px)] flex items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:items-start max-[680px]:mb-auto">
+          <div className="hero-kicker flex items-center gap-3 max-[680px]:max-w-[200px] max-[680px]:leading-[1.35]">
+            <span className="status-dot size-[9px] animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
+            Open for fullstack opportunities
+          </div>
+          <p className="m-0 text-right leading-[1.35]">Java · Spring · React · TypeScript<br />© 2026</p>
+        </motion.div>
+
+        <h1 id="hero-title" className="font-display relative z-[1] m-0 text-[clamp(66px,11.4vw,182px)] leading-[0.77] font-[770] tracking-[-0.086em] uppercase max-[1000px]:text-[clamp(62px,16.4vw,126px)] max-[1000px]:leading-[0.79] max-[680px]:text-[clamp(55px,17.4vw,91px)]">
+          {[
+            ["FULL", "block overflow-hidden pr-[0.08em]"],
+            ["STACK", "block overflow-hidden pr-[0.08em] pl-[13.7vw] text-acid max-[1000px]:pl-[7vw]"],
+            ["DEVELOPER.", "block overflow-hidden pr-[0.08em]"],
+          ].map(([word, maskClass], index) => (
+            <span className={maskClass} key={word}>
+              <motion.span
+                className="hero-word block origin-bottom-left will-change-transform"
+                variants={heroLine}
+                custom={index}
+                initial="hidden"
+                animate="shown"
+              >
+                {word}
+              </motion.span>
+            </span>
+          ))}
         </h1>
 
-        <div className="hero-foot">
-          <p>Saya Fajar Rafsan. Saya merancang backend yang reliable, data yang konsisten, dan sistem yang siap tumbuh.</p>
-          <a className="circle-link magnetic" href="#work" aria-label="Gulir ke proyek pilihan">
-            <span aria-hidden="true">↓</span>
-          </a>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: 0.58 }}
+          className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-center">
+          <div className="min-w-0">
+            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] max-[680px]:max-w-[82%] max-[680px]:text-base">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
+            <div className="mb-5 flex flex-wrap items-center gap-2" aria-label="Stack utama">
+              {[
+                ["java", "Java"],
+                ["springboot", "Spring"],
+                ["react", "React"],
+                ["typescript", "TypeScript"],
+              ].map(([icon, label]) => (
+                <span key={label} className="inline-flex min-h-11 items-center gap-2 border border-paper/20 px-3 text-[10px] tracking-[0.1em] uppercase">
+                  <TechIcon name={icon} className="size-3.5 text-acid" />
+                  {label}
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-[11px] tracking-[0.09em] uppercase">
+              <Magnetic>
+                <a
+                  className="inline-flex min-h-12 items-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-transparent hover:text-acid"
+                  href="#work"
+                  data-cursor
+                >
+                  Lihat proyek <span aria-hidden="true">↓</span>
+                </a>
+              </Magnetic>
+              <Magnetic>
+                <a
+                  className="inline-flex min-h-12 items-center gap-3 border border-paper/35 px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink"
+                  href={githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  data-cursor
+                >
+                  <SocialIcon name="github" className="size-3.5" /> GitHub <span aria-hidden="true">↗</span>
+                </a>
+              </Magnetic>
+            </div>
+          </div>
+          <Magnetic className="max-[680px]:hidden">
+            <a className="circle-link grid size-[62px] shrink-0 place-items-center rounded-full border border-paper text-[22px] transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink" href="#work" aria-label="Gulir ke proyek pilihan">
+              <span aria-hidden="true">↓</span>
+            </a>
+          </Magnetic>
+        </motion.div>
+      </section>
+
+      <section className="overflow-hidden border-y border-ink bg-acid text-ink" aria-label="Teknologi utama">
+        <div className="border-b border-ink/15 pt-[18px] pb-4">
+          <MarqueeTrack words={marqueeTop} />
+        </div>
+        <div className="bg-ink pt-3.5 pb-3 text-paper" aria-hidden="true">
+          <MarqueeTrack words={marqueeBottom} reverse muted />
         </div>
       </section>
 
-      <section className="marquee-band" aria-label="Teknologi utama">
-        <div className="marquee-track">
-          <span>JAVA</span><i>●</i><span>SPRING BOOT</span><i>●</i><span>MICROSERVICES</span><i>●</i><span>POSTGRESQL</span><i>●</i><span>REDIS</span><i>●</i><span>RABBITMQ</span><i>●</i>
-          <span aria-hidden="true">JAVA</span><i aria-hidden="true">●</i><span aria-hidden="true">SPRING BOOT</span><i aria-hidden="true">●</i><span aria-hidden="true">MICROSERVICES</span><i aria-hidden="true">●</i><span aria-hidden="true">POSTGRESQL</span><i aria-hidden="true">●</i><span aria-hidden="true">REDIS</span><i aria-hidden="true">●</i><span aria-hidden="true">RABBITMQ</span><i aria-hidden="true">●</i>
+      <section className="manifesto relative overflow-hidden bg-paper px-[3vw] py-[clamp(98px,13vw,210px)] text-ink max-[680px]:px-[18px] max-[680px]:pt-[92px] max-[680px]:pb-[110px]" id="profile" aria-labelledby="manifesto-title">
+        <div
+          className="pointer-events-none absolute -top-[18%] -left-[12%] size-[min(720px,58vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.16),transparent_68%)]"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute right-[8%] bottom-[-12%] size-[min(520px,40vw)] rounded-full bg-[radial-gradient(circle,rgba(255,97,60,0.1),transparent_70%)]"
+          aria-hidden="true"
+        />
+        <motion.div className="relative mb-[clamp(52px,7vw,96px)]" {...reveal}>
+          <SectionLabel index="01" label="Profile" />
+        </motion.div>
+
+        <div className="relative grid grid-cols-[minmax(240px,0.78fr)_minmax(0,1.55fr)] items-start gap-x-[5vw] gap-y-14 max-[1000px]:grid-cols-1">
+          <motion.div {...reveal}>
+            <ProfilePortrait />
+          </motion.div>
+          <ProfileCopy />
         </div>
       </section>
 
-      <section className="manifesto" id="profile" aria-labelledby="manifesto-title">
-        <div className="section-label" data-reveal>
-          <span>01</span>
-          <p>Profile</p>
+      <section className="system-showcase relative grid grid-cols-[0.82fr_1.18fr] items-center gap-[5vw] overflow-hidden bg-ink bg-[image:radial-gradient(circle_at_70%_50%,rgba(57,124,255,0.12),transparent_34%)] px-[3vw] py-[clamp(110px,11vw,176px)] min-[1001px]:max-[1200px]:grid-cols-[minmax(0,0.9fr)_minmax(500px,1.1fr)] min-[1001px]:max-[1200px]:gap-[3vw] max-[1000px]:grid-cols-1 max-[1000px]:py-[110px] max-[680px]:px-[18px]" id="architecture" aria-labelledby="system-title">
+        <div className="system-copy relative z-[5]">
+          <SectionLabel index="02" label="Motion architecture" />
+          <p className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">Backend in motion</p>
+          <h2 id="system-title" className="font-display mb-7 max-w-[670px] text-[clamp(46px,5.4vw,88px)] leading-[0.93] font-[560] tracking-[-0.066em] min-[1001px]:max-[1200px]:text-[clamp(44px,4.8vw,62px)] max-[1000px]:max-w-[850px] max-[680px]:text-[clamp(44px,13vw,68px)]">Setiap request punya jalur. Setiap event punya tujuan.</h2>
+          <p className="system-description mb-0 max-w-[480px] leading-[1.5] text-[#aeb0a8]">Visualisasi cara saya memikirkan backend: modular, observable, dan terhubung tanpa kehilangan batas tanggung jawab.</p>
         </div>
-        <div className="manifesto-copy" data-reveal>
-          <p className="eyebrow">Back-end is where trust is built.</p>
-          <h2 id="manifesto-title">Saya membangun sistem yang <em>bersih, terukur,</em> dan dapat diandalkan saat kompleksitas meningkat.</h2>
-        </div>
-        <div className="profile-summary" data-reveal>
-          <p>Java Back-End Engineer dengan fokus pada Spring Boot, REST API, microservices, database, caching, dan integrasi layanan nyata.</p>
-          <div className="profile-stats">
-            <article><strong>13</strong><span>Public repositories</span></article>
-            <article><strong>03</strong><span>Flagship systems</span></article>
-            <article><strong>02</strong><span>Teaching roles</span></article>
-          </div>
-        </div>
+
+        <SystemGraph />
       </section>
 
-      <section className="system-showcase" id="architecture" aria-labelledby="system-title">
-        <div className="system-copy">
-          <div className="section-label on-dark">
-            <span>02</span>
-            <p>Motion architecture</p>
-          </div>
-          <p className="eyebrow">Systems in motion</p>
-          <h2 id="system-title">Setiap request punya jalur. Setiap event punya tujuan.</h2>
-          <p className="system-description">Visualisasi cara saya memikirkan backend: modular, observable, dan terhubung tanpa kehilangan batas tanggung jawab.</p>
-        </div>
+      <HorizontalScrollSection
+        id="frontend"
+        kicker={frontendArchitecture.kicker}
+        heading={frontendArchitecture.heading}
+        panels={frontendArchitecture.panels}
+      />
 
-        <div className="graph-frame" aria-label="Diagram animasi arsitektur microservices">
-          <div className="graph-grid" aria-hidden="true" />
-          <span className="graph-route route-a" aria-hidden="true" />
-          <span className="graph-route route-b" aria-hidden="true" />
-          <span className="graph-route route-c" aria-hidden="true" />
-          <span className="graph-route route-d" aria-hidden="true" />
-          <span className="graph-orbit" aria-hidden="true"><i /><i /><i /></span>
-          <div className="graph-core">
-            <small>Core</small>
-            <strong>SPRING</strong>
-            <span>BOOT</span>
+      <section className="work-section bg-paper px-[3vw] py-[clamp(96px,11vw,180px)] text-ink max-[680px]:px-[18px]" id="work" aria-labelledby="work-title">
+        <motion.div className="section-heading flex items-end justify-between gap-8 border-b border-ink pb-7 max-[680px]:flex-col max-[680px]:items-start max-[680px]:gap-[52px]" {...reveal}>
+          <div className="flex items-center gap-4.5 pb-1 text-[11px] tracking-[0.1em] uppercase">
+            <span className="grid size-[38px] place-items-center rounded-full border border-ink">03</span>
+            <p className="m-0">Selected repositories / 2026</p>
           </div>
-          <div className="graph-node node-gateway"><span>01</span><strong>Gateway</strong><small>Route & secure</small></div>
-          <div className="graph-node node-auth"><span>02</span><strong>Auth</strong><small>JWT / OAuth</small></div>
-          <div className="graph-node node-service"><span>03</span><strong>Service</strong><small>Business logic</small></div>
-          <div className="graph-node node-data"><span>04</span><strong>Data</strong><small>SQL / Redis</small></div>
-          <div className="graph-node node-event"><span>05</span><strong>Events</strong><small>RabbitMQ</small></div>
-          <span className="data-packet packet-a" aria-hidden="true" />
-          <span className="data-packet packet-b" aria-hidden="true" />
-          <span className="data-packet packet-c" aria-hidden="true" />
-        </div>
+          <h2 id="work-title" className="font-display m-0 text-[clamp(52px,8vw,132px)] leading-[0.76] font-[650] tracking-[-0.08em] max-[680px]:text-[clamp(54px,17vw,84px)]">Built systems</h2>
+        </motion.div>
+
+        <ProjectStack />
       </section>
 
-      <section className="work-section" id="work" aria-labelledby="work-title">
-        <div className="section-heading" data-reveal>
-          <div>
-            <span>03</span>
-            <p>Selected repositories / 2026</p>
+      <section className="capabilities relative overflow-hidden bg-ink px-[3vw] py-[clamp(100px,12vw,190px)] text-paper max-[680px]:px-[18px]" id="stack" aria-labelledby="capabilities-title">
+        <div
+          className="pointer-events-none absolute -top-[20%] right-[-8%] size-[min(640px,50vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.1),transparent_68%)]"
+          aria-hidden="true"
+        />
+        <motion.div className="relative mb-[clamp(56px,7vw,96px)] grid grid-cols-[1fr_2.4fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
+          <SectionLabel index="04" label="Core stack" />
+          <div className="max-[1000px]:mt-10">
+            <h2 id="capabilities-title" className="font-display mb-4 max-w-[18ch] text-[clamp(40px,5vw,72px)] leading-[0.94] font-[540] tracking-[-0.07em] max-[680px]:text-[clamp(36px,11vw,54px)]">
+              Dari endpoint pertama sampai layar.
+            </h2>
+            <p className="m-0 max-w-[46ch] text-[15px] leading-[1.55] text-[#a7a99f]">
+              Empat lapisan yang saya pakai membangun sistem: service, data, jaringan service, dan interface.
+            </p>
           </div>
-          <h2 id="work-title">Built systems</h2>
-        </div>
-
-        <div className="project-list">
-          {projects.map((project) => (
-            <article className="project-card" key={project.number} data-cursor>
-              <div className={`project-art project-art--${project.variant}`} aria-hidden="true">
-                <div className="project-art-motion">
-                  <span className="art-line art-line-a" />
-                  <span className="art-line art-line-b" />
-                  <span className="art-disc" />
-                  <span className="art-window art-window-one" />
-                  <span className="art-window art-window-two" />
-                  <strong>{project.mark}</strong>
-                  <small>{project.type}</small>
-                </div>
-              </div>
-              <div className="project-meta">
-                <span>{project.number}</span>
-                <div className="project-main">
-                  <p className="project-type">{project.type}</p>
-                  <h3>{project.title}</h3>
-                  <p>{project.note}</p>
-                  <ul aria-label={`Teknologi ${project.title}`}>
-                    {project.stack.map((item) => <li key={item}>{item}</li>)}
-                  </ul>
-                </div>
-                <div className="project-aside">
-                  <span>{project.year}</span>
-                  {project.links.map(([label, href]) => (
-                    <a key={href} href={href} target="_blank" rel="noreferrer">
-                      {label} <span aria-hidden="true">↗</span>
-                    </a>
+        </motion.div>
+        <motion.div
+          className="relative grid grid-cols-2 gap-4 max-[720px]:grid-cols-1"
+          variants={staggerParent}
+          initial="hidden"
+          whileInView="shown"
+          viewport={{ once: true, margin: "0px 0px -18% 0px" }}
+        >
+          {capabilities.map((item) => (
+            <motion.article
+              variants={staggerChild}
+              className="group/cap flex min-h-[240px] flex-col justify-between border border-paper/12 bg-ink-soft/80 p-6 transition-colors duration-200 hover:border-acid max-[680px]:min-h-[220px] max-[680px]:p-5"
+              key={item.number}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <span className="font-mono text-[11px] tracking-[0.16em] text-acid">{item.number}</span>
+                <span className="flex gap-2" aria-hidden="true">
+                  {item.icons.map((icon) => (
+                    <span
+                      key={icon}
+                      className="grid size-11 place-items-center border border-paper/15 text-[#9ea090] transition-colors duration-200 group-hover/cap:border-acid/40 group-hover/cap:text-acid"
+                    >
+                      <TechIcon name={icon} className="size-[18px]" />
+                    </span>
                   ))}
-                </div>
+                </span>
               </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="capabilities" id="stack" aria-labelledby="capabilities-title">
-        <div className="capabilities-intro" data-reveal>
-          <div className="section-label on-dark">
-            <span>04</span>
-            <p>Core stack</p>
-          </div>
-          <h2 id="capabilities-title">Dari endpoint pertama sampai sistem siap menghadapi traffic nyata.</h2>
-        </div>
-        <div className="capabilities-list">
-          {capabilities.map(([number, title, detail]) => (
-            <article className="capability-row" key={number}>
-              <span>{number}</span>
-              <h3>{title}</h3>
-              <p>{detail}</p>
-              <i aria-hidden="true">↗</i>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="experience" aria-labelledby="experience-title">
-        <div className="section-label" data-reveal>
-          <span>05</span>
-          <p>Experience & education</p>
-        </div>
-        <div className="experience-heading" data-reveal>
-          <p>Accounting trained my precision.<br />Engineering gave it a system.</p>
-          <h2 id="experience-title">Belajar dalam.<br /><em>Mengajar kembali.</em></h2>
-        </div>
-        <div className="experience-list">
-          {experience.map((item, index) => (
-            <article key={item.role} data-reveal>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <p>{item.period}</p>
               <div>
-                <h3>{item.role}</h3>
-                <strong>{item.place}</strong>
+                <h3 className="mt-10 mb-3 text-[clamp(26px,2.6vw,36px)] leading-[1.05] font-[590] tracking-[-0.05em]">
+                  {item.title}
+                </h3>
+                <p className="m-0 max-w-[46ch] text-sm leading-[1.5] text-[#a7a99f]">{item.detail}</p>
               </div>
-              <p>{item.detail}</p>
-            </article>
+            </motion.article>
+          ))}
+        </motion.div>
+      </section>
+
+      <section
+        className="toolchain relative overflow-hidden border-t border-paper/10 bg-surface px-[3vw] py-[clamp(96px,11vw,170px)] text-paper max-[680px]:px-[18px]"
+        id="tech"
+        aria-labelledby="toolchain-title"
+      >
+        <div
+          className="pointer-events-none absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.04)_1px,transparent_1px)] bg-[size:72px_72px]"
+          aria-hidden="true"
+        />
+        <div className="relative">
+          <motion.div className="mb-[clamp(52px,6.5vw,88px)] grid grid-cols-[1fr_2.4fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
+            <SectionLabel index="05" label="Toolchain" />
+            <div className="max-[1000px]:mt-10">
+              <h2
+                id="toolchain-title"
+                className="font-display mb-4 max-w-[16ch] text-[clamp(36px,4.6vw,64px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.5vw,52px)]"
+              >
+                Alat yang saya pakai setiap hari.
+              </h2>
+              <p className="m-0 max-w-[52ch] text-[15px] leading-[1.55] text-[#a7a99f]">
+                Bukan daftar semua yang pernah saya sentuh — hanya yang benar-benar dipakai di ketiga sistem di atas.
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="grid grid-cols-4 gap-4 max-[1000px]:grid-cols-2 max-[560px]:grid-cols-1"
+            variants={staggerParent}
+            initial="hidden"
+            whileInView="shown"
+            viewport={{ once: true, margin: "0px 0px -16% 0px" }}
+          >
+            {stackGroups.map((group, index) => (
+              <motion.div
+                className="flex flex-col border border-paper/12 bg-ink p-5 max-[680px]:p-4"
+                key={group.label}
+                variants={staggerChild}
+              >
+                <p className="mb-5 flex items-center justify-between gap-3 text-[10px] tracking-[0.12em] text-[#8d8f85] uppercase">
+                  <span className="flex items-center gap-2.5">
+                    <i className="h-px w-5 shrink-0 bg-acid not-italic" aria-hidden="true" />
+                    {group.label}
+                  </span>
+                  <span className="font-mono text-acid/80">{String(index + 1).padStart(2, "0")}</span>
+                </p>
+                <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+                  {group.items.map((item) => (
+                    <li key={item.name}>
+                      <span className="group/tech flex min-h-11 items-center gap-3 px-1 transition-colors duration-200 hover:text-acid">
+                        <span className="grid size-11 shrink-0 place-items-center border border-paper/15 text-[#8a8c82] transition-colors duration-200 group-hover/tech:border-acid group-hover/tech:bg-acid group-hover/tech:text-ink">
+                          <TechIcon name={item.icon} className="size-[18px]" />
+                        </span>
+                        <span className="text-[15px] tracking-[-0.015em]">{item.name}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="experience bg-paper-deep px-[3vw] py-[clamp(100px,12vw,190px)] text-ink max-[680px]:px-[18px]" id="experience" aria-labelledby="experience-title">
+        <motion.div {...reveal}>
+          <SectionLabel index="06" label="Experience & education" />
+        </motion.div>
+        <motion.div className="experience-heading mt-[clamp(62px,8vw,120px)] mb-[clamp(92px,10vw,150px)] grid grid-cols-[0.8fr_2fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
+          <p className="mb-2 text-sm leading-[1.5]">Accounting trained my precision.<br />Engineering gave it a system.</p>
+          <h2 id="experience-title" className="font-display m-0 text-[clamp(50px,7.6vw,122px)] leading-[0.86] font-[560] tracking-[-0.075em] max-[680px]:text-[clamp(47px,13.6vw,72px)]">Belajar dalam.<br /><em className="stroke-text">Mengajar kembali.</em></h2>
+        </motion.div>
+        <div className="experience-list border-t border-ink">
+          {experience.map((item, index) => (
+            <motion.article className="grid min-h-[180px] grid-cols-[50px_0.6fr_1fr_1fr] items-start gap-[22px] border-b border-ink/25 py-[22px] max-[1000px]:grid-cols-[42px_0.65fr_1.1fr] max-[680px]:grid-cols-[30px_1fr] max-[680px]:gap-4 max-[680px]:py-[26px]" key={item.role} {...reveal}>
+              <span className="text-[10px] tracking-[0.1em] uppercase">{String(index + 1).padStart(2, "0")}</span>
+              <p className="text-[10px] tracking-[0.1em] uppercase max-[680px]:col-start-2">{item.period}</p>
+              <div className="max-[680px]:col-start-2">
+                <h3 className="mb-2 text-[clamp(25px,2.5vw,40px)] leading-none tracking-[-0.05em]">{item.role}</h3>
+                <strong className="text-xs font-[560]">{item.place}</strong>
+              </div>
+              <p className="mb-0 max-w-[420px] text-sm leading-[1.48] text-[#4c4d46] max-[1000px]:col-start-3 max-[680px]:col-start-2">{item.detail}</p>
+            </motion.article>
           ))}
         </div>
       </section>
 
-      <section className="contact" id="contact" aria-labelledby="contact-title">
-        <div className="contact-top">
-          <div className="section-label">
-            <span>06</span>
-            <p>Connect</p>
-          </div>
-          <p>Terbuka untuk kesempatan Java back-end, kolaborasi produk, dan diskusi sistem.</p>
+      <section className="contact relative flex min-h-svh flex-col justify-between overflow-hidden bg-acid px-[3vw] pt-10 pb-[22px] text-ink max-[680px]:min-h-[820px] max-[680px]:px-[18px] max-[680px]:pt-[30px]" id="contact" aria-labelledby="contact-title">
+        <div className="absolute -top-[10vw] -right-[8vw] aspect-square w-[48vw] animate-contact-ring rounded-full border border-ink/25 shadow-[inset_0_0_0_8vw_rgba(11,13,12,0.04),inset_0_0_0_16vw_rgba(11,13,12,0.04)]" aria-hidden="true" />
+        <div className="contact-top relative z-[1] flex items-start justify-between gap-[30px] max-[680px]:flex-col">
+          <SectionLabel index="07" label="Connect" />
+          <p className="m-0 max-w-[480px] text-[clamp(17px,1.5vw,23px)] leading-[1.28]">Terbuka untuk kesempatan fullstack, kolaborasi produk, dan diskusi sistem ujung ke ujung.</p>
         </div>
-        <h2 id="contact-title">LET&apos;S BUILD<br /><em>RELIABLE.</em></h2>
-        <div className="social-links">
-          <a className="contact-link magnetic" href={linkedInUrl} target="_blank" rel="noreferrer">
-            <span>LinkedIn</span><span aria-hidden="true">↗</span>
+        <h2 id="contact-title" className="font-display relative z-[1] my-auto mb-[4vw] text-[clamp(74px,14.2vw,218px)] leading-[0.69] font-[780] tracking-[-0.09em] max-[680px]:text-[clamp(68px,18.8vw,105px)] max-[680px]:leading-[0.72]">LET&apos;S BUILD<br /><em className="stroke-text">RELIABLE.</em></h2>
+        <div className="relative z-[1] mb-6 flex flex-wrap items-center gap-3 max-[680px]:mb-5">
+          <Magnetic>
+            <a
+              className="inline-flex min-h-12 items-center gap-3 border border-ink bg-ink px-5 text-[12px] tracking-[0.08em] text-acid uppercase transition-colors duration-200 hover:bg-transparent hover:text-ink"
+              href={`mailto:${email}?subject=Peluang%20Fullstack`}
+              data-cursor
+            >
+              Kirim email <span aria-hidden="true">↗</span>
+            </a>
+          </Magnetic>
+          <CopyEmail />
+        </div>
+        <div className="social-links relative z-[1] grid grid-cols-2 border-y border-ink max-[680px]:grid-cols-1">
+          <a className="contact-link flex min-h-[86px] items-center justify-between px-[22px] text-[clamp(20px,2vw,31px)] tracking-[-0.035em] transition-[background-color,color,padding] duration-250 will-change-transform hover:bg-ink hover:px-[34px] hover:text-acid max-[680px]:min-h-[72px] max-[680px]:px-0 max-[680px]:hover:px-3.5" href={linkedInUrl} target="_blank" rel="noreferrer">
+            <span className="flex items-center gap-4"><SocialIcon name="linkedin" className="size-[0.8em] shrink-0" />LinkedIn</span><span aria-hidden="true">↗</span>
           </a>
-          <a className="contact-link magnetic" href={githubUrl} target="_blank" rel="noreferrer">
-            <span>GitHub</span><span aria-hidden="true">↗</span>
+          <a className="contact-link flex min-h-[86px] items-center justify-between border-l border-ink px-[22px] text-[clamp(20px,2vw,31px)] tracking-[-0.035em] transition-[background-color,color,padding] duration-250 will-change-transform hover:bg-ink hover:px-[34px] hover:text-acid max-[680px]:min-h-[72px] max-[680px]:border-l-0 max-[680px]:border-t max-[680px]:px-0 max-[680px]:hover:px-3.5" href={githubUrl} target="_blank" rel="noreferrer">
+            <span className="flex items-center gap-4"><SocialIcon name="github" className="size-[0.8em] shrink-0" />GitHub</span><span aria-hidden="true">↗</span>
           </a>
         </div>
-        <footer>
-          <p>© 2026 Fajar Rafsan. Java Back-End Engineer.</p>
-          <a href="#top">Kembali ke atas ↑</a>
+        <footer className="relative z-[1] flex justify-between gap-6 pt-5 text-[10px] tracking-[0.1em] uppercase max-[680px]:items-end">
+          <p className="m-0 max-[680px]:max-w-[210px] max-[680px]:leading-[1.45]">© 2026 Fajar Rafsan. Fullstack Developer.</p>
+          <a className="-my-2.5 inline-flex shrink-0 items-center py-2.5 transition-opacity duration-200 hover:opacity-60" href="#top">Kembali ke atas ↑</a>
         </footer>
       </section>
     </main>
