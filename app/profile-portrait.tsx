@@ -9,6 +9,7 @@ import {
   useReducedMotion,
   useSpring,
   useTransform,
+  type Variants,
 } from "motion/react";
 import {
   profileAbout,
@@ -34,6 +35,56 @@ const headline = [
   { text: "Saya adalah", accent: false },
   { text: "Fullstack Developer.", accent: true },
 ];
+
+/**
+ * Portrait entrance.
+ *
+ * Deliberately NOT driven by `staggerChildren` — the photo's clip-path wipe
+ * and the four corner brackets need to land at specific moments relative to
+ * each other (brackets snap in only once the wipe has visibly finished, not
+ * at a fixed index-based offset), so every step below carries its own
+ * explicit `delay` off a single shared timeline instead.
+ *
+ * The hover-tilt plate, the photo image, and the hover-shine sweep already
+ * carry their own explicit `animate` for the pointer interaction — adding
+ * variants to those too would fight that, so this entrance only touches the
+ * frame, the corner marks, the badge, and the two text moments.
+ */
+const portraitEyebrow: Variants = {
+  hidden: { opacity: 0, y: -8 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.45, ease } },
+};
+
+const portraitWipe: Variants = {
+  hidden: { clipPath: "inset(0 100% 0 0)", scale: 1.05 },
+  shown: {
+    clipPath: "inset(0 0% 0 0)",
+    scale: 1,
+    transition: {
+      clipPath: { duration: 0.85, delay: 0.1, ease: [0.76, 0, 0.24, 1] },
+      scale: { duration: 1.05, delay: 0.1, ease },
+    },
+  },
+};
+
+const portraitCorner: Variants = {
+  hidden: { opacity: 0, scale: 0.35 },
+  shown: (index: number) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.35, ease, delay: 0.95 + index * 0.07 },
+  }),
+};
+
+const portraitBadge: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease, delay: 1.05 } },
+};
+
+const portraitFigcaption: Variants = {
+  hidden: { opacity: 0, y: 16, filter: "blur(5px)" },
+  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.6, ease, delay: 1.3 } },
+};
 
 export function ProfilePortrait() {
   const reduced = useReducedMotion();
@@ -62,11 +113,19 @@ export function ProfilePortrait() {
   };
 
   return (
-    <figure className="relative mx-auto w-full max-w-[400px] min-[1001px]:mx-0 min-[1001px]:sticky min-[1001px]:top-28">
-      <div className="mb-3 flex items-center justify-between text-[10px] tracking-[0.12em] uppercase">
+    <motion.figure
+      className="relative mx-auto w-full max-w-[400px] min-[1001px]:mx-0 min-[1001px]:sticky min-[1001px]:top-28"
+      initial="hidden"
+      whileInView="shown"
+      viewport={{ once: true, margin: "0px 0px -20% 0px", amount: 0.3 }}
+    >
+      <motion.div
+        variants={portraitEyebrow}
+        className="mb-3 flex items-center justify-between text-[10px] tracking-[0.12em] uppercase"
+      >
         <span>Portrait</span>
         <span className="font-mono">01 / FR</span>
-      </div>
+      </motion.div>
 
       <motion.div
         className="relative [perspective:1100px]"
@@ -84,6 +143,7 @@ export function ProfilePortrait() {
         />
 
         <motion.div
+          variants={portraitWipe}
           className="relative aspect-[3/4] overflow-hidden border border-ink bg-[#cfcbbf] [transform-style:preserve-3d] will-change-transform"
           style={tilt ? { rotateX, rotateY } : undefined}
         >
@@ -112,21 +172,24 @@ export function ProfilePortrait() {
             aria-hidden="true"
           />
 
-          <span className="pointer-events-none absolute top-0 left-0 z-2 size-3.5 border-t-2 border-l-2 border-ink" aria-hidden="true" />
-          <span className="pointer-events-none absolute top-0 right-0 z-2 size-3.5 border-t-2 border-r-2 border-ink" aria-hidden="true" />
-          <span className="pointer-events-none absolute bottom-0 left-0 z-2 size-3.5 border-b-2 border-l-2 border-ink" aria-hidden="true" />
-          <span className="pointer-events-none absolute right-0 bottom-0 z-2 size-3.5 border-r-2 border-b-2 border-ink" aria-hidden="true" />
+          <motion.span variants={portraitCorner} custom={0} className="pointer-events-none absolute top-0 left-0 z-2 size-3.5 border-t-2 border-l-2 border-ink" aria-hidden="true" />
+          <motion.span variants={portraitCorner} custom={1} className="pointer-events-none absolute top-0 right-0 z-2 size-3.5 border-t-2 border-r-2 border-ink" aria-hidden="true" />
+          <motion.span variants={portraitCorner} custom={2} className="pointer-events-none absolute bottom-0 left-0 z-2 size-3.5 border-b-2 border-l-2 border-ink" aria-hidden="true" />
+          <motion.span variants={portraitCorner} custom={3} className="pointer-events-none absolute right-0 bottom-0 z-2 size-3.5 border-r-2 border-b-2 border-ink" aria-hidden="true" />
 
-          <div className="absolute inset-x-0 bottom-0 z-3 flex items-end justify-between gap-3 p-3.5 text-paper">
+          <motion.div variants={portraitBadge} className="absolute inset-x-0 bottom-0 z-3 flex items-end justify-between gap-3 p-3.5 text-paper">
             <span className="inline-flex min-h-11 items-center gap-2 border border-paper/25 bg-ink/55 px-3 text-[10px] tracking-[0.12em] uppercase backdrop-blur-md">
               <i className="size-[7px] animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_4px_rgba(216,255,62,0.18)] not-italic" aria-hidden="true" />
               Open to work
             </span>
-          </div>
+          </motion.div>
         </motion.div>
       </motion.div>
 
-      <figcaption className="relative z-[1] mt-4 flex items-end justify-between gap-4 border-t border-ink/25 pt-3">
+      <motion.figcaption
+        variants={portraitFigcaption}
+        className="relative z-[1] mt-4 flex items-end justify-between gap-4 border-t border-ink/25 pt-3"
+      >
         <div>
           <strong className="font-display block text-[22px] leading-none font-[640] tracking-[-0.045em]">
             {profileName}
@@ -138,8 +201,8 @@ export function ProfilePortrait() {
         <span className="shrink-0 pb-0.5 text-[10px] tracking-[0.1em] uppercase">
           {profileLocation}
         </span>
-      </figcaption>
-    </figure>
+      </motion.figcaption>
+    </motion.figure>
   );
 }
 
@@ -152,7 +215,7 @@ export function ProfileCopy() {
       variants={profileParent}
       initial={reduced ? "shown" : "hidden"}
       whileInView="shown"
-      viewport={{ once: true, margin: "0px 0px -12% 0px" }}
+      viewport={{ once: true, margin: "0px 0px -20% 0px", amount: 0.12 }}
     >
       <motion.p className="eyebrow mb-5 text-[11px] tracking-[0.1em] uppercase" variants={profileItem}>
         Tentang saya
@@ -197,9 +260,10 @@ export function ProfileCopy() {
         variants={profileChipParent}
         aria-label="Keahlian utama"
       >
-        {profileSkills.map((skill) => (
+        {profileSkills.map((skill, index) => (
           <motion.li key={skill.id} variants={profileChip}>
-            <span className="inline-flex min-h-11 items-center gap-2 border border-ink/20 px-3.5 text-[11px] tracking-[0.08em] uppercase transition-colors duration-200 hover:border-ink hover:bg-ink hover:text-paper">
+            <span className="inline-flex min-h-11 items-center gap-2 border border-ink/20 px-3.5 text-[11px] tracking-[0.08em] uppercase transition-all duration-200 hover:-translate-y-0.5 hover:border-ink hover:bg-ink hover:text-paper">
+              <span className="font-mono text-[9px] tracking-[0.06em] opacity-45">{String(index + 1).padStart(2, "0")}</span>
               <TechIcon name={skill.icon} className="size-3.5" />
               {skill.label}
             </span>
@@ -209,8 +273,33 @@ export function ProfileCopy() {
 
       <motion.div className="flex max-w-[62ch] flex-col gap-5 text-[17px] leading-[1.65] text-[#3f4038] max-[680px]:text-base">
         {profileAbout.map((paragraph) => (
-          <motion.p className="m-0" key={paragraph.slice(0, 48)} variants={profileItem}>
-            {paragraph}
+          <motion.p className="m-0" key={paragraph.map((segment) => segment.text).join("").slice(0, 48)} variants={profileItem}>
+            {paragraph.map((segment, index) => {
+              if (!segment.tone) return <span key={index}>{segment.text}</span>;
+              if (segment.tone === "java")
+                return (
+                  <strong key={index} className="profile-token profile-token-java font-semibold text-java">
+                    {segment.text}
+                  </strong>
+                );
+              if (segment.tone === "react")
+                return (
+                  <strong key={index} className="profile-token profile-token-react font-semibold text-ink">
+                    {segment.text}
+                  </strong>
+                );
+              if (segment.tone === "dim")
+                return (
+                  <span key={index} className="text-[#7d7f70]">
+                    {segment.text}
+                  </span>
+                );
+              return (
+                <strong key={index} className="font-medium text-ink">
+                  {segment.text}
+                </strong>
+              );
+            })}
           </motion.p>
         ))}
       </motion.div>

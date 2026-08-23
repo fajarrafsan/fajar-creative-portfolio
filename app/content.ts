@@ -10,9 +10,36 @@ export const profileRole = "Fullstack Developer";
 export const profileLocation = "Bandung, ID";
 export const profilePhotoSrc = "/profile.jpeg";
 
-export const profileAbout = [
-  "Saya merancang sistem ujung ke ujung: API Java/Spring yang andal di belakang, interface React 19 / TypeScript yang jelas di depan.",
-  "Terbiasa bekerja mandiri maupun dalam tim dengan clean code, komunikasi teknis yang rapi, dan rasa ingin tahu yang tidak berhenti di satu layer.",
+export type AboutTone = "java" | "react" | "dim" | "strong";
+
+export type AboutSegment = {
+  text: string;
+  /** Visual emphasis for one phrase; omitted = plain body text. */
+  tone?: AboutTone;
+};
+
+/** Each paragraph is a list of segments so the view can highlight phrases
+    without this file ever having to know about CSS classes. */
+export const profileAbout: AboutSegment[][] = [
+  [
+    { text: "Saya merancang sistem ujung ke ujung: " },
+    { text: "API Java/Spring", tone: "java" },
+    { text: " yang andal " },
+    { text: "di belakang,", tone: "dim" },
+    { text: " " },
+    { text: "interface React 19 / TypeScript", tone: "react" },
+    { text: " yang jelas " },
+    { text: "di depan.", tone: "dim" },
+  ],
+  [
+    { text: "Terbiasa bekerja mandiri maupun dalam tim dengan " },
+    { text: "clean code", tone: "strong" },
+    { text: ", " },
+    { text: "komunikasi teknis yang rapi", tone: "strong" },
+    { text: ", dan " },
+    { text: "rasa ingin tahu", tone: "strong" },
+    { text: " yang tidak berhenti di satu layer." },
+  ],
 ];
 
 export const profileSkills = [
@@ -257,44 +284,106 @@ export const cvDocument = {
   ],
 };
 
+/** Inline emphasis vocabulary for long-form copy: "acid" marks the one
+    punchline per paragraph, "strong" lifts names/entities, "dim" recedes
+    connective phrases. Omitted tone = plain body text. */
+export type RichTone = "acid" | "strong" | "dim";
+
+export type RichSegment = {
+  text: string;
+  tone?: RichTone;
+};
+
+export type RichText = RichSegment[];
+
 export const frontendArchitecture = {
   kicker: "Front-end architecture",
-  heading: "Setiap layar punya state. Setiap aksi punya tujuan.",
+  heading: [
+    { text: "Setiap " },
+    { text: "layar", tone: "acid" },
+    { text: " punya state. Setiap " },
+    { text: "aksi", tone: "acid" },
+    { text: " punya tujuan." },
+  ] as RichText,
   panels: [
     {
       number: "01",
       title: "Interface surface",
       nodeId: "views",
       icons: ["react", "javascript"],
-      body: "Tiga SPA di GitHub: ANISTREAM-FE (katalog, multi-server player, Google OAuth), GLOWMARKET (katalog emas, checkout, admin), dan RoomlyHotel (dashboard reservasi dwibahasa). Satu pola: komponen yang jelas, state yang tidak bocor ke API.",
+      body: [
+        { text: "Tiga SPA di GitHub: " },
+        { text: "ANISTREAM-FE", tone: "strong" },
+        { text: " (katalog, multi-server player, Google OAuth), " },
+        { text: "GLOWMARKET", tone: "strong" },
+        { text: " (katalog emas, checkout, admin), dan " },
+        { text: "RoomlyHotel", tone: "strong" },
+        { text: " (dashboard reservasi dwibahasa). Satu pola: " },
+        { text: "komponen yang jelas, state yang tidak bocor ke API.", tone: "acid" },
+      ] as RichText,
     },
     {
       number: "02",
       title: "Type & tooling",
       nodeId: "types",
       icons: ["typescript", "vite", "tailwind"],
-      body: "RoomlyHotel ditulis TypeScript. GlowMarket dan ANISTREAM-FE memakai Vite + Tailwind v4. Tipe di klien mengikuti kontrak REST, bukan sebaliknya — UI tidak menebak bentuk data.",
+      body: [
+        { text: "RoomlyHotel", tone: "strong" },
+        { text: " ditulis TypeScript. " },
+        { text: "GlowMarket", tone: "strong" },
+        { text: " dan " },
+        { text: "ANISTREAM-FE", tone: "strong" },
+        { text: " memakai Vite + Tailwind v4. Tipe di klien mengikuti kontrak REST, bukan sebaliknya — " },
+        { text: "UI tidak menebak bentuk data.", tone: "acid" },
+      ] as RichText,
     },
     {
       number: "03",
       title: "Auth di klien",
       nodeId: "auth",
       icons: ["jwt", "react"],
-      body: "Google OAuth di ANISTREAM, JWT di Roomly dan GlowMarket. Token tinggal di browser; keputusan otorisasi tetap di gateway dan service Java. Front end hanya membawa identitas, tidak menghakimi hak akses.",
+      body: [
+        { text: "Google OAuth di " },
+        { text: "ANISTREAM", tone: "strong" },
+        { text: ", JWT di " },
+        { text: "Roomly", tone: "strong" },
+        { text: " dan " },
+        { text: "GlowMarket", tone: "strong" },
+        { text: ". Token tinggal di browser; keputusan otorisasi tetap di gateway dan service Java. " },
+        { text: "Front end hanya membawa identitas, tidak menghakimi hak akses.", tone: "acid" },
+      ] as RichText,
     },
     {
       number: "04",
       title: "Realtime UI",
       nodeId: "realtime",
       icons: ["websocket", "react"],
-      body: "Chat WebSocket/STOMP di GlowMarket dan analitik live di Roomly. Event masuk, komponen berubah — tanpa reload. Subscription dipasang di batas layar, dilepas saat unmount.",
+      body: [
+        { text: "Chat WebSocket/STOMP di " },
+        { text: "GlowMarket", tone: "strong" },
+        { text: " dan analitik live di " },
+        { text: "Roomly", tone: "strong" },
+        { text: ". " },
+        { text: "Event masuk, komponen berubah — tanpa reload.", tone: "acid" },
+        { text: " Subscription dipasang di batas layar, dilepas saat unmount." },
+      ] as RichText,
     },
     {
       number: "05",
       title: "Checkout & delivery",
       nodeId: "checkout",
       icons: ["card", "javascript"],
-      body: "Xendit di GlowMarket, Midtrans di Roomly. Front end mengorkestrasi langkah bayar; jurnal, invoice, dan stok tetap di service. Yang tampil di UI hanya status yang sudah dikonfirmasi backend.",
+      body: [
+        { text: "Xendit", tone: "strong" },
+        { text: " di " },
+        { text: "GlowMarket", tone: "strong" },
+        { text: ", " },
+        { text: "Midtrans", tone: "strong" },
+        { text: " di " },
+        { text: "Roomly", tone: "strong" },
+        { text: ". Front end mengorkestrasi langkah bayar; jurnal, invoice, dan stok tetap di service. Yang tampil di UI " },
+        { text: "hanya status yang sudah dikonfirmasi backend.", tone: "acid" },
+      ] as RichText,
     },
   ],
 };

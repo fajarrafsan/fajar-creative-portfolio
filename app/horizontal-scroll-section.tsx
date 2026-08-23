@@ -11,11 +11,12 @@ import {
 import { InkParticles } from "./ink-particles";
 import { FrontEndGraph } from "./system-graph";
 import { TechIcon } from "./tech-icons";
+import type { RichText } from "./content";
 
 export type HorizontalPanel = {
   number: string;
   title: string;
-  body: string;
+  body: RichText;
   nodeId?: string;
   icons?: string[];
 };
@@ -23,9 +24,56 @@ export type HorizontalPanel = {
 type HorizontalScrollSectionProps = {
   panels: HorizontalPanel[];
   kicker?: string;
-  heading?: string;
+  heading?: RichText;
   id?: string;
 };
+
+/** Renders the shared segment vocabulary: acid = the paragraph's punchline,
+    strong = lifted names/entities on the dark card, dim = receding phrases. */
+function RichBody({ segments }: { segments: RichText }) {
+  return (
+    <>
+      {segments.map((segment, index) => {
+        if (!segment.tone) return <span key={index}>{segment.text}</span>;
+        if (segment.tone === "acid")
+          return (
+            <strong key={index} className="font-semibold text-acid">
+              {segment.text}
+            </strong>
+          );
+        if (segment.tone === "dim")
+          return (
+            <span key={index} className="text-[#84867a]">
+              {segment.text}
+            </span>
+          );
+        return (
+          <strong key={index} className="font-medium text-paper">
+            {segment.text}
+          </strong>
+        );
+      })}
+    </>
+  );
+}
+
+/** Display-heading variant: the anaphora words ("layar", "aksi") pick up the
+    accent so the two parallel clauses read as one rhetorical shape. */
+function AccentHeading({ segments }: { segments: RichText }) {
+  return (
+    <>
+      {segments.map((segment, index) =>
+        segment.tone === "acid" ? (
+          <span key={index} className="text-acid">
+            {segment.text}
+          </span>
+        ) : (
+          <span key={index}>{segment.text}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 const pad = (value: number) => String(value).padStart(2, "0");
 const PIN_QUERY = "(min-width: 768px) and (hover: hover) and (pointer: fine)";
@@ -91,7 +139,9 @@ function Panel({
           ))}
         </ul>
       ) : null}
-      <p className="m-0 max-w-[54ch] text-base leading-[1.55] text-[#aeb0a8]">{panel.body}</p>
+      <p className="m-0 max-w-[54ch] text-base leading-[1.55] text-[#aeb0a8]">
+        <RichBody segments={panel.body} />
+      </p>
     </article>
   );
 }
@@ -135,11 +185,11 @@ function StackLayout({
             id={headingId}
             className="font-display mt-3 mb-8 max-w-[18ch] text-[clamp(22px,6.8vw,36px)] leading-[0.94] font-[560] tracking-[-0.06em]"
           >
-            {heading}
+            <AccentHeading segments={heading} />
           </h2>
         ) : null}
         <div className="mb-8 grid place-items-center">
-          <FrontEndGraph className="mx-auto w-[min(100%,300px)] max-[420px]:w-[min(92vw,240px)]" />
+          <FrontEndGraph className="mx-auto w-[min(100%,300px)] max-[420px]:w-[min(88vw,280px)]" />
         </div>
         <div className="flex flex-col gap-5">
           {panels.map((panel) => (
@@ -249,7 +299,7 @@ export function HorizontalScrollSection({
                   id={headingId}
                   className="font-display m-0 max-w-[16ch] shrink-0 px-[3vw] text-[clamp(28px,3vw,48px)] leading-[0.94] font-[560] tracking-[-0.06em]"
                 >
-                  {heading}
+                  <AccentHeading segments={heading} />
                 </h2>
               ) : null}
               <div ref={stageRef} className="min-h-0 overflow-hidden">

@@ -25,6 +25,14 @@ function lockPageScroll(locked: boolean) {
 
 const curtainEase = [0.76, 0, 0.24, 1] as const;
 
+/** How long the intro reads before the curtain starts lifting. */
+const HOLD_MS = 2350;
+/** How long the curtain takes to clear. Shared with the overlay's exit transition
+ *  so the hero's cue and the panels can never drift apart. */
+const CURTAIN_MS = 1180;
+const REDUCED_HOLD_MS = 420;
+const REDUCED_CURTAIN_MS = 300;
+
 const letter = {
   hidden: { y: "112%", rotateX: -52, opacity: 0 },
   shown: (index: number) => ({
@@ -92,7 +100,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
       aria-label="Memuat. See work."
       initial={false}
       exit={{ opacity: 1 }}
-      transition={{ duration: reduced ? 0.28 : 1.42 }}
+      transition={{ duration: (reduced ? REDUCED_CURTAIN_MS : CURTAIN_MS) / 1000 }}
     >
       <div className="absolute inset-0 flex" aria-hidden="true">
         {panels.map((index) => (
@@ -103,7 +111,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
             transition={
               reduced
                 ? { duration: 0.28, ease }
-                : { duration: 0.92, delay: 0.16 + index * 0.07, ease: curtainEase }
+                : { duration: 0.84, delay: 0.08 + index * 0.055, ease: curtainEase }
             }
           />
         ))}
@@ -245,21 +253,49 @@ export function IntroGate({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(true);
   const [ready, setReady] = useState(false);
 
+  // `ready` is deliberately NOT set alongside `setOpen(false)`. The curtain
+  // takes CURTAIN_MS to lift and the hero entrance runs about as long, so
+  // firing them together plays the whole sequence behind the panels — the
+  // visitor gets a hero that has already settled. Cueing the hero only once the
+  // panels have cleared is the entire point of having an intro.
+  //
+  // The cue is a plain timer rather than `onExitComplete` alone: a dropped
+  // animation frame (backgrounded tab, interrupted navigation) must never
+  // strand the hero at opacity 0. `onExitComplete` still runs, and is a no-op
+  // when the timer got there first.
   useEffect(() => {
     lockPageScroll(true);
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const hold = prefersReduced ? 480 : 2680;
-    const timer = window.setTimeout(() => {
-      setReady(true);
+    const hold = prefersReduced ? REDUCED_HOLD_MS : HOLD_MS;
+    const curtain = prefersReduced ? REDUCED_CURTAIN_MS : CURTAIN_MS;
+
+    document.documentElement.dataset.intro = "holding";
+    const lift = window.setTimeout(() => {
+      document.documentElement.dataset.intro = "lifting";
       setOpen(false);
     }, hold);
-    return () => window.clearTimeout(timer);
+    const cue = window.setTimeout(() => {
+      document.documentElement.dataset.intro = "revealed";
+      setReady(true);
+      lockPageScroll(false);
+    }, hold + curtain);
+
+    return () => {
+      window.clearTimeout(lift);
+      window.clearTimeout(cue);
+    };
   }, []);
 
   return (
     <IntroReadyContext.Provider value={ready}>
       {children}
-      <AnimatePresence onExitComplete={() => lockPageScroll(false)}>
+      <AnimatePresence
+        onExitComplete={() => {
+          document.documentElement.dataset.intro = "revealed";
+          lockPageScroll(false);
+          setReady(true);
+        }}
+      >
         {open ? <IntroOverlay reduced={reduced} /> : null}
       </AnimatePresence>
     </IntroReadyContext.Provider>

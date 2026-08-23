@@ -2,7 +2,16 @@
 
 import { useEffect, useRef } from "react";
 import { motion, useReducedMotion, useSpring, useTransform, type MotionValue } from "motion/react";
-import { graphCore, graphNode, graphParent, useMediaQuery } from "./motion";
+import {
+  graphCore,
+  graphFormationShell,
+  graphNode,
+  graphOrbitSpinUp,
+  graphRing,
+  graphSurface,
+  heroGraphParent,
+  useMediaQuery,
+} from "./motion";
 import { TechIcon } from "./tech-icons";
 import { useIntroReady } from "./intro";
 
@@ -124,16 +133,44 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
       <motion.div className="size-full origin-center will-change-transform" style={{ rotate, y }}>
         <div className="relative size-full">
           <motion.div
-            variants={graphParent}
+            variants={heroGraphParent}
             initial="hidden"
             animate={introReady ? "shown" : "hidden"}
             className="absolute inset-[2%] origin-center"
             style={tilt ? { rotateX: tiltX, rotateY: tiltY } : undefined}
           >
-            <div className="absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.12)_1px,transparent_1px)] bg-[size:16%_16%] opacity-70" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(216,255,62,0.16),transparent_52%)]" />
-            <span className="absolute inset-0 rounded-full border border-acid/30" />
-            <span className="absolute inset-[11%] rounded-full border border-paper/10" />
+            {/* Backdrop + halo rings + orbit rings form first, as one self-contained
+                stagger scope — see `graphFormationShell` in motion.tsx. This is what
+                makes the diagram read as "built" rather than popping in whole. */}
+            <motion.div variants={graphFormationShell} className="absolute inset-0">
+              <motion.div
+                variants={graphSurface}
+                className="absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.12)_1px,transparent_1px)] bg-[size:16%_16%] opacity-70"
+              />
+              <motion.div
+                variants={graphSurface}
+                className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(216,255,62,0.16),transparent_52%)]"
+              />
+              <motion.span variants={graphRing} className="absolute inset-0 rounded-full border border-acid/30" />
+              <motion.span variants={graphRing} className="absolute inset-[11%] rounded-full border border-paper/10" />
+
+              <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet" className="absolute inset-0 size-full" aria-hidden="true">
+                <motion.g variants={graphOrbitSpinUp} className="origin-center [transform-box:view-box] [transform-origin:500px_500px]">
+                  <g className="origin-center animate-spin-slow [transform-box:view-box] [transform-origin:500px_500px]">
+                    <circle cx="500" cy="500" r="250" fill="none" stroke="#8d73ff" strokeOpacity="0.45" strokeWidth="1" strokeDasharray="7 12" vectorEffect="non-scaling-stroke" />
+                    <circle cx="500" cy="250" r="5" fill="#8d73ff" />
+                    <circle cx="750" cy="500" r="4" fill="#397cff" />
+                  </g>
+                </motion.g>
+                <motion.g variants={graphOrbitSpinUp} className="origin-center [transform-box:view-box] [transform-origin:500px_500px]">
+                  <g className="origin-center animate-spin-reverse [transform-box:view-box] [transform-origin:500px_500px]">
+                    <circle cx="500" cy="500" r="340" fill="none" stroke="#ff613c" strokeOpacity="0.4" strokeWidth="1" strokeDasharray="3 14" vectorEffect="non-scaling-stroke" />
+                    <circle cx="160" cy="500" r="4" fill="#ff613c" />
+                    <circle cx="500" cy="840" r="5" fill="#d8ff3e" />
+                  </g>
+                </motion.g>
+              </svg>
+            </motion.div>
 
             <motion.svg
               viewBox="0 0 1000 1000"
@@ -148,17 +185,6 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
                   <stop offset="100%" stopColor="#ff613c" stopOpacity="0.45" />
                 </linearGradient>
               </defs>
-
-              <g className="origin-center animate-spin-slow [transform-box:view-box] [transform-origin:500px_500px]">
-                <circle cx="500" cy="500" r="250" fill="none" stroke="#8d73ff" strokeOpacity="0.45" strokeWidth="1" strokeDasharray="7 12" vectorEffect="non-scaling-stroke" />
-                <circle cx="500" cy="250" r="5" fill="#8d73ff" />
-                <circle cx="750" cy="500" r="4" fill="#397cff" />
-              </g>
-              <g className="origin-center animate-spin-reverse [transform-box:view-box] [transform-origin:500px_500px]">
-                <circle cx="500" cy="500" r="340" fill="none" stroke="#ff613c" strokeOpacity="0.4" strokeWidth="1" strokeDasharray="3 14" vectorEffect="non-scaling-stroke" />
-                <circle cx="160" cy="500" r="4" fill="#ff613c" />
-                <circle cx="500" cy="840" r="5" fill="#d8ff3e" />
-              </g>
 
               {legs.map(({ node, d, from, to }, index) => (
                 <motion.g key={node.id} variants={graphNode}>
@@ -211,25 +237,31 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
             </motion.div>
 
             {nodes.map((node) => (
-              <motion.div
+              // The centering translate lives on this plain (non-motion)
+              // wrapper, sized and positioned with ordinary CSS. It has to be
+              // separate from the motion.div below: Framer's variants define
+              // their own `y` for the rise-in effect, and a variant's `y`
+              // silently wins over a `style` y once the component mounts —
+              // put both on the same element and the "-50%" centering never
+              // actually applies, leaving every card offset from its point.
+              <div
                 key={node.id}
-                variants={graphNode}
-                className="absolute z-[5] flex h-[min(44px,9%)] w-[min(158px,24%)] items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm max-[420px]:gap-1 max-[420px]:px-1"
-                style={{
-                  left: pct(node.x),
-                  top: pct(node.y),
-                  x: "-50%",
-                  y: "-50%",
-                }}
+                className="absolute z-[5] h-[min(44px,9%)] w-[min(158px,24%)] max-[420px]:h-[min(48px,10%)] max-[420px]:w-[min(170px,27%)]"
+                style={{ left: pct(node.x), top: pct(node.y), transform: "translate(-50%, -50%)" }}
               >
-                <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6 max-[420px]:size-5">
-                  <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3 max-[420px]:size-2.5" />
-                </span>
-                <span className="min-w-0">
-                  <strong className="block truncate text-[12px] leading-none tracking-[-0.03em] max-[420px]:text-[9px]">{node.label}</strong>
-                  <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase max-[420px]:hidden">{node.sub}</small>
-                </span>
-              </motion.div>
+                <motion.div
+                  variants={graphNode}
+                  className="flex size-full items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm max-[420px]:gap-1 max-[420px]:px-1"
+                >
+                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6 max-[420px]:size-4">
+                    <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3 max-[420px]:size-2" />
+                  </span>
+                  <span className="min-w-0">
+                    <strong className="block truncate text-[12px] leading-none tracking-[-0.03em] max-[420px]:text-[8px]">{node.label}</strong>
+                    <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase max-[420px]:hidden">{node.sub}</small>
+                  </span>
+                </motion.div>
+              </div>
             ))}
           </motion.div>
         </div>

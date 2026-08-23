@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type Ref } from "react";
-import { motion } from "motion/react";
+import { MotionConfig, motion } from "motion/react";
 import {
   capabilities,
   cvFile,
@@ -19,6 +19,17 @@ import {
   Magnetic,
   ScrollProgress,
   SmoothScroll,
+  contactCta,
+  contactCtaParent,
+  contactFoot,
+  contactItem,
+  contactLine,
+  contactParent,
+  contactRow,
+  contactRowsParent,
+  contactRule,
+  heroChip,
+  heroChipParent,
   heroLine,
   reveal,
   staggerChild,
@@ -176,10 +187,15 @@ function CopyEmail() {
 }
 
 export default function Home() {
+  // `reducedMotion="user"` makes every motion.* element below drop its
+  // transform animations (keeping opacity) when the OS asks for reduced
+  // motion. Without it the amplified hero entrance would play regardless.
   return (
-    <IntroGate>
-      <Portfolio />
-    </IntroGate>
+    <MotionConfig reducedMotion="user">
+      <IntroGate>
+        <Portfolio />
+      </IntroGate>
+    </MotionConfig>
   );
 }
 
@@ -214,7 +230,7 @@ function Portfolio() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.12 : 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.06 : 0 }}
           className="hero-meta relative z-[1] mb-[clamp(28px,4vh,54px)] flex items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:items-start max-[680px]:mb-auto max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
           <div className="hero-kicker flex items-center gap-3 max-[680px]:max-w-[200px] max-[680px]:leading-[1.35] max-[420px]:max-w-none">
             <span className="status-dot size-[9px] animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
@@ -246,12 +262,20 @@ function Portfolio() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.2 : 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.58 : 0 }}
           className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-stretch max-[680px]:gap-5 max-[420px]:mt-7 max-[420px]:flex-col max-[420px]:pt-5 max-[420px]:pb-1">
           <div className="relative min-w-0 w-full">
             <span className="pointer-events-none absolute -inset-x-3 -inset-y-4 -z-[1] bg-[linear-gradient(90deg,var(--color-ink)_0%,var(--color-ink)_62%,transparent_100%)] max-[680px]:-inset-x-2 max-[420px]:inset-x-[-6px] max-[420px]:bg-[linear-gradient(to_top,var(--color-ink)_0%,var(--color-ink)_78%,transparent_100%)]" aria-hidden="true" />
-            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.2] tracking-[-0.026em] text-paper [text-shadow:0_1px_16px_rgba(11,13,12,0.9)] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:mb-4 max-[420px]:max-w-none max-[420px]:text-[15px] max-[420px]:leading-[1.35]">Saya Fajar Rafsan. Fullstack developer: API Java yang andal di belakang, interface React yang jelas di depan.</p>
-            <div
+            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.3] tracking-[-0.026em] text-paper/85 [text-shadow:0_1px_16px_rgba(11,13,12,0.9)] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:mb-4 max-[420px]:max-w-none max-[420px]:text-[15px] max-[420px]:leading-[1.45]">
+              <strong className="hero-lede-name font-[750] tracking-[-0.03em] text-paper">Saya Fajar Rafsan.</strong>{" "}
+              Fullstack developer: <em className="hero-lede-token font-semibold text-acid not-italic">API Java</em> yang andal{" "}
+              <span className="text-paper/50">di belakang,</span> <em className="hero-lede-token font-semibold text-acid not-italic">interface React</em> yang jelas{" "}
+              <span className="text-paper/50">di depan.</span>
+            </p>
+            <motion.div
+              variants={heroChipParent}
+              initial="hidden"
+              animate={introReady ? "shown" : "hidden"}
               className="mb-5 grid grid-cols-2 gap-2 min-[681px]:mb-5 min-[681px]:flex min-[681px]:flex-wrap min-[681px]:items-center max-[420px]:mb-4"
               aria-label="Stack utama"
             >
@@ -261,15 +285,16 @@ function Portfolio() {
                 ["react", "React"],
                 ["typescript", "TypeScript"],
               ].map(([icon, label]) => (
-                <span
+                <motion.span
                   key={label}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 border border-paper/25 bg-ink px-3 text-[10px] tracking-[0.1em] uppercase min-[681px]:justify-start"
+                  variants={heroChip}
+                  className="inline-flex min-h-11 items-center justify-center gap-2 border border-paper/25 bg-ink px-3 text-[10px] tracking-[0.1em] uppercase will-change-transform min-[681px]:justify-start"
                 >
                   <TechIcon name={icon} className="size-3.5 shrink-0 text-acid" />
                   {label}
-                </span>
+                </motion.span>
               ))}
-            </div>
+            </motion.div>
             <div className="flex flex-col gap-2.5 text-[11px] tracking-[0.09em] uppercase min-[681px]:flex-row min-[681px]:flex-wrap min-[681px]:items-center min-[681px]:gap-3">
               <Magnetic className="w-full min-[681px]:w-auto [&_a]:w-full">
                 <a
@@ -336,21 +361,36 @@ function Portfolio() {
         </motion.div>
 
         <div className="relative grid grid-cols-[minmax(240px,0.78fr)_minmax(0,1.55fr)] items-start gap-x-[5vw] gap-y-14 max-[1000px]:grid-cols-1">
-          <motion.div {...reveal}>
-            <ProfilePortrait />
-          </motion.div>
+          {/* ProfilePortrait stages its own multi-part entrance (wipe, corner
+              marks, badge, caption) — wrapping it in the generic `reveal`
+              fade would just add a second, conflicting fade on top. */}
+          <ProfilePortrait />
           <ProfileCopy />
         </div>
       </section>
 
       <section className="system-showcase relative grid grid-cols-[0.82fr_1.18fr] items-center gap-[5vw] overflow-hidden bg-ink bg-[image:radial-gradient(circle_at_70%_50%,rgba(57,124,255,0.12),transparent_34%)] px-[3vw] py-[clamp(110px,11vw,176px)] min-[1001px]:max-[1200px]:grid-cols-[minmax(0,0.9fr)_minmax(500px,1.1fr)] min-[1001px]:max-[1200px]:gap-[3vw] max-[1000px]:grid-cols-1 max-[1000px]:py-[110px] max-[680px]:px-[18px] max-[420px]:px-3.5 max-[420px]:py-16" id="architecture" aria-labelledby="system-title">
         <InkParticles className="z-0" />
-        <div className="system-copy relative z-[5]">
-          <SectionLabel index="02" label="Motion architecture" />
-          <p className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">Backend in motion</p>
-          <h2 id="system-title" className="font-display mb-7 max-w-[670px] text-[clamp(46px,5.4vw,88px)] leading-[0.93] font-[560] tracking-[-0.066em] min-[1001px]:max-[1200px]:text-[clamp(44px,4.8vw,62px)] max-[1000px]:max-w-[850px] max-[680px]:text-[clamp(44px,13vw,68px)] max-[420px]:text-[clamp(32px,10vw,44px)]">Setiap request punya jalur. Setiap event punya tujuan.</h2>
-          <p className="system-description mb-0 max-w-[480px] leading-[1.5] text-[#aeb0a8]">Visualisasi cara saya memikirkan backend: modular, observable, dan terhubung tanpa kehilangan batas tanggung jawab.</p>
-        </div>
+        <motion.div
+          variants={staggerParent}
+          initial="hidden"
+          whileInView="shown"
+          viewport={{ once: true, amount: 0.65, margin: "0px 0px -150px 0px" }}
+          className="system-copy relative z-[5]"
+        >
+          <motion.div variants={staggerChild}>
+            <SectionLabel index="02" label="Motion architecture" />
+          </motion.div>
+          <motion.p variants={staggerChild} className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">Backend in motion</motion.p>
+          <motion.h2 variants={staggerChild} id="system-title" className="font-display mb-7 max-w-[670px] text-[clamp(46px,5.4vw,88px)] leading-[0.93] font-[560] tracking-[-0.066em] min-[1001px]:max-[1200px]:text-[clamp(44px,4.8vw,62px)] max-[1000px]:max-w-[850px] max-[680px]:text-[clamp(44px,13vw,68px)] max-[420px]:text-[clamp(32px,10vw,44px)]">
+            Setiap <span className="text-acid">request</span> punya jalur. Setiap <span className="text-acid">event</span> punya tujuan.
+          </motion.h2>
+          <motion.p variants={staggerChild} className="system-description mb-0 max-w-[480px] leading-[1.5] text-[#aeb0a8]">
+            Visualisasi cara saya memikirkan backend: <em className="hero-lede-token font-medium text-paper not-italic">modular</em>,{" "}
+            <em className="hero-lede-token font-medium text-paper not-italic">observable</em>, dan{" "}
+            <em className="hero-lede-token font-medium text-paper not-italic">terhubung</em> tanpa kehilangan batas tanggung jawab.
+          </motion.p>
+        </motion.div>
 
         <SystemGraph />
       </section>
@@ -513,48 +553,98 @@ function Portfolio() {
         </div>
       </section>
 
-      <section className="contact relative flex min-h-svh flex-col justify-between overflow-hidden bg-acid px-[3vw] pt-10 pb-[22px] text-ink max-[680px]:min-h-[820px] max-[680px]:px-[18px] max-[680px]:pt-[30px] max-[420px]:min-h-svh max-[420px]:px-3.5" id="contact" aria-labelledby="contact-title">
+      <motion.section
+        variants={contactParent}
+        initial="hidden"
+        whileInView="shown"
+        viewport={{ once: true, amount: 0.3 }}
+        className="contact relative flex min-h-svh flex-col justify-between overflow-hidden bg-acid px-[3vw] pt-10 pb-[22px] text-ink max-[680px]:min-h-[820px] max-[680px]:px-[18px] max-[680px]:pt-[30px] max-[420px]:min-h-svh max-[420px]:px-3.5"
+        id="contact"
+        aria-labelledby="contact-title"
+      >
         <div className="absolute -top-[10vw] -right-[8vw] aspect-square w-[48vw] animate-contact-ring rounded-full border border-ink/25 shadow-[inset_0_0_0_8vw_rgba(11,13,12,0.04),inset_0_0_0_16vw_rgba(11,13,12,0.04)]" aria-hidden="true" />
         <div className="contact-top relative z-[1] flex items-start justify-between gap-[30px] max-[680px]:flex-col">
-          <SectionLabel index="07" label="Connect" />
-          <p className="m-0 max-w-[480px] text-[clamp(17px,1.5vw,23px)] leading-[1.28]">Terbuka untuk kesempatan fullstack, kolaborasi produk, dan diskusi sistem ujung ke ujung.</p>
+          <motion.div variants={contactItem}>
+            <SectionLabel index="07" label="Connect" />
+          </motion.div>
+          <motion.p variants={contactItem} className="m-0 max-w-[480px] text-[clamp(17px,1.5vw,23px)] leading-[1.28]">
+            Terbuka untuk kesempatan fullstack, kolaborasi produk, dan diskusi sistem ujung ke ujung.
+          </motion.p>
         </div>
-        <h2 id="contact-title" className="font-display relative z-[1] my-auto mb-[4vw] text-[clamp(74px,14.2vw,218px)] leading-[0.69] font-[780] tracking-[-0.09em] max-[680px]:text-[clamp(56px,16.5vw,105px)] max-[680px]:leading-[0.72] max-[420px]:text-[clamp(42px,13.2vw,56px)]">LET&apos;S BUILD<br /><em className="stroke-text">RELIABLE.</em></h2>
-        <div className="relative z-[1] mb-6 flex flex-wrap items-center gap-3 max-[680px]:mb-5 max-[420px]:flex-col max-[420px]:items-stretch">
-          <Magnetic className="max-[420px]:w-full [&_a]:w-full">
-            <a
-              className="inline-flex min-h-12 items-center justify-center gap-3 border border-ink bg-ink px-5 text-[12px] tracking-[0.08em] text-acid uppercase transition-colors duration-200 hover:bg-transparent hover:text-ink"
-              href={`mailto:${email}?subject=Peluang%20Fullstack`}
-              data-cursor
-            >
-              Kirim email <span aria-hidden="true">↗</span>
-            </a>
-          </Magnetic>
-          <CopyEmail />
-          <Magnetic className="max-[420px]:w-full [&_a]:w-full">
-            <a
-              className="inline-flex min-h-12 items-center justify-center gap-3 border border-ink px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:bg-ink hover:text-acid"
-              href={cvFile.href}
-              download={cvFile.download}
-              data-cursor
-            >
-              Unduh CV <span aria-hidden="true">↓</span>
-            </a>
-          </Magnetic>
-        </div>
-        <div className="social-links relative z-[1] grid grid-cols-2 border-y border-ink max-[680px]:grid-cols-1">
-          <a className="contact-link flex min-h-[86px] items-center justify-between px-[22px] text-[clamp(20px,2vw,31px)] tracking-[-0.035em] transition-[background-color,color,padding] duration-250 will-change-transform hover:bg-ink hover:px-[34px] hover:text-acid max-[680px]:min-h-[72px] max-[680px]:px-0 max-[680px]:hover:px-3.5" href={linkedInUrl} target="_blank" rel="noreferrer">
+        <h2
+          id="contact-title"
+          className="font-display relative z-[1] my-auto mb-[4vw] text-[clamp(74px,14.2vw,218px)] leading-[0.69] font-[780] tracking-[-0.09em] max-[680px]:text-[clamp(56px,16.5vw,105px)] max-[680px]:leading-[0.72] max-[420px]:text-[clamp(42px,13.2vw,56px)]"
+        >
+          {/* Each line rides up out of its own overflow mask. The padding on
+              the mask is what keeps the outlined "RELIABLE." from having its
+              stroke shaved off at the top and bottom edges. */}
+          <span className="block overflow-hidden py-[0.08em]">
+            <motion.span variants={contactLine} custom={0} className="block origin-bottom-left will-change-transform">
+              LET&apos;S BUILD
+            </motion.span>
+          </span>
+          <span className="block overflow-hidden py-[0.08em]">
+            <motion.span variants={contactLine} custom={1} className="block origin-bottom-left will-change-transform">
+              <em className="stroke-text">RELIABLE.</em>
+            </motion.span>
+          </span>
+        </h2>
+        {/* The entrance variant sits on a wrapper around each Magnetic, never
+            on the Magnetic itself: Magnetic drives its own `x`/`y` for the
+            pointer pull, and a variant's `y` would silently win over that
+            style once mounted, killing the magnetic effect. */}
+        <motion.div
+          variants={contactCtaParent}
+          className="relative z-[1] mb-6 flex flex-wrap items-center gap-3 max-[680px]:mb-5 max-[420px]:flex-col max-[420px]:items-stretch"
+        >
+          <motion.div variants={contactCta} className="max-[420px]:w-full">
+            <Magnetic className="max-[420px]:w-full [&_a]:w-full">
+              <a
+                className="inline-flex min-h-12 items-center justify-center gap-3 border border-ink bg-ink px-5 text-[12px] tracking-[0.08em] text-acid uppercase transition-colors duration-200 hover:bg-transparent hover:text-ink"
+                href={`mailto:${email}?subject=Peluang%20Fullstack`}
+                data-cursor
+              >
+                Kirim email <span aria-hidden="true">↗</span>
+              </a>
+            </Magnetic>
+          </motion.div>
+          <motion.div variants={contactCta} className="max-[420px]:w-full">
+            <CopyEmail />
+          </motion.div>
+          <motion.div variants={contactCta} className="max-[420px]:w-full">
+            <Magnetic className="max-[420px]:w-full [&_a]:w-full">
+              <a
+                className="inline-flex min-h-12 items-center justify-center gap-3 border border-ink px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:bg-ink hover:text-acid"
+                href={cvFile.href}
+                download={cvFile.download}
+                data-cursor
+              >
+                Unduh CV <span aria-hidden="true">↓</span>
+              </a>
+            </Magnetic>
+          </motion.div>
+        </motion.div>
+        {/* The top and bottom hairlines are real elements rather than a
+            `border-y` so each can draw itself across before the rows land —
+            a border cannot be scaled independently of its own box. */}
+        <motion.div variants={contactRowsParent} className="social-links relative z-[1] grid grid-cols-2 max-[680px]:grid-cols-1">
+          <motion.span variants={contactRule} className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-px origin-left bg-ink" aria-hidden="true" />
+          <motion.span variants={contactRule} className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-px origin-left bg-ink" aria-hidden="true" />
+          <motion.a variants={contactRow} className="contact-link flex min-h-[86px] items-center justify-between px-[22px] text-[clamp(20px,2vw,31px)] tracking-[-0.035em] transition-[background-color,color,padding] duration-250 hover:bg-ink hover:px-[34px] hover:text-acid max-[680px]:min-h-[72px] max-[680px]:px-0 max-[680px]:hover:px-3.5" href={linkedInUrl} target="_blank" rel="noreferrer">
             <span className="flex items-center gap-4"><SocialIcon name="linkedin" className="size-[0.8em] shrink-0" />LinkedIn</span><span aria-hidden="true">↗</span>
-          </a>
-          <a className="contact-link flex min-h-[86px] items-center justify-between border-l border-ink px-[22px] text-[clamp(20px,2vw,31px)] tracking-[-0.035em] transition-[background-color,color,padding] duration-250 will-change-transform hover:bg-ink hover:px-[34px] hover:text-acid max-[680px]:min-h-[72px] max-[680px]:border-l-0 max-[680px]:border-t max-[680px]:px-0 max-[680px]:hover:px-3.5" href={githubUrl} target="_blank" rel="noreferrer">
+          </motion.a>
+          <motion.a variants={contactRow} className="contact-link flex min-h-[86px] items-center justify-between border-l border-ink px-[22px] text-[clamp(20px,2vw,31px)] tracking-[-0.035em] transition-[background-color,color,padding] duration-250 hover:bg-ink hover:px-[34px] hover:text-acid max-[680px]:min-h-[72px] max-[680px]:border-l-0 max-[680px]:border-t max-[680px]:px-0 max-[680px]:hover:px-3.5" href={githubUrl} target="_blank" rel="noreferrer">
             <span className="flex items-center gap-4"><SocialIcon name="github" className="size-[0.8em] shrink-0" />GitHub</span><span aria-hidden="true">↗</span>
-          </a>
-        </div>
-        <footer className="relative z-[1] flex justify-between gap-6 pt-5 text-[10px] tracking-[0.1em] uppercase max-[680px]:items-end max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
+          </motion.a>
+        </motion.div>
+        <motion.footer
+          variants={contactFoot}
+          className="relative z-[1] flex justify-between gap-6 pt-5 text-[10px] tracking-[0.1em] uppercase max-[680px]:items-end max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3"
+        >
           <p className="m-0 max-[680px]:max-w-[210px] max-[680px]:leading-[1.45] max-[420px]:max-w-none">© 2026 Fajar Rafsan. Fullstack Developer.</p>
-          <a className="-my-2.5 inline-flex shrink-0 items-center py-2.5 transition-opacity duration-200 hover:opacity-60" href="#top">Kembali ke atas ↑</a>
-        </footer>
-      </section>
+          <a className="-my-[15px] inline-flex min-h-11 shrink-0 items-center py-[15px] transition-opacity duration-200 hover:opacity-60" href="#top">Kembali ke atas ↑</a>
+        </motion.footer>
+      </motion.section>
     </main>
   );
 }

@@ -129,6 +129,48 @@
   animation: hero-path-flow 20s linear infinite;
 }
 
+/* Hero lede typography. The name gets an acid underline that draws itself in
+   once the intro overlay lifts (delay tuned to the lede block's own fade at
+   0.58s + 0.7s), and stack keywords carry a flat low-alpha highlighter band —
+   same flat-ink language as the node cards, not a neon glow. */
+.hero-lede-name {
+  background-image: linear-gradient(var(--color-acid), var(--color-acid));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 2px;
+  animation: hero-lede-sweep 0.85s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+}
+
+@keyframes hero-lede-sweep {
+  to {
+    background-size: 100% 2px;
+  }
+}
+
+.hero-lede-token {
+  padding-inline: 3px;
+  background-image: linear-gradient(transparent 58%, rgba(216, 255, 62, 0.16) 58%);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Profile section tokens — light-theme siblings of the hero highlighter.
+   Backend phrases get the java-orange marker, frontend phrases the acid
+   marker, echoing the packet colors of the architecture graphs. */
+.profile-token {
+  padding-inline: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.profile-token-java {
+  background-image: linear-gradient(transparent 58%, rgba(255, 97, 60, 0.14) 58%);
+}
+
+.profile-token-react {
+  background-image: linear-gradient(transparent 58%, rgba(216, 255, 62, 0.45) 58%);
+}
+
 @keyframes architecture-mote {
   0%,
   100% {
