@@ -189,7 +189,13 @@ function StackLayout({
           </h2>
         ) : null}
         <div className="mb-8 grid place-items-center">
-          <FrontEndGraph className="mx-auto w-[min(100%,300px)] max-[420px]:w-[min(88vw,280px)]" />
+          {/* `StackLayout` only ever mounts on mobile/touch (the desktop pin
+              stage below uses a separate render path), so this can grow
+              freely without any breakpoint gymnastics or desktop risk — the
+              compact card (see system-graph.tsx) needs the extra width to
+              not feel cramped. Still capped well under the panel column's
+              width: it's a preview above the detail list, not the headline. */}
+          <FrontEndGraph className="mx-auto w-[min(100%,340px)] max-[420px]:w-[min(90vw,300px)]" />
         </div>
         <div className="flex flex-col gap-5">
           {panels.map((panel) => (

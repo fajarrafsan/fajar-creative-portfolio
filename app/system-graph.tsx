@@ -140,6 +140,11 @@ function ArchitectureGraph({
   const compact = useMediaQuery("(max-width: 1000px)");
   const card = compact ? CARD_COMPACT : CARD;
   const legs = nodes.map((node) => ({ node, ...connector(node, card) }));
+  // Same "(pointer: fine)" convention HeroGraph/Magnetic already use: without
+  // it, a tap on a touch screen fires `whileHover` and the matching CSS
+  // `:hover`, and neither reliably clears until the visitor taps elsewhere —
+  // a card can be left looking "stuck" highlighted on mobile.
+  const finePointer = useMediaQuery("(pointer: fine)");
   const haloId = `${idPrefix}-halo`;
   const strokeId = `${idPrefix}-leg`;
 
@@ -321,20 +326,20 @@ function ArchitectureGraph({
                 {
                   left: pct(node.x),
                   top: pct(node.y),
-                  width: pct(CARD.w),
-                  height: pct(CARD.h),
+                  width: pct(card.w),
+                  height: pct(card.h),
                   transform: "translate(-50%, -50%)",
                 } as CSSProperties
               }
             >
               <motion.div
                 variants={graphNode}
-                whileHover={{ y: -3 }}
+                whileHover={finePointer ? { y: -3 } : undefined}
                 transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 className={`graph-node flex size-full flex-col justify-center gap-1.5 overflow-hidden border px-2.5 py-2 backdrop-blur-sm transition-colors duration-250 max-[420px]:gap-1 max-[420px]:px-1.5 max-[420px]:py-1 ${
                   active
                     ? "border-acid bg-[#141a10]/95 text-acid"
-                    : "border-paper/20 bg-ink/92 text-paper hover:border-acid/45 hover:bg-[#12150f]/95"
+                    : "border-paper/20 bg-ink/92 text-paper [@media(pointer:fine)]:hover:border-acid/45 [@media(pointer:fine)]:hover:bg-[#12150f]/95"
                 }`}
               >
                 <div className="flex min-w-0 items-baseline gap-1.5">
@@ -369,7 +374,13 @@ export function SystemGraph() {
       coreTitle="SPRING"
       coreSub="BOOT"
       nodes={backendNodes}
-      className="relative z-[3] w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:mx-auto max-[1000px]:mt-[50px]"
+      // Below 1000px the section stacks to a single column and this diagram
+      // becomes its own full-width row, so it breaks out of the section's
+      // side padding entirely (the `calc(50% - 50vw)` trick) instead of
+      // sitting inside it shrunk down — every card gets real screen pixels
+      // instead of a scaled-down copy of the desktop layout. Desktop's
+      // `w-[min(100%,720px)]` sizing is untouched above 1000px.
+      className="relative z-[3] w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:mt-[50px] max-[1000px]:w-screen max-[1000px]:mx-[calc(50%-50vw)]"
       ariaLabel="Diagram arsitektur: klien, gateway, autentikasi, service, data, cache, events, dan pembayaran mengelilingi inti Spring Boot"
     />
   );
