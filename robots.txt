@@ -1,0 +1,5 @@
+# Portfolio of Fajar Rafsan Tanjung
+User-agent: *
+Allow: /
+
+Sitemap: https://fajarrafsan.my.id/sitemap.xml
