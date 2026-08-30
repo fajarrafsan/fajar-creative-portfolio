@@ -2,17 +2,20 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import { githubUrl, linkedInUrl } from "./content";
+import { copy, githubUrl, linkedInUrl } from "./content";
 import { Magnetic, ease } from "./motion";
 import { SocialIcon } from "./tech-icons";
 import { openCvPreview } from "./cv-preview";
 import { useIntroReady } from "./intro";
+import { LocaleToggle } from "./locale-toggle";
+import { dual, useT } from "./i18n";
 
 const links = [
-  { href: "#profile", id: "profile", label: "Profile", index: "01" },
-  { href: "#work", id: "work", label: "Projects", index: "02" },
-  { href: "#stack", id: "tech", label: "Stack", index: "03" },
-  { href: "#contact", id: "contact", label: "Contact", index: "04" },
+  { href: "#profile", id: "profile", label: dual("Profil", "Profile"), index: "01" },
+  { href: "#work", id: "work", label: dual("Proyek", "Projects"), index: "02" },
+  { href: "#stack", id: "tech", label: dual("Stack", "Stack"), index: "03" },
+  { href: "#certificates", id: "certificates", label: dual("Sertifikat", "Certificates"), index: "04" },
+  { href: "#contact", id: "contact", label: dual("Kontak", "Contact"), index: "05" },
 ] as const;
 
 /** Page sections in document order, mapped onto the four header tabs. */
@@ -25,6 +28,7 @@ const spyMap: { id: string; tab: string | null }[] = [
   { id: "stack", tab: "tech" },
   { id: "tech", tab: "tech" },
   { id: "experience", tab: "tech" },
+  { id: "certificates", tab: "certificates" },
   { id: "contact", tab: "contact" },
 ];
 
@@ -64,6 +68,7 @@ function BandungClock() {
 export function SiteHeader() {
   const reduced = Boolean(useReducedMotion());
   const introReady = useIntroReady();
+  const t = useT();
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -132,9 +137,9 @@ export function SiteHeader() {
           }`}
         >
           <a
-            className="brand group flex min-w-0 items-center gap-3"
+            className="brand group flex min-w-0 flex-1 items-center gap-3"
             href="#top"
-            aria-label="Fajar Rafsan — kembali ke atas"
+            aria-label={t(copy.brandHome)}
           >
             <span className="flex size-11 shrink-0 items-center justify-center border border-paper/25 bg-ink transition-colors duration-200 group-hover:border-acid group-hover:bg-acid group-hover:text-ink max-[680px]:size-10">
               <span className="font-display text-[15px] leading-none font-[800] tracking-[-0.04em] whitespace-nowrap max-[680px]:text-[14px]">
@@ -145,11 +150,16 @@ export function SiteHeader() {
               <strong className="font-display text-[13px] font-[650] tracking-[-0.04em] normal-case">
                 Fajar Rafsan
               </strong>
-              <small className="text-[10px] tracking-[0.14em] text-paper/55">Fullstack · Bandung</small>
+              <small className="text-[10px] tracking-[0.14em] text-paper/55">{t(copy.brandRole)}</small>
             </span>
           </a>
 
-          <nav className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 min-[1001px]:block" aria-label="Navigasi utama">
+          {/* In flow, not absolutely centred. Taking it out of flow meant the
+              flex row could not see its width, so the right-hand cluster was
+              free to overlap it — which is exactly what happened once a fifth
+              link was added. Equal flex-1 on the brand and the cluster keeps
+              it optically centred without that risk. */}
+          <nav className="hidden shrink-0 min-[1240px]:block" aria-label={t(dual("Navigasi utama", "Main navigation"))}>
             <ul className="m-0 flex h-11 list-none items-center p-0">
               {links.map((link) => {
                 const isActive = active === link.id;
@@ -170,7 +180,7 @@ export function SiteHeader() {
                           transition={{ duration: 0.28, ease }}
                         />
                       ) : null}
-                      <span className="relative z-[1]">{link.label}</span>
+                      <span className="relative z-[1]">{t(link.label)}</span>
                     </a>
                   </li>
                 );
@@ -178,15 +188,18 @@ export function SiteHeader() {
             </ul>
           </nav>
 
-          <div className="flex shrink-0 items-center justify-end gap-2">
-            <p className="nav-location m-0 hidden h-11 items-center gap-2 whitespace-nowrap min-[1180px]:flex">
+          <div className="flex flex-1 items-center justify-end gap-2">
+            {/* Five nav links leave less room than four did, so the status
+                strip only appears once there is genuinely space for it. */}
+            <p className="nav-location m-0 hidden h-11 items-center gap-2 whitespace-nowrap min-[1620px]:flex">
               <span className="size-2 animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_4px_rgba(216,255,62,0.14)]" aria-hidden="true" />
-              <span className={scrolled ? "hidden min-[1280px]:inline" : undefined}>Available</span>
+              <span>{t(copy.available)}</span>
               <span className="text-paper/35" aria-hidden="true">
                 /
               </span>
               <BandungClock />
             </p>
+            <LocaleToggle />
             <button
               type="button"
               className="inline-flex h-11 shrink-0 items-center border border-paper/25 px-3.5 text-paper transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[680px]:px-3 max-[420px]:px-2.5"
@@ -196,15 +209,15 @@ export function SiteHeader() {
               CV
             </button>
             <a
-              className="grid size-11 shrink-0 place-items-center border border-paper/25 text-paper transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[680px]:hidden"
+              className="grid size-11 shrink-0 place-items-center border border-paper/25 text-paper transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[1100px]:hidden"
               href={githubUrl}
               target="_blank"
               rel="noreferrer"
-              aria-label="Profil GitHub Fajar Rafsan"
+              aria-label={t(dual("Profil GitHub Fajar Rafsan", "Fajar Rafsan on GitHub"))}
             >
               <SocialIcon name="github" className="size-4" />
             </a>
-            <Magnetic className="max-[1000px]:hidden">
+            <Magnetic className="max-[1320px]:hidden">
               <a
                 className="nav-cta inline-flex h-11 items-center gap-2.5 border border-acid bg-acid px-4 text-ink transition-colors duration-200 hover:bg-transparent hover:text-paper"
                 href={linkedInUrl}
@@ -218,10 +231,10 @@ export function SiteHeader() {
             <button
               ref={closeRef}
               type="button"
-              className="grid size-11 shrink-0 place-items-center border border-paper/25 min-[1001px]:hidden"
+              className="grid size-11 shrink-0 place-items-center border border-paper/25 min-[1240px]:hidden"
               aria-expanded={open}
               aria-controls={menuId}
-              aria-label={open ? "Tutup navigasi" : "Buka navigasi"}
+              aria-label={open ? t(dual("Tutup navigasi", "Close navigation")) : t(dual("Buka navigasi", "Open navigation"))}
               onClick={() => setOpen((prev) => !prev)}
             >
               <span className="relative block h-3 w-4" aria-hidden="true">
@@ -247,14 +260,14 @@ export function SiteHeader() {
             id={menuId}
             role="dialog"
             aria-modal="true"
-            aria-label="Navigasi"
+            aria-label={t(copy.mobileNav)}
             initial={reduced ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28, ease }}
-            className="fixed inset-0 z-[70] flex flex-col bg-ink/96 px-[clamp(18px,4vw,40px)] pt-[max(6.5rem,calc(env(safe-area-inset-top)+5.25rem))] pb-[max(28px,env(safe-area-inset-bottom))] backdrop-blur-xl min-[1001px]:hidden"
+            className="fixed inset-0 z-[70] flex flex-col bg-ink/96 px-[clamp(18px,4vw,40px)] pt-[max(6.5rem,calc(env(safe-area-inset-top)+5.25rem))] pb-[max(28px,env(safe-area-inset-bottom))] backdrop-blur-xl min-[1240px]:hidden"
           >
-            <nav className="flex min-h-0 flex-1 flex-col justify-center" aria-label="Navigasi seluler">
+            <nav className="flex min-h-0 flex-1 flex-col justify-center" aria-label={t(dual("Navigasi seluler", "Mobile navigation"))}>
               <ul className="m-0 flex list-none flex-col gap-1 p-0">
                 {links.map((link, index) => (
                   <li key={link.id}>
@@ -267,7 +280,7 @@ export function SiteHeader() {
                       onClick={() => setOpen(false)}
                     >
                       <span className="font-display text-[clamp(34px,9vw,56px)] leading-none font-[650] tracking-[-0.07em] uppercase max-[420px]:text-[clamp(28px,8.5vw,34px)]">
-                        {link.label}
+                        {t(link.label)}
                       </span>
                       <span className="font-mono text-[11px] tracking-[0.16em] text-acid">{link.index}</span>
                     </motion.a>
@@ -276,9 +289,12 @@ export function SiteHeader() {
               </ul>
             </nav>
             <div className="flex flex-wrap items-center gap-3 pt-8">
+              {/* The header's own switch is hidden at this width, so the sheet
+                  carries its own or the language becomes unreachable on phones. */}
+              <LocaleToggle />
               <span className="inline-flex min-h-11 items-center gap-2 border border-paper/20 px-3 text-[10px] tracking-[0.12em] uppercase">
                 <span className="size-2 rounded-full bg-acid" aria-hidden="true" />
-                Available · Bandung
+                {t(copy.availableBandung)}
               </span>
               <button
                 type="button"
@@ -288,7 +304,7 @@ export function SiteHeader() {
                   openCvPreview();
                 }}
               >
-                Lihat CV
+                {t(copy.viewCv)}
               </button>
               <a
                 className="inline-flex min-h-11 items-center gap-2 border border-paper/25 px-4 text-[11px] tracking-[0.1em] uppercase"

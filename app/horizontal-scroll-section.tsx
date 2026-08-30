@@ -11,20 +11,21 @@ import {
 import { InkParticles } from "./ink-particles";
 import { FrontEndGraph } from "./system-graph";
 import { TechIcon } from "./tech-icons";
-import type { RichText } from "./content";
+import { copy, frontendArchitecture, type RichText } from "./content";
+import { useT, type Dual } from "./i18n";
 
 export type HorizontalPanel = {
   number: string;
-  title: string;
-  body: RichText;
+  title: Dual | string;
+  body: Dual<RichText> | RichText;
   nodeId?: string;
   icons?: string[];
 };
 
 type HorizontalScrollSectionProps = {
   panels: HorizontalPanel[];
-  kicker?: string;
-  heading?: RichText;
+  kicker?: Dual | string;
+  heading?: Dual<RichText> | RichText;
   id?: string;
 };
 
@@ -105,6 +106,9 @@ function Panel({
 }) {
   const headingId = `${headingPrefix}-panel-${panel.number}`;
   const pin = typeof paneWidth === "number" && paneWidth > 0;
+  const t = useT();
+  const title = t(panel.title);
+  const body = t(panel.body);
 
   return (
     <article
@@ -123,10 +127,10 @@ function Panel({
         id={headingId}
         className="font-display m-0 max-w-[14ch] text-[clamp(24px,7.4vw,36px)] leading-[0.88] font-[620] tracking-[-0.07em] md:text-[clamp(30px,4.2vw,68px)]"
       >
-        {panel.title}
+        {title}
       </h3>
       {panel.icons?.length ? (
-        <ul className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Teknologi pada panel ini">
+        <ul className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label={t(copy.panelTechAria)}>
           {panel.icons.map((icon) => (
             <li key={icon}>
               <span className="inline-flex min-h-11 items-center gap-2 border border-paper/20 px-3 py-2 text-acid">
@@ -140,7 +144,7 @@ function Panel({
         </ul>
       ) : null}
       <p className="m-0 max-w-[54ch] text-base leading-[1.55] text-[#aeb0a8]">
-        <RichBody segments={panel.body} />
+        <RichBody segments={body} />
       </p>
     </article>
   );
@@ -165,27 +169,30 @@ function StackLayout({
   id,
 }: {
   panels: HorizontalPanel[];
-  kicker: string;
-  heading?: string;
+  kicker: Dual | string;
+  heading?: Dual<RichText> | RichText;
   headingId: string;
   id: string;
 }) {
+  const t = useT();
+  const kickerLabel = t(kicker);
+  const headingSegments = heading ? t(heading) : undefined;
   return (
     <div className="frontend-stack relative px-[3vw] pb-[clamp(96px,20vw,160px)] max-[680px]:px-[18px] max-[420px]:px-3.5">
       <InkParticles seed={20260823} className="z-0" />
       <header className="relative z-[2] flex items-center justify-between gap-3 pt-[max(6.5rem,calc(env(safe-area-inset-top)+5rem))] pb-5 max-[420px]:px-0">
-        <p className="m-0 min-w-0 truncate text-[11px] tracking-[0.1em] text-acid uppercase">{kicker}</p>
+        <p className="m-0 min-w-0 truncate text-[11px] tracking-[0.1em] text-acid uppercase">{kickerLabel}</p>
         <p className="m-0 shrink-0 font-mono text-[11px] tracking-[0.14em] text-acid tabular-nums">
           {pad(1)} – {pad(panels.length)}
         </p>
       </header>
       <div className="relative z-[1]">
-        {heading ? (
+        {headingSegments ? (
           <h2
             id={headingId}
             className="font-display mt-3 mb-8 max-w-[18ch] text-[clamp(22px,6.8vw,36px)] leading-[0.94] font-[560] tracking-[-0.06em]"
           >
-            <AccentHeading segments={heading} />
+            <AccentHeading segments={headingSegments} />
           </h2>
         ) : null}
         <div className="mb-8 grid place-items-center">
@@ -216,10 +223,11 @@ function StackLayout({
  */
 export function HorizontalScrollSection({
   panels,
-  kicker = "Front-end architecture",
+  kicker = frontendArchitecture.kicker,
   heading,
   id = "frontend",
 }: HorizontalScrollSectionProps) {
+  const t = useT();
   const reduced = Boolean(useReducedMotion());
   const desktop = useDesktopPin();
   const pin = desktop && !reduced;
@@ -293,7 +301,7 @@ export function HorizontalScrollSection({
         <div ref={stickyRef} className="frontend-pin sticky top-0 flex h-[100svh] flex-col overflow-hidden">
           <InkParticles seed={20260824} className="z-0" />
           <header className="relative z-[2] flex shrink-0 items-center justify-between gap-3 px-[3vw] pt-[max(7.5rem,calc(env(safe-area-inset-top)+5.75rem))] pb-5">
-            <p className="m-0 min-w-0 truncate text-[11px] tracking-[0.1em] text-acid uppercase">{kicker}</p>
+            <p className="m-0 min-w-0 truncate text-[11px] tracking-[0.1em] text-acid uppercase">{t(kicker)}</p>
             <p className="m-0 shrink-0 font-mono text-[11px] tracking-[0.14em] text-acid tabular-nums">
               {current} / {total}
             </p>
@@ -305,7 +313,7 @@ export function HorizontalScrollSection({
                   id={headingId}
                   className="font-display m-0 max-w-[16ch] shrink-0 px-[3vw] text-[clamp(28px,3vw,48px)] leading-[0.94] font-[560] tracking-[-0.06em]"
                 >
-                  <AccentHeading segments={heading} />
+                  <AccentHeading segments={t(heading)} />
                 </h2>
               ) : null}
               <div ref={stageRef} className="min-h-0 overflow-hidden">

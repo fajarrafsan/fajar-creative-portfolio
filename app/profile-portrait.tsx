@@ -12,7 +12,9 @@ import {
   type Variants,
 } from "motion/react";
 import {
+  copy,
   profileAbout,
+  profileHeadline,
   profileLocation,
   profileName,
   profilePhotoSrc,
@@ -30,11 +32,7 @@ import {
   useMediaQuery,
 } from "./motion";
 import { TechIcon } from "./tech-icons";
-
-const headline = [
-  { text: "Saya adalah", accent: false },
-  { text: "Fullstack Developer.", accent: true },
-];
+import { useT } from "./i18n";
 
 /**
  * Portrait entrance.
@@ -87,6 +85,7 @@ const portraitFigcaption: Variants = {
 };
 
 export function ProfilePortrait() {
+  const t = useT();
   const reduced = useReducedMotion();
   const finePointer = useMediaQuery("(pointer: fine)");
   const tilt = finePointer && !reduced;
@@ -123,7 +122,7 @@ export function ProfilePortrait() {
         variants={portraitEyebrow}
         className="mb-3 flex items-center justify-between text-[10px] tracking-[0.12em] uppercase"
       >
-        <span>Portrait</span>
+        <span>{t(copy.portrait)}</span>
         <span className="font-mono">01 / FR</span>
       </motion.div>
 
@@ -149,7 +148,7 @@ export function ProfilePortrait() {
         >
           <motion.img
             src={profilePhotoSrc}
-            alt={`Foto profil ${profileName}`}
+            alt={t(copy.photoAlt)}
             width={760}
             height={1014}
             decoding="async"
@@ -180,7 +179,7 @@ export function ProfilePortrait() {
           <motion.div variants={portraitBadge} className="absolute inset-x-0 bottom-0 z-3 flex items-end justify-between gap-3 p-3.5 text-paper">
             <span className="inline-flex min-h-11 items-center gap-2 border border-paper/25 bg-ink/55 px-3 text-[10px] tracking-[0.12em] uppercase backdrop-blur-md">
               <i className="size-[7px] animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_4px_rgba(216,255,62,0.18)] not-italic" aria-hidden="true" />
-              Open to work
+              {t(copy.openToWork)}
             </span>
           </motion.div>
         </motion.div>
@@ -208,6 +207,7 @@ export function ProfilePortrait() {
 
 export function ProfileCopy() {
   const reduced = useReducedMotion();
+  const t = useT();
 
   return (
     <motion.div
@@ -218,15 +218,15 @@ export function ProfileCopy() {
       viewport={{ once: true, margin: "0px 0px -20% 0px", amount: 0.12 }}
     >
       <motion.p className="eyebrow mb-5 text-[11px] tracking-[0.1em] uppercase" variants={profileItem}>
-        Tentang saya
+        {t(copy.aboutMe)}
       </motion.p>
 
       <h2
         id="manifesto-title"
         className="font-display mb-7 max-w-[920px] text-[clamp(40px,5.2vw,82px)] leading-[0.92] font-[560] tracking-[-0.07em] max-[680px]:mb-6 max-[680px]:text-[clamp(32px,9.6vw,56px)] max-[420px]:text-[clamp(26px,8.2vw,32px)]"
       >
-        {headline.map((line, lineIndex) => (
-          <span className="block overflow-hidden py-[0.04em] [perspective:700px]" key={line.text}>
+        {profileHeadline.map((line, lineIndex) => (
+          <span className="block overflow-hidden py-[0.04em] [perspective:700px]" key={line.text.id}>
             <motion.span
               className={`relative isolate inline-block origin-bottom-left will-change-transform ${
                 line.accent ? "text-ink" : ""
@@ -245,10 +245,10 @@ export function ProfileCopy() {
                     style={{ originX: 0 }}
                     aria-hidden="true"
                   />
-                  <span className="relative z-[1]">{line.text}</span>
+                  <span className="relative z-[1]">{t(line.text)}</span>
                 </>
               ) : (
-                line.text
+                t(line.text)
               )}
             </motion.span>
           </span>
@@ -258,7 +258,7 @@ export function ProfileCopy() {
       <motion.ul
         className="mb-8 flex list-none flex-wrap gap-2 p-0"
         variants={profileChipParent}
-        aria-label="Keahlian utama"
+        aria-label={t(copy.skillsAria)}
       >
         {profileSkills.map((skill, index) => (
           <motion.li key={skill.id} variants={profileChip}>
@@ -272,7 +272,7 @@ export function ProfileCopy() {
       </motion.ul>
 
       <motion.div className="flex max-w-[62ch] flex-col gap-5 text-[17px] leading-[1.65] text-[#3f4038] max-[680px]:text-base">
-        {profileAbout.map((paragraph) => (
+        {t(profileAbout).map((paragraph) => (
           <motion.p className="m-0" key={paragraph.map((segment) => segment.text).join("").slice(0, 48)} variants={profileItem}>
             {paragraph.map((segment, index) => {
               if (!segment.tone) return <span key={index}>{segment.text}</span>;
@@ -308,8 +308,8 @@ export function ProfileCopy() {
         className="profile-stats mt-[clamp(48px,6vw,80px)] grid grid-cols-4 border-t border-ink/25 pt-5 max-[680px]:grid-cols-2"
         variants={profileItem}
       >
-        {profileStats.map(([value, label]) => (
-          <ProfileStat key={label} value={value} label={label} />
+        {profileStats.map((stat) => (
+          <ProfileStat key={stat.value} value={stat.value} label={t(stat.label)} />
         ))}
       </motion.div>
     </motion.div>

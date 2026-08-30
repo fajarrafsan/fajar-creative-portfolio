@@ -6,12 +6,14 @@ import {
   cvDocument,
   cvFile,
   cvPhone,
+  cvPhoneTel,
+  cvPreviewCta,
   email,
   githubUrl,
   linkedInUrl,
-  profileLocation,
 } from "./content";
 import { ease } from "./motion";
+import { useT } from "./i18n";
 
 const OPEN_EVENT = "portfolio-cv-open";
 
@@ -40,10 +42,10 @@ function IconBriefcase({ className }: { className?: string }) {
   );
 }
 
-function IconPrint({ className }: { className?: string }) {
+function IconDownload({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path d="M7 9V4h10v5M7 17H5.5A1.5 1.5 0 0 1 4 15.5v-5A1.5 1.5 0 0 1 5.5 9h13A1.5 1.5 0 0 1 20 10.5v5a1.5 1.5 0 0 1-1.5 1.5H17M7 14h10v6H7z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M12 4v10M8 10l4 4 4-4M5 18h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="square" strokeLinejoin="miter" />
     </svg>
   );
 }
@@ -58,6 +60,7 @@ function SectionHead({ icon, label }: { icon: ReactNode; label: string }) {
 }
 
 export function CvPreview() {
+  const t = useT();
   const reduced = Boolean(useReducedMotion());
   const [open, setOpen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -140,16 +143,16 @@ export function CvPreview() {
                   className="inline-flex min-h-11 items-center gap-2 border border-paper/20 px-3 text-[10px] tracking-[0.12em] uppercase transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[420px]:px-2.5"
                   href={cvFile.href}
                   download={cvFile.download}
-                  data-cursor
+                  aria-label={t(cvPreviewCta.label)}
                 >
-                  <IconPrint className="size-4" />
-                  <span className="max-[420px]:hidden">Cetak / </span>PDF
+                  <IconDownload className="size-4" />
+                  {t(cvPreviewCta.header)}
                 </a>
                 <button
                   ref={closeRef}
                   type="button"
                   className="grid size-11 place-items-center border border-paper/20 text-[18px] transition-colors duration-200 hover:border-acid hover:text-acid"
-                  aria-label="Tutup pratinjau CV"
+                  aria-label={t(cvPreviewCta.closeAria)}
                   onClick={close}
                 >
                   ×
@@ -163,22 +166,22 @@ export function CvPreview() {
                   <h2 id={titleId} className="font-display m-0 text-[clamp(28px,8vw,52px)] leading-[0.92] font-[650] tracking-[-0.06em] max-[420px]:text-[clamp(26px,8.2vw,32px)]">
                     {cvDocument.name}
                   </h2>
-                  <p className="mt-2 mb-4 text-[15px] tracking-[0.02em] text-acid">{cvDocument.role}</p>
-                  <p className="m-0 max-w-[62ch] text-[15px] leading-[1.55] text-[#c4c6bc]">{cvDocument.summary}</p>
+                  <p className="mt-2 mb-4 text-[15px] tracking-[0.02em] text-acid">{t(cvDocument.role)}</p>
+                  <p className="m-0 max-w-[62ch] text-[15px] leading-[1.55] text-[#c4c6bc]">{t(cvDocument.summary)}</p>
                 </div>
                 <address className="m-0 text-right text-[12px] leading-[1.7] text-[#9ea090] not-italic max-[720px]:text-left">
                   <a className="text-paper no-underline hover:text-acid" href={`mailto:${email}`}>
                     {email}
                   </a>
                   <br />
-                  <a className="text-paper no-underline hover:text-acid" href={`tel:${cvPhone.replace(/\s/g, "")}`}>
+                  <a className="text-paper no-underline hover:text-acid" href={`tel:${cvPhoneTel}`}>
                     {cvPhone}
                   </a>
                   <br />
-                  {profileLocation} (UTC+7)
+                  {cvDocument.location} (UTC+7)
                   <br />
                   <a className="text-paper no-underline hover:text-acid" href={githubUrl} target="_blank" rel="noreferrer">
-                    github.com/fajarrafsan02-bit
+                    {githubUrl.replace(/^https?:\/\//, "")}
                   </a>
                   <br />
                   <a className="text-paper no-underline hover:text-acid" href={linkedInUrl} target="_blank" rel="noreferrer">
@@ -187,16 +190,16 @@ export function CvPreview() {
                 </address>
               </div>
 
-              <SectionHead icon={<IconCode className="size-3.5" />} label="Keahlian & penguasaan teknologi" />
+              <SectionHead icon={<IconCode className="size-3.5" />} label={t(cvPreviewCta.skills)} />
               <div className="mb-9 grid grid-cols-3 gap-3 max-[900px]:grid-cols-1">
                 {cvDocument.skills.map((group) => (
-                  <article key={group.title} className="border border-paper/12 bg-surface p-5">
-                    <h3 className="mt-0 mb-3 text-[13px] font-[560] tracking-[-0.02em]">{group.title}</h3>
+                  <article key={t(group.title)} className="border border-paper/12 bg-surface p-5">
+                    <h3 className="mt-0 mb-3 text-[13px] font-[560] tracking-[-0.02em]">{t(group.title)}</h3>
                     <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-[13px] leading-[1.45] text-[#b4b6ac]">
                       {group.items.map((item) => (
-                        <li key={item} className="flex gap-2">
+                        <li key={t(item)} className="flex gap-2">
                           <span className="mt-[0.45em] size-1 shrink-0 bg-acid" aria-hidden="true" />
-                          {item}
+                          {t(item)}
                         </li>
                       ))}
                     </ul>
@@ -204,37 +207,51 @@ export function CvPreview() {
                 ))}
               </div>
 
-              <SectionHead icon={<IconBriefcase className="size-3.5" />} label="Pengalaman kerja" />
+              <SectionHead icon={<IconBriefcase className="size-3.5" />} label={t(cvPreviewCta.jobs)} />
               {cvDocument.jobs.map((job) => (
-                <article key={job.role} className="mb-8">
+                <article key={`${job.role.en}-${job.period.en}`} className="mb-8">
                   <div className="mb-2 flex items-baseline justify-between gap-4 max-[720px]:flex-col max-[720px]:gap-1">
                     <h3 className="m-0 text-[16px] leading-snug font-[560] tracking-[-0.02em]">
-                      {job.role} — {job.place}
+                      {t(job.role)} — {job.place}
                     </h3>
-                    <p className="m-0 shrink-0 text-[11px] tracking-[0.08em] text-acid uppercase">{job.period}</p>
+                    <p className="m-0 shrink-0 text-[11px] tracking-[0.08em] text-acid uppercase">{t(job.period)}</p>
                   </div>
-                  <p className="mt-0 mb-3 text-[14px] leading-[1.5] text-[#c4c6bc]">{job.summary}</p>
+                  <p className="mt-0 mb-3 text-[14px] leading-[1.5] text-[#c4c6bc]">{t(job.summary)}</p>
                   <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[14px] leading-[1.5] text-[#b4b6ac]">
                     {job.bullets.map((bullet) => (
-                      <li key={bullet} className="flex gap-2.5">
+                      <li key={bullet.en} className="flex gap-2.5">
                         <span className="mt-[0.55em] size-1.5 shrink-0 bg-acid" aria-hidden="true" />
-                        {bullet}
+                        {t(bullet)}
                       </li>
                     ))}
                   </ul>
                 </article>
               ))}
 
-              <p className="mb-8 text-[13px] leading-[1.5] text-[#9ea090]">
-                <strong className="font-[560] text-paper">{cvDocument.education.place}</strong>
-                {" · "}
-                {cvDocument.education.detail}
-                {" · "}
-                {cvDocument.education.period}
-              </p>
+              <p className="mb-3 text-[11px] tracking-[0.14em] text-acid uppercase">{t(cvPreviewCta.education)}</p>
+              <article className="mb-8">
+                <div className="mb-2 flex items-baseline justify-between gap-4 max-[720px]:flex-col max-[720px]:gap-1">
+                  <h3 className="m-0 text-[16px] leading-snug font-[560] tracking-[-0.02em]">
+                    {t(cvDocument.education.program)} — {cvDocument.education.place}
+                  </h3>
+                  <p className="m-0 shrink-0 text-[11px] tracking-[0.08em] text-acid uppercase">{t(cvDocument.education.period)}</p>
+                </div>
+                <p className="mt-0 mb-2 text-[14px] leading-[1.5] text-[#c4c6bc]">{t(cvDocument.education.detail)}</p>
+                <p className="m-0 text-[13px] leading-[1.5] text-[#9ea090]">{t(cvDocument.education.note)}</p>
+              </article>
 
-              <p className="mb-3 text-[11px] tracking-[0.14em] text-acid uppercase">Proyek pilihan</p>
-              <ul className="m-0 grid list-none grid-cols-3 gap-3 p-0 max-[900px]:grid-cols-1">
+              <p className="mb-3 text-[11px] tracking-[0.14em] text-acid uppercase">{t(cvPreviewCta.achievements)}</p>
+              <ul className="mb-8 flex list-none flex-col gap-2 p-0 text-[14px] leading-[1.5] text-[#b4b6ac]">
+                {cvDocument.achievements.map((item) => (
+                  <li key={item.en} className="flex gap-2.5">
+                    <span className="mt-[0.55em] size-1.5 shrink-0 bg-acid" aria-hidden="true" />
+                    {t(item)}
+                  </li>
+                ))}
+              </ul>
+
+              <p className="mb-3 text-[11px] tracking-[0.14em] text-acid uppercase">{t(cvPreviewCta.projects)}</p>
+              <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 max-[900px]:grid-cols-1">
                 {cvDocument.projects.map((project) => (
                   <li key={project.title} className="border border-paper/12 p-4">
                     <p className="m-0 flex items-baseline justify-between gap-3 text-[13px] font-[560]">
@@ -242,23 +259,34 @@ export function CvPreview() {
                       <span className="font-mono text-[10px] tracking-[0.08em] text-acid">{project.year}</span>
                     </p>
                     <p className="mt-1 mb-2 text-[10px] tracking-[0.08em] text-[#8d8f85] uppercase">{project.stack}</p>
-                    <p className="m-0 text-[13px] leading-[1.45] text-[#b4b6ac]">{project.detail}</p>
+                    <p className="m-0 text-[13px] leading-[1.45] text-[#b4b6ac]">{t(project.detail)}</p>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <footer className="flex min-h-16 items-center justify-between gap-3 border-t border-paper/12 px-4 max-[680px]:flex-col max-[680px]:items-stretch max-[680px]:py-3">
-              <p className="m-0 text-[10px] tracking-[0.12em] text-[#8d8f85] uppercase max-[680px]:text-center">
-                Open for fullstack opportunities
+            <footer className="flex items-center justify-between gap-4 border-t border-paper/12 px-4 py-3 max-[680px]:flex-col max-[680px]:items-stretch">
+              <p className="m-0 max-w-[48ch] text-[13px] leading-[1.45] text-[#9ea090] max-[680px]:text-center">
+                {t(cvPreviewCta.support)}
               </p>
-              <button
-                type="button"
-                className="inline-flex min-h-11 items-center justify-center bg-acid px-5 text-[11px] tracking-[0.12em] text-ink uppercase transition-colors duration-200 hover:bg-paper"
-                onClick={close}
-              >
-                Tutup Preview
-              </button>
+              <div className="flex shrink-0 items-center gap-2 max-[680px]:flex-col max-[680px]:items-stretch">
+                <a
+                  className="inline-flex min-h-11 items-center justify-center gap-2 bg-acid px-5 text-[11px] tracking-[0.12em] text-ink uppercase transition-colors duration-200 hover:bg-paper"
+                  href={cvFile.href}
+                  download={cvFile.download}
+                  aria-label={t(cvPreviewCta.label)}
+                >
+                  <IconDownload className="size-4" />
+                  {t(cvPreviewCta.label)}
+                </a>
+                <button
+                  type="button"
+                  className="inline-flex min-h-11 items-center justify-center border border-paper/20 px-5 text-[11px] tracking-[0.12em] uppercase transition-colors duration-200 hover:border-acid hover:text-acid"
+                  onClick={close}
+                >
+                  {t(cvPreviewCta.close)}
+                </button>
+              </div>
             </footer>
           </motion.section>
           </div>

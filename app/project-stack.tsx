@@ -1,15 +1,29 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
-import { artThemes, projects, type Project } from "./content";
+import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from "motion/react";
+import { artThemes, copy, projects, type Project } from "./content";
+import anistreamCover from "./covers/anistream.jpg";
 import glowmarketCover from "./covers/glowmarket.jpg";
+import roomlyCover from "./covers/roomly.jpg";
+import siaCover from "./covers/sia.jpg";
 import { useMediaQuery } from "./motion";
-import { ArrowOut, Chevron } from "./tech-icons";
+import { useT, dual } from "./i18n";
+import { PaperField } from "./paper-field";
+import { ArrowOut, Chevron, SocialIcon } from "./tech-icons";
+
+function bundledSrc(image: string | { src: string }) {
+  return typeof image === "string" ? image : image.src;
+}
 
 const bundledCovers: Record<string, string> = {
-  glowmarket: typeof glowmarketCover === "string" ? glowmarketCover : glowmarketCover.src,
+  anistream: bundledSrc(anistreamCover),
+  glowmarket: bundledSrc(glowmarketCover),
+  roomly: bundledSrc(roomlyCover),
+  sia: bundledSrc(siaCover),
 };
+
+const containCovers = new Set(["glowmarket", "sia"]);
 
 /**
  * The stack is a tall scroll track with a sticky viewport inside it. Each card
@@ -24,15 +38,26 @@ const bundledCovers: Record<string, string> = {
  * `!important` neutralise these inline transforms and the cards simply stack in
  * normal flow — see the matching blocks in globals.css.
  */
-const LEAD = 0.12;
-const TAIL = 0.14;
+const LEAD = 0.18;
+const TAIL = 0.1;
 /**
  * Share of a segment spent moving. The remainder is dwell: the card sits still
- * and fully legible before the next one starts climbing over it. Without this
- * the middle card would reach full opacity for a single instant and immediately
- * begin leaving, so its copy could never actually be read.
+ * and fully legible before the next one starts climbing over it. Kept under
+ * half so the copy can actually be read, not just flashed.
  */
-const MOVE = 0.6;
+const MOVE = 0.36;
+/** Incoming cards start just below the slot so a rotate never peeks a sliver. */
+const ENTER_FROM = 106;
+/** How far a settled previous card peeks above the current one, per layer. */
+const PEEK = 3.45;
+const PEEK_LAYERS = 2;
+const SCALE_IN = 0.974;
+const SCALE_RECESS = 0.022;
+const ROTATE_IN = 0.7;
+const DIM_BASE = 0.07;
+const DIM_STEP = 0.04;
+const DIM_MAX = 0.15;
+const ART_ZOOM = 1.05;
 
 export function timings(index: number, total: number) {
   const step = (1 - LEAD - TAIL) / Math.max(1, total - 1);
@@ -48,103 +73,156 @@ export function timings(index: number, total: number) {
   };
 }
 
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+/** C2 smootherstep — zero 1st/2nd derivative at the ends, so reverse scroll doesn't kick. */
+function smootherstep(value: number) {
+  const x = clamp01(value);
+  return x * x * x * (x * (x * 6 - 15) + 10);
+}
+
+function unit(progress: number, start: number, duration: number) {
+  if (duration <= 0) return progress >= start ? 1 : 0;
+  return smootherstep((progress - start) / duration);
+}
+
+function layersAbove(progress: number, index: number, total: number) {
+  if (index >= total - 1) return 0;
+  let layers = 0;
+  for (let i = index + 1; i < total; i++) {
+    const t = timings(i, total);
+    if (progress <= t.enterStart) break;
+    layers += unit(progress, t.enterStart, t.move);
+  }
+  return Math.min(PEEK_LAYERS, layers);
+}
+
+function cardY(progress: number, index: number, total: number) {
+  const t = timings(index, total);
+  let enter = 0;
+  if (index !== 0) {
+    if (progress <= t.enterStart) enter = ENTER_FROM;
+    else if (progress < t.enterEnd) enter = ENTER_FROM * (1 - unit(progress, t.enterStart, t.move));
+    else enter = 0;
+  }
+  return `${enter - layersAbove(progress, index, total) * PEEK}%`;
+}
+
+function cardScale(progress: number, index: number, total: number) {
+  const t = timings(index, total);
+  if (index !== 0 && progress < t.enterEnd) {
+    const u = progress <= t.enterStart ? 0 : unit(progress, t.enterStart, t.move);
+    return SCALE_IN + (1 - SCALE_IN) * u;
+  }
+  return 1 - SCALE_RECESS * layersAbove(progress, index, total);
+}
+
+function cardRotate(progress: number, index: number, total: number) {
+  if (index === 0) return 0;
+  const t = timings(index, total);
+  if (progress >= t.enterEnd) return 0;
+  if (progress <= t.enterStart) return ROTATE_IN;
+  return ROTATE_IN * (1 - unit(progress, t.enterStart, t.move));
+}
+
+function cardDim(progress: number, index: number, total: number) {
+  if (index >= total - 1) return 0;
+  const layers = layersAbove(progress, index, total);
+  if (layers <= 0) return 0;
+  return Math.min(DIM_MAX, DIM_BASE + DIM_STEP * layers);
+}
+
+function cardCopy(progress: number, index: number, total: number) {
+  const t = timings(index, total);
+  const isFirst = index === 0;
+  const isLast = index === total - 1;
+  const fadeIn = t.move * 0.16;
+  const fadeOut = t.move * 0.42;
+
+  if (isFirst) {
+    if (progress <= t.exitStart) return 1;
+    return 1 - smootherstep((progress - t.exitStart) / fadeOut);
+  }
+  if (isLast) {
+    if (progress >= t.enterEnd) return 1;
+    if (progress <= t.enterStart + fadeIn) return 0;
+    return smootherstep((progress - t.enterStart - fadeIn) / Math.max(0.0001, t.move - fadeIn));
+  }
+  if (progress <= t.enterStart + fadeIn) return 0;
+  if (progress < t.enterEnd) {
+    return smootherstep((progress - t.enterStart - fadeIn) / Math.max(0.0001, t.move - fadeIn));
+  }
+  if (progress <= t.exitStart) return 1;
+  return 1 - smootherstep((progress - t.exitStart) / fadeOut);
+}
+
+function cardArtScale(progress: number, index: number, total: number) {
+  if (index === 0) return 1;
+  const t = timings(index, total);
+  if (progress >= t.enterEnd) return 1;
+  if (progress <= t.enterStart) return ART_ZOOM;
+  return ART_ZOOM - (ART_ZOOM - 1) * unit(progress, t.enterStart, t.move);
+}
+
+function topCardIndex(progress: number, total: number) {
+  for (let i = total - 1; i >= 1; i--) {
+    if (progress > timings(i, total).enterStart) return i;
+  }
+  return 0;
+}
+
 function ProjectCard({
   project,
   index,
   total,
   progress,
   inert,
+  stacked,
 }: {
   project: Project;
   index: number;
   total: number;
   progress: MotionValue<number>;
   inert: boolean;
+  stacked: boolean;
 }) {
-  const t = timings(index, total);
-  const isFirst = index === 0;
-  const isLast = index === total - 1;
+  const translate = useT();
   const reduced = Boolean(useReducedMotion());
-
-  // Incoming card rises from below, rests, then lifts a little and shrinks away.
-  // The middle case needs both `enterEnd` and `exitStart` so it holds at 0%
-  // through the dwell instead of drifting straight into its exit.
-  const y = useTransform(
-    progress,
-    isFirst
-      ? [0, t.exitStart, t.exitEnd]
-      : isLast
-        ? [0, t.enterStart, t.enterEnd]
-        : [0, t.enterStart, t.enterEnd, t.exitStart, t.exitEnd],
-    isFirst
-      ? ["0%", "0%", "-8%"]
-      : isLast
-        ? ["108%", "108%", "0%"]
-        : ["108%", "108%", "0%", "0%", "-8%"],
-  );
-
-  const scale = useTransform(
-    progress,
-    isLast ? [0, 1] : [0, t.exitStart, t.exitEnd],
-    isLast ? [1, 1] : [1, 1, 0.94],
-  );
-
-  const rotate = useTransform(
-    progress,
-    isFirst ? [0, 1] : [0, t.enterStart, t.enterEnd],
-    isFirst ? [0, 0] : [1.2, 1.2, 0],
-  );
-
-  // The card peels open from a slightly inset rectangle as it arrives.
-  const clipInset = useTransform(
-    progress,
-    isFirst ? [0, 1] : [0, t.enterStart, t.enterEnd],
-    isFirst ? [0, 0] : [10, 10, 0],
-  );
-  const clipPath = useTransform(
-    clipInset,
-    (v) => `inset(${v.toFixed(3)}% ${(v * 0.15).toFixed(3)}% 0% ${(v * 0.15).toFixed(3)}%)`,
-  );
-
-  const dimOpacity = useTransform(
-    progress,
-    isLast ? [0, 1] : [0, t.exitStart, t.exitEnd],
-    isLast ? [0, 0] : [0, 0, 0.55],
-  );
-
-  // Copy fades in over the back half of the move, holds through the dwell, and
-  // clears early on the way out so it never reads over the card behind it.
-  const copyOpacity = useTransform(
-    progress,
-    isFirst
-      ? [0, t.exitStart, t.exitStart + t.move * 0.45]
-      : isLast
-        ? [0, t.enterStart + t.move * 0.5, t.enterEnd]
-        : [0, t.enterStart + t.move * 0.5, t.enterEnd, t.exitStart, t.exitStart + t.move * 0.45],
-    isFirst ? [1, 1, 0] : isLast ? [0, 0, 1] : [0, 0, 1, 1, 0],
-  );
-
-  const artScale = useTransform(
-    progress,
-    isFirst ? [0, 1] : [0, t.enterStart, t.enterEnd],
-    isFirst ? [1, 1] : [1.08, 1.08, 1],
-  );
-
   const cover = bundledCovers[project.variant] ?? project.cover;
+
+  const y = useTransform(progress, (p) => cardY(p, index, total));
+  const scale = useTransform(progress, (p) => cardScale(p, index, total));
+  const rotate = useTransform(progress, (p) => cardRotate(p, index, total));
+  const dimOpacity = useTransform(progress, (p) => cardDim(p, index, total));
+  const copyOpacity = useTransform(progress, (p) => cardCopy(p, index, total));
+  const artScale = useTransform(progress, (p) => cardArtScale(p, index, total));
+  const pointerEvents = useTransform(progress, (p) =>
+    index === topCardIndex(p, total) ? "auto" : "none",
+  );
 
   return (
     <motion.article
-      className="project-card group/art relative bg-paper md:absolute md:inset-[112px_0_24px] md:grid md:grid-rows-[minmax(0,1fr)_auto] md:overflow-hidden md:will-change-[transform,clip-path]"
-      style={{ y, scale, rotate, clipPath, zIndex: index + 1 }}
-      data-cursor
+      className="project-card group/art relative min-w-0 overflow-hidden border-2 border-ink bg-paper md:absolute md:inset-[92px_0_36px] md:grid md:grid-rows-[minmax(0,1fr)_auto] md:overflow-hidden md:will-change-transform"
+      style={{
+        y,
+        scale,
+        rotate,
+        originX: 0.5,
+        originY: 0,
+        zIndex: index + 1,
+        pointerEvents: stacked ? pointerEvents : "auto",
+      }}
       {...(inert ? { inert: true } : {})}
     >
       <div
         className={`project-art relative h-[min(56vw,770px)] min-h-[520px] overflow-hidden md:h-full md:min-h-0 max-[680px]:h-[108vw] max-[680px]:min-h-0 max-[420px]:h-[100vw] ${artThemes[project.variant]}`}
+        data-cursor
         aria-hidden="true"
       >
         <motion.div
-          className={`project-art-motion absolute grid place-items-center transition-[filter] duration-300 will-change-transform group-hover/art:saturate-[1.16] ${
+          className={`project-art-motion absolute grid place-items-center transition-[filter] duration-300 will-change-transform group-hover/art:saturate-[1.1] ${
             cover ? "inset-0" : "-inset-[8%]"
           }`}
           style={{ scale: artScale }}
@@ -154,13 +232,14 @@ function ProjectCard({
               <img
                 src={cover}
                 alt=""
+                draggable={false}
                 className={
-                  project.variant === "glowmarket"
-                    ? "absolute inset-0 size-full object-contain object-center"
-                    : "absolute inset-0 size-full object-cover"
+                  containCovers.has(project.variant)
+                    ? "pointer-events-none absolute inset-0 size-full object-contain object-center"
+                    : "pointer-events-none absolute inset-0 size-full object-cover"
                 }
                 style={
-                  project.variant === "glowmarket"
+                  containCovers.has(project.variant)
                     ? undefined
                     : { objectPosition: project.coverPosition ?? "50% 50%" }
                 }
@@ -168,8 +247,10 @@ function ProjectCard({
               <span
                 className={
                   project.variant === "glowmarket"
-                    ? "absolute inset-0 bg-linear-to-t from-[#27180d]/28 via-transparent to-[#27180d]/10"
-                    : "absolute inset-0 bg-linear-to-t from-ink/55 via-transparent to-ink/25"
+                    ? "absolute inset-0 bg-linear-to-t from-[#27180d]/20 via-transparent to-[#27180d]/8"
+                    : project.variant === "sia"
+                      ? "absolute inset-0 bg-linear-to-t from-[#12233a]/28 via-transparent to-[#12233a]/10"
+                      : "absolute inset-0 bg-linear-to-t from-ink/42 via-ink/8 to-ink/14"
                 }
               />
               {project.variant === "anistream" && (
@@ -224,65 +305,62 @@ function ProjectCard({
             </>
           )}
         </motion.div>
-        <span className="absolute inset-[3.5%_2.75%] z-[5] border border-current/25" />
-        <i className="absolute top-[4.5%] left-[2.75%] z-[6] text-[clamp(16px,1.8vw,26px)] leading-none font-light not-italic">
+        <span className="pointer-events-none absolute inset-[2.5%_2%] z-[5] border border-current/20" />
+        <i className="absolute top-[3.5%] left-[2%] z-[6] text-[clamp(15px,1.6vw,22px)] leading-none font-light not-italic">
           +
         </i>
-        <span className="absolute right-[2.75%] bottom-[4.5%] z-[6] size-[9px] bg-current" />
+        <span className="absolute right-[2%] bottom-[3.5%] z-[6] size-2 bg-current" />
       </div>
 
-      <div className="project-meta grid grid-cols-[40px_minmax(0,1fr)_minmax(212px,0.28fr)] gap-x-6 border-t-2 border-ink pt-4 max-[680px]:grid-cols-[28px_minmax(0,1fr)] max-[420px]:grid-cols-[22px_minmax(0,1fr)] max-[420px]:gap-x-3">
-        <span className="pt-1.5 text-[11px] tracking-[0.08em]">{project.number}</span>
-        <motion.div className="project-main min-w-0" style={{ opacity: copyOpacity }}>
-          <p className="project-type mb-2.5 flex items-center gap-2.5 text-[10px] font-semibold tracking-[0.12em] uppercase">
-            <i className="h-px w-6 shrink-0 bg-current not-italic" aria-hidden="true" />
-            {project.type}
-          </p>
-          <h3 className="font-display mb-3 flex min-w-0 items-center gap-3 text-[clamp(44px,5.6vw,88px)] leading-[0.84] font-bold tracking-[-0.07em] max-[680px]:text-[clamp(36px,11vw,60px)] max-[420px]:text-[clamp(28px,8.8vw,36px)]">
-            {project.title}
-            <motion.span
-              className="hidden size-[0.42em] shrink-0 place-items-center border-2 border-current p-[0.09em] md:grid"
-              aria-hidden="true"
-              animate={reduced ? undefined : { x: [0, 4, 0], y: [0, -4, 0] }}
-              transition={{ duration: 1.35, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <ArrowOut className="size-full" />
-            </motion.span>
-          </h3>
-          <p className="mb-3.5 line-clamp-3 max-w-[640px] text-[15px] leading-[1.55] text-[#4c4d46] md:mb-3 md:[@media(max-height:820px)]:line-clamp-2">
-            {project.note}
-          </p>
-          <dl className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-ink/15 py-2.5 text-[9px] tracking-[0.11em] uppercase md:mb-3.5 md:[@media(max-height:820px)]:py-2">
-            {project.metrics.map(([key, value]) => (
-              <div className="flex items-baseline gap-2" key={key}>
-                <dt className="m-0 text-[#84857c]">{key}</dt>
-                <dd className="m-0 font-semibold text-ink">{value}</dd>
-              </div>
-            ))}
-          </dl>
-          <ul className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label={`Teknologi ${project.title}`}>
-            {project.stack.map((item) => (
-              <li
-                className="border border-ink/25 px-2.5 py-1.5 text-[9px] font-medium tracking-[0.1em] uppercase transition-colors duration-200 group-hover/art:border-ink/50"
-                key={item}
+      <div className="project-meta">
+        <motion.div className="project-main" style={{ opacity: copyOpacity }}>
+          <div className="project-copy-head">
+            <div className="project-kicker">
+              <span className="project-number">{project.number}</span>
+              <span className="project-kicker-rule" aria-hidden="true" />
+              <span className="min-w-0">{translate(project.type)}</span>
+            </div>
+            <h3 className="font-display m-0 flex min-w-0 items-center gap-3 text-[clamp(36px,11vw,60px)] leading-[0.86] font-bold tracking-[-0.07em] md:text-[clamp(40px,4.2vw,68px)] max-[420px]:text-[clamp(28px,8.8vw,36px)]">
+              {project.title}
+              <span
+                className="hidden size-[0.34em] shrink-0 place-items-center border-2 border-current p-[0.08em] opacity-70 transition-transform duration-250 group-hover/art:translate-x-[3px] group-hover/art:-translate-y-[3px] md:grid"
+                aria-hidden="true"
               >
-                {item}
-              </li>
-            ))}
-          </ul>
+                <ArrowOut className="size-full" />
+              </span>
+            </h3>
+          </div>
+          <div className="project-copy-body">
+            <p className="project-note">{translate(project.note)}</p>
+            <ul className="project-metrics">
+              {project.metrics.map(([label, value]) => (
+                <li className="flex min-w-0 items-baseline gap-2" key={typeof label === "string" ? label : label.en}>
+                  <span className="text-[#6f7068]">{translate(label)}</span>
+                  <span className="font-semibold text-ink">{translate(value)}</span>
+                </li>
+              ))}
+            </ul>
+            <ul className="project-stack-list" aria-label={translate(dual(`Teknologi ${project.title}`, `${project.title} technologies`))}>
+              {project.stack.map((item) => (
+                <li
+                  className="border border-ink/25 px-2.5 py-1.5 text-[10px] font-medium tracking-[0.12em] whitespace-nowrap uppercase transition-colors duration-200 group-hover/art:border-ink/55"
+                  key={item}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
         </motion.div>
-        <motion.div
-          className="project-aside flex flex-col text-[10px] font-medium tracking-[0.11em] uppercase max-[680px]:col-start-2 max-[680px]:mt-4"
-          style={{ opacity: copyOpacity }}
-        >
-          <span className="mb-3 flex items-baseline justify-between gap-4 text-[#4c4d46]">
-            Year
-            <span className="text-ink">{project.year}</span>
-          </span>
-          <div className="mt-auto flex flex-col max-[680px]:mt-3">
+        <motion.div className="project-aside" style={{ opacity: copyOpacity }}>
+          <div className="project-year">
+            <span>{translate(copy.year)}</span>
+            <span className="project-year-value">{project.year}</span>
+          </div>
+          <div className="project-actions">
             {project.demo && (
               <a
-                className="group/live relative mb-2 flex min-h-11 items-center justify-between gap-3 overflow-hidden border-2 border-ink bg-ink px-2.5 font-semibold text-acid transition-colors duration-250 hover:bg-acid hover:text-ink"
+                className="group/live relative mb-2 flex min-h-11 items-center justify-between gap-3 overflow-hidden border-2 border-ink bg-ink px-3.5 font-semibold tracking-[0.12em] text-acid uppercase transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink"
                 href={project.demo}
                 target="_blank"
                 rel="noreferrer"
@@ -296,40 +374,45 @@ function ProjectCard({
                     className="size-[7px] shrink-0 animate-pulse-dot rounded-full bg-current not-italic"
                     aria-hidden="true"
                   />
-                  Live demo
+                  {translate(copy.liveDemo)}
                 </span>
-                <motion.span
-                  className="relative grid size-4 shrink-0 place-items-center"
+                <span
+                  className="relative grid size-4 shrink-0 place-items-center transition-transform duration-250 group-hover/live:translate-x-0.5 group-hover/live:-translate-y-0.5"
                   aria-hidden="true"
-                  animate={reduced ? undefined : { x: [0, 4, 0], y: [0, -4, 0] }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <ArrowOut className="size-3.5" />
-                </motion.span>
+                </span>
               </a>
             )}
-            {project.links.map(([label, href], linkIndex) => (
-              <a
-                className="group/link flex min-h-11 items-center justify-between gap-3 border-t border-ink/35 transition-colors duration-250 hover:border-ink hover:bg-ink hover:text-acid"
-                key={href}
-                href={href}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <span className="flex items-center transition-[padding] duration-250 group-hover/link:pl-3">
-                  <i className="mr-2.5 not-italic opacity-45">{String(linkIndex + 1).padStart(2, "0")}</i>
-                  {label}
-                </span>
-                <motion.span
-                  className="mr-2.5 grid size-4 shrink-0 place-items-center"
-                  aria-hidden="true"
-                  animate={reduced ? undefined : { x: [0, 4, 0], y: [0, -4, 0] }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <ArrowOut className="size-3.5" />
-                </motion.span>
-              </a>
-            ))}
+            <div className="project-source">
+              {project.links.map(([label, href], linkIndex) => {
+                const github = href.includes("github.com");
+                return (
+                  <a
+                    className="group/link flex min-h-11 items-center justify-between gap-3 border-t border-ink/30 px-2.5 text-[10px] font-medium tracking-[0.12em] uppercase transition-colors duration-250 first:border-t-0 hover:bg-ink hover:text-acid focus-visible:bg-ink focus-visible:text-acid"
+                    key={href}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      {github ? (
+                        <SocialIcon name="github" className="size-3.5 shrink-0 opacity-70" />
+                      ) : (
+                        <i className="not-italic opacity-45">{String(linkIndex + 1).padStart(2, "0")}</i>
+                      )}
+                      <span className="min-w-0">{label}</span>
+                    </span>
+                    <span
+                      className="grid size-4 shrink-0 place-items-center transition-transform duration-250 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
+                      aria-hidden="true"
+                    >
+                      <ArrowOut className="size-3.5" />
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </motion.div>
       </div>
@@ -349,11 +432,61 @@ export function ProjectStack() {
   // on screen in flow and must stay reachable by keyboard.
   const stacked = useMediaQuery("(min-width: 768px)");
 
-  const { scrollYProgress } = useScroll({ target: stageRef, offset: ["start start", "end end"] });
+  /**
+   * Window-scroll progress of the track (`start start` → `end end`).
+   * Motion's `useScroll({ target })` is accelerated via CSS view timelines in
+   * Chromium, and those freeze at 0 when an ancestor uses `overflow-x: clip`
+   * (html, body, and main all do). Sampling the track's box on animation
+   * frames follows native scroll and Lenis without listening to a hijacked
+   * wheel stream.
+   */
+  const scrollYProgress = useMotionValue(0);
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+
+    let frame = 0;
+    let cancelled = false;
+    let running = false;
+
+    const tick = () => {
+      if (cancelled || !running) return;
+      const rect = el.getBoundingClientRect();
+      const range = rect.height - window.innerHeight;
+      scrollYProgress.set(range <= 0 ? 0 : clamp01(-rect.top / range));
+      frame = requestAnimationFrame(tick);
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const next = Boolean(entry?.isIntersecting);
+        if (next && !running) {
+          running = true;
+          frame = requestAnimationFrame(tick);
+        } else if (!next && running) {
+          running = false;
+          cancelAnimationFrame(frame);
+        }
+      },
+      { rootMargin: "100% 0px" },
+    );
+    io.observe(el);
+
+    return () => {
+      cancelled = true;
+      running = false;
+      cancelAnimationFrame(frame);
+      io.disconnect();
+    };
+  }, [scrollYProgress]);
+  const playhead = useTransform(scrollYProgress, (p) => `${(clamp01(p) * 100).toFixed(2)}%`);
 
   const step = (1 - LEAD - TAIL) / Math.max(1, total - 1);
   useMotionValueEvent(scrollYProgress, "change", (p) => {
-    const next = Math.min(total - 1, Math.max(0, Math.round((p - LEAD) / step)));
+    // Flip the index at the midpoint of each hand-off, so the card that now
+    // covers the stack is the one that can be focused and clicked.
+    const u = (p - LEAD) / step;
+    const next = Math.min(total - 1, Math.max(0, Math.floor(u + 1 - MOVE / 2)));
     setActive((current) => (current === next ? current : next));
   });
 
@@ -362,21 +495,43 @@ export function ProjectStack() {
       <div
         ref={stageRef}
         className="project-track relative md:h-(--track-height)"
-        style={{ "--track-height": `${(total + 0.5) * 100}vh` } as React.CSSProperties}
+        style={{ "--track-height": `${(total + 1.2) * 100}vh` } as React.CSSProperties}
       >
         <div className="project-stage relative z-[1] bg-paper md:sticky md:top-0 md:isolate md:h-svh md:min-h-[700px] md:overflow-hidden">
+          <div className="hidden md:contents">
+            <PaperField variant="work" />
+          </div>
           <div
-            className="project-stage-progress absolute inset-x-0 top-[84px] z-20 hidden grid-cols-[auto_minmax(90px,220px)_auto] items-center gap-3 text-[10px] tracking-[0.12em] text-ink md:grid"
+            className="project-stage-progress pointer-events-none absolute inset-x-0 top-7 z-20 hidden grid-cols-[auto_minmax(120px,1fr)_auto_auto] items-center gap-4 text-[10px] tracking-[0.14em] text-ink uppercase md:grid"
             aria-hidden="true"
           >
-            <span className="project-stage-current">{String(active + 1).padStart(2, "0")}</span>
-            <span className="relative h-px bg-ink/25">
-              <motion.i className="absolute inset-0 origin-left bg-ink" style={{ scaleX: scrollYProgress }} />
+            <span className="font-display text-[13px] font-semibold tracking-[0.08em] tabular-nums">
+              {String(active + 1).padStart(2, "0")}
+              <span className="mx-1.5 font-sans text-[10px] font-medium tracking-[0.14em] text-[#6f7068]">/</span>
+              {String(total).padStart(2, "0")}
             </span>
-            <span>{String(total).padStart(2, "0")}</span>
+            <span className="project-progress-rail">
+              <motion.i className="project-progress-fill" style={{ scaleX: scrollYProgress }} />
+              <motion.i className="project-progress-head" style={{ left: playhead }} />
+            </span>
+            <span className="max-w-[18ch] truncate text-[#4c4d46]">{projects[active]?.title}</span>
+            <ol className="m-0 flex list-none items-center gap-1.5 p-0">
+              {projects.map((project, index) => (
+                <li
+                  className={
+                    index === active
+                      ? "size-2 border border-ink bg-acid"
+                      : index < active
+                        ? "size-1.5 bg-ink"
+                        : "size-1.5 border border-ink/40"
+                  }
+                  key={project.number}
+                />
+              ))}
+            </ol>
           </div>
 
-          <div className="project-list grid gap-[clamp(100px,12vw,190px)] pt-8 md:absolute md:inset-0 md:block md:pt-0 max-[680px]:gap-[98px]">
+          <div className="project-list relative z-[1] grid gap-[clamp(100px,12vw,190px)] pt-8 md:absolute md:inset-0 md:block md:pt-0 max-[680px]:gap-[98px]">
             {projects.map((project, index) => (
               <ProjectCard
                 key={project.number}
@@ -385,6 +540,7 @@ export function ProjectStack() {
                 total={total}
                 progress={scrollYProgress}
                 inert={stacked && index !== active}
+                stacked={stacked}
               />
             ))}
           </div>

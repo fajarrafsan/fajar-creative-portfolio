@@ -11,6 +11,8 @@ import {
   type Variants,
 } from "motion/react";
 import Lenis from "lenis";
+import { copy } from "./content";
+import { useT } from "./i18n";
 
 /** Shared easing — a soft overshoot-free curve that matches the type's weight. */
 export const ease = [0.16, 1, 0.3, 1] as const;
@@ -360,6 +362,41 @@ export const contactFoot: Variants = {
   shown: { opacity: 1, y: 0, transition: { duration: 0.6, ease, delay: 1.02 } },
 };
 
+/**
+ * Certificate wall.
+ *
+ * `certFrame` is the important one: it animates the wrapper AROUND the
+ * coverflow carousel, never the cards. The carousel writes `transform` to
+ * every card on every frame to build the rake, so a variant touching a card's
+ * transform would be overwritten mid-animation — and would also fight the
+ * drag. Scaling the container sidesteps both.
+ */
+export const certParent: Variants = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+};
+
+export const certItem: Variants = {
+  hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
+  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.65, ease } },
+};
+
+export const certFrame: Variants = {
+  hidden: { opacity: 0, y: 40, scale: 0.94 },
+  shown: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 150, damping: 20, mass: 0.8 },
+  },
+};
+
+/** Re-keyed per slide, so the index flips rather than cross-fades. */
+export const certCounter: Variants = {
+  hidden: { opacity: 0, y: "-55%" },
+  shown: { opacity: 1, y: "0%", transition: { duration: 0.32, ease } },
+};
+
 /** True once the viewport is at least `query` wide. Starts false to match SSR. */
 export function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(false);
@@ -451,61 +488,158 @@ export function ScrollProgress() {
 }
 
 /**
- * Ring that trails the pointer and swells over anything marked `data-cursor`.
- * Only mounts for fine pointers, so touch devices pay nothing for it.
+ * Custom pointer.
+ *
+ * Two bodies, deliberately on different springs: a hard dot that tracks almost
+ * exactly, and a ring that lags behind it. That lag is the whole effect — a
+ * single element moving in lockstep just reads as a re-skinned system cursor.
+ *
+ * The ring paints with `mix-blend-mode: difference`, which is what makes one
+ * cursor work across this site's alternating ink / paper / acid sections: it
+ * inverts whatever is under it instead of needing a colour per section.
+ *
+ * The native cursor is hidden by a class this component puts on <html>, never
+ * from static CSS — if the bundle fails to boot, the class is never added and
+ * the visitor keeps a working system cursor rather than an invisible one.
+ * Touch devices never mount it at all.
  */
 export function CursorGlow() {
+  const t = useT();
   const finePointer = useMediaQuery("(pointer: fine)");
-  const [hovering, setHovering] = useState(false);
-  const x = useMotionValue(-100);
-  const y = useMotionValue(-100);
-  const springX = useSpring(x, { stiffness: 900, damping: 60, mass: 0.35 });
-  const springY = useSpring(y, { stiffness: 900, damping: 60, mass: 0.35 });
+  const reduced = useReducedMotion();
+  const [state, setState] = useState<"idle" | "link" | "view">("idle");
+  const [pressed, setPressed] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  const x = useMotionValue(-200);
+  const y = useMotionValue(-200);
+
+  // The dot is nearly rigid; the ring is looser and trails it.
+  const dotX = useSpring(x, { stiffness: 1600, damping: 70, mass: 0.28 });
+  const dotY = useSpring(y, { stiffness: 1600, damping: 70, mass: 0.28 });
+  const ringX = useSpring(x, { stiffness: 380, damping: 34, mass: 0.6 });
+  const ringY = useSpring(y, { stiffness: 380, damping: 34, mass: 0.6 });
 
   useEffect(() => {
     if (!finePointer) return;
 
+    const root = document.documentElement;
+    root.classList.add("has-custom-cursor");
+
     const move = (event: PointerEvent) => {
       x.set(event.clientX);
       y.set(event.clientY);
+      setVisible(true);
     };
-    // Delegated so cards rendered later still light the ring up.
-    const over = (event: PointerEvent) =>
-      setHovering(Boolean((event.target as HTMLElement | null)?.closest?.("[data-cursor]")));
+
+    // Delegated, so anything rendered later still drives the cursor.
+    const over = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest?.("[data-cursor]")) setState("view");
+      else if (target?.closest?.("a, button, [role='button']")) setState("link");
+      else setState("idle");
+    };
+
+    const down = () => setPressed(true);
+    const up = () => setPressed(false);
+    // Leaving the window should take the cursor with it, or it strands
+    // mid-screen while the real pointer is somewhere else entirely.
+    const leave = () => setVisible(false);
+    const enter = () => setVisible(true);
 
     window.addEventListener("pointermove", move, { passive: true });
     window.addEventListener("pointerover", over, { passive: true });
+    window.addEventListener("pointerdown", down, { passive: true });
+    window.addEventListener("pointerup", up, { passive: true });
+    document.addEventListener("pointerleave", leave);
+    document.addEventListener("pointerenter", enter);
+    window.addEventListener("blur", leave);
+
     return () => {
+      root.classList.remove("has-custom-cursor");
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerover", over);
+      window.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointerup", up);
+      document.removeEventListener("pointerleave", leave);
+      document.removeEventListener("pointerenter", enter);
+      window.removeEventListener("blur", leave);
     };
   }, [finePointer, x, y]);
 
   if (!finePointer) return null;
 
+  // Multipliers on a 34px base ring. The "view" swell used to be 5.2x — a
+  // 200px disc that swallowed whole project cards. It only has to be wide
+  // enough to seat the label.
+  const ringSize = state === "view" ? 2.05 : state === "link" ? 1.45 : 1;
+  const springy = { type: "spring", stiffness: 420, damping: 32, mass: 0.7 } as const;
+
+  // Visibility is carried by a two-sided outline rather than a blend mode.
+  // `mix-blend-difference` cannot work here: the cursor lives in a
+  // position:fixed layer, fixed elements always form their own stacking
+  // context, and a blended child can only blend against its own stacking
+  // context — never the page underneath. So it silently did nothing, and the
+  // near-white ring vanished over the paper and acid sections.
+  //
+  // The dark hairline is what shows on light ground; the acid halo is what
+  // shows on ink. Together they cannot both disappear.
+  // The dark hairline does the heavy lifting on the acid section, where the
+  // ring's own acid border matches the background exactly and contributes
+  // nothing — so it is weighted for that worst case, not for ink.
+  const ringShadow =
+    "0 0 0 1.5px rgba(11,13,12,0.62), 0 0 0 4px rgba(11,13,12,0.14), 0 0 24px 6px rgba(216,255,62,0.45)";
+  const dotShadow = "0 0 0 1.5px rgba(11,13,12,0.6), 0 0 14px 3px rgba(216,255,62,0.75)";
+
   return (
-    <motion.div
-      className="cursor-glow pointer-events-none fixed top-0 left-0 z-[80] -ml-8 -mt-8"
-      style={{ x: springX, y: springY }}
-      aria-hidden="true"
-    >
+    <div className="cursor-glow pointer-events-none fixed inset-0 z-[300] overflow-hidden" aria-hidden="true">
+      {/* Soft halo. Sits under everything and is pure light — it is what makes
+          the pointer readable against a busy photo or a dark card, and it is
+          the only part that blurs. */}
       <motion.div
-        className="grid size-16 place-items-center rounded-full border border-acid/45 bg-acid/10"
+        className="absolute top-0 left-0 -mt-8 -ml-8 size-16 rounded-full bg-acid/30 blur-xl"
+        style={{ x: reduced ? x : ringX, y: reduced ? y : ringY }}
         animate={{
-          scale: hovering ? 1.375 : 1,
-          backgroundColor: hovering ? "rgb(216 255 62)" : "rgb(216 255 62 / 0.1)",
+          scale: (pressed ? 0.9 : 1) * (state === "view" ? 1.7 : state === "link" ? 1.25 : 1),
+          opacity: visible ? (state === "idle" ? 0.75 : 1) : 0,
         }}
-        transition={{ duration: 0.24, ease }}
+        transition={springy}
+      />
+
+      {/* Ring — trails the dot. Carries both outlines. */}
+      <motion.div
+        className="absolute top-0 left-0 -mt-[17px] -ml-[17px] size-[34px] rounded-full border"
+        style={{ x: reduced ? x : ringX, y: reduced ? y : ringY, boxShadow: ringShadow }}
+        animate={{
+          scale: (pressed ? 0.88 : 1) * ringSize,
+          opacity: visible ? 1 : 0,
+          borderColor: state === "view" ? "rgba(216,255,62,0)" : "rgb(216 255 62)",
+          backgroundColor: state === "view" ? "rgb(216 255 62)" : "rgba(216,255,62,0.08)",
+        }}
+        transition={springy}
+      />
+
+      {/* Dot — near-rigid, so the pointer still feels precise under the lag. */}
+      <motion.div
+        className="absolute top-0 left-0 -mt-[3px] -ml-[3px] size-1.5 rounded-full bg-acid"
+        style={{ x: reduced ? x : dotX, y: reduced ? y : dotY, boxShadow: dotShadow }}
+        animate={{
+          scale: pressed ? 1.8 : state === "idle" ? 1 : 0,
+          opacity: visible ? 1 : 0,
+        }}
+        transition={springy}
+      />
+
+      {/* Label rides the ring, so it lands with the swell rather than ahead of it. */}
+      <motion.div
+        className="absolute top-0 left-0 -mt-[17px] -ml-[17px] grid size-[34px] place-items-center"
+        style={{ x: reduced ? x : ringX, y: reduced ? y : ringY }}
+        animate={{ opacity: visible && state === "view" ? 1 : 0 }}
+        transition={{ duration: 0.18, ease }}
       >
-        <motion.span
-          className="text-[9px] font-extrabold tracking-[0.12em] text-ink"
-          animate={{ opacity: hovering ? 1 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          VIEW
-        </motion.span>
+        <span className="text-[8px] font-extrabold tracking-[0.12em] text-ink uppercase">{t(copy.cursorView)}</span>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
 

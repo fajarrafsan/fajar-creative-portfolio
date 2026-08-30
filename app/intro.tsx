@@ -11,6 +11,8 @@ import {
   type MotionValue,
 } from "motion/react";
 import { ease } from "./motion";
+import { copy } from "./content";
+import { useT } from "./i18n";
 
 const IntroReadyContext = createContext(true);
 
@@ -81,8 +83,11 @@ function SplitWord({
 }
 
 function IntroOverlay({ reduced }: { reduced: boolean }) {
+  const t = useT();
   const progress = useMotionValue(0);
   const panels = [0, 1, 2, 3, 4];
+  const seeWord = t(copy.introSee);
+  const workWord = t(copy.introWork);
 
   useEffect(() => {
     const controls = animate(progress, 100, {
@@ -97,7 +102,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
       className="intro-overlay pointer-events-auto fixed inset-0 z-[210] overflow-hidden text-paper"
       role="status"
       aria-live="polite"
-      aria-label="Memuat. See work."
+      aria-label={t(copy.introAria)}
       initial={false}
       exit={{ opacity: 1 }}
       transition={{ duration: (reduced ? REDUCED_CURTAIN_MS : CURTAIN_MS) / 1000 }}
@@ -148,8 +153,8 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
               </span>
             </span>
             <span className="flex flex-col leading-none">
-              <span className="text-paper/45">Index 01</span>
-              <span className="mt-1.5">Loading</span>
+              <span className="text-paper/45">{t(copy.introIndex)}</span>
+              <span className="mt-1.5">{t(copy.introLoading)}</span>
             </span>
           </span>
           <span className="font-mono tabular-nums text-[clamp(28px,4vw,42px)] leading-none tracking-[-0.06em] text-acid">
@@ -165,15 +170,15 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.08, ease }}
           >
-            Selected work · 2026
+            {t(copy.introKicker)}
           </motion.p>
 
           <h1 className="font-display relative m-0 text-[clamp(72px,18vw,188px)] leading-[0.74] font-[800] tracking-[-0.085em] max-[420px]:text-[clamp(58px,17.5vw,72px)]">
-            <span className="sr-only">See work.</span>
+            <span className="sr-only">{t(copy.introSr)}</span>
             <span aria-hidden="true">
-              <SplitWord word="SEE" offset={0} reduced={reduced} />
+              <SplitWord word={seeWord} offset={0} reduced={reduced} />
               <span className="relative mt-[0.02em] ml-[clamp(28px,8vw,120px)] block w-fit">
-                <SplitWord word="WORK" offset={4} reduced={reduced} className="relative z-[1]" />
+                <SplitWord word={workWord} offset={seeWord.length + 1} reduced={reduced} className="relative z-[1]" />
                 <motion.span
                   className="absolute inset-y-0 -inset-x-[0.06em] z-0 origin-left bg-acid"
                   initial={reduced ? false : { scaleX: 0 }}
@@ -189,8 +194,8 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
                   aria-hidden="true"
                 >
                   <span className="block overflow-hidden py-[0.03em]">
-                    {["W", "O", "R", "K"].map((char) => (
-                      <span key={char} className="inline-block origin-bottom-left">
+                    {workWord.split("").map((char, index) => (
+                      <span key={`${char}-${index}`} className="inline-block origin-bottom-left">
                         {char}
                       </span>
                     ))}
@@ -206,14 +211,14 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.15, ease }}
           >
-            Fajar Rafsan — fullstack, Java &amp; React. Bandung.
+            {t(copy.introByline)}
           </motion.p>
         </div>
 
         <div className="mb-2">
           <p className="mb-3 flex items-center justify-between gap-4 text-[10px] tracking-[0.16em] text-[#8d8f85] uppercase">
             <span>Fajar Rafsan</span>
-            <span>Fullstack · Bandung</span>
+            <span>{t(copy.brandRole)}</span>
           </p>
           <div className="relative h-[3px] overflow-hidden bg-paper/15" aria-hidden="true">
             <motion.span
@@ -242,7 +247,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.9, delay: 0.35, ease }}
       >
-        WORK
+        {workWord}
       </motion.span>
     </motion.div>
   );

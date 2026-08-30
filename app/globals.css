@@ -119,6 +119,297 @@
   font-feature-settings: "ss01", "cv01";
 }
 
+/* Paper-section field. Inverse of the dark hairline grids: ink at low
+   opacity, a sparse tick tile, fiber grain, and a soft vignette. Sits
+   behind copy (`pointer-events: none`). Static — reduced-motion is a no-op. */
+.paper-field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.paper-field-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(11, 13, 12, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 13, 12, 0.055) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 92% 78% at 50% 42%, #000 28%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 92% 78% at 50% 42%, #000 28%, transparent 100%);
+}
+
+.paper-field[data-variant="experience"] .paper-field-grid {
+  background-image:
+    linear-gradient(rgba(11, 13, 12, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 13, 12, 0.07) 1px, transparent 1px);
+}
+
+.paper-field-ticks {
+  position: absolute;
+  inset: 0;
+  opacity: 0.7;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cg fill='none' stroke='%230b0d0c' stroke-opacity='.14' stroke-width='1'%3E%3Cpath d='M28 22v12M22 28h12'/%3E%3Cpath d='M168 74v12M162 80h12'/%3E%3Cpath d='M86 176v12M80 182h12'/%3E%3C/g%3E%3Cg fill='%230b0d0c' fill-opacity='.12'%3E%3Crect x='204' y='36' width='3' height='3'/%3E%3Crect x='48' y='118' width='3' height='3'/%3E%3Ccircle cx='196' cy='198' r='1.1'/%3E%3Ccircle cx='112' cy='44' r='1.1'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 240px 240px;
+  mask-image: radial-gradient(ellipse 88% 80% at 50% 45%, #000 18%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 88% 80% at 50% 45%, #000 18%, transparent 100%);
+}
+
+.paper-field-fiber {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.paper-field-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 42%, transparent 48%, rgba(11, 13, 12, 0.045) 100%);
+}
+
+.paper-field[data-variant="experience"] .paper-field-vignette {
+  background: radial-gradient(ellipse at 50% 42%, transparent 46%, rgba(11, 13, 12, 0.055) 100%);
+}
+
+/* Sticky project stack: clip sideways rotate, keep the paper field behind
+   cards, and never let the progress rail intercept the Live / GitHub hits. */
+/* The sticky stage clips rotated cards. Do not clip `.project-pin-shell`:
+   overflow-x other than `visible` makes it a scroll container, and Chromium
+   view-timelines then freeze card progress at 0. */
+
+.project-stage-progress {
+  pointer-events: none;
+}
+
+.project-stage > .paper-field {
+  z-index: 0;
+}
+
+.project-card {
+  box-shadow:
+    0 1px 0 rgba(11, 13, 12, 0.06),
+    0 24px 48px -26px rgba(11, 13, 12, 0.42);
+  overflow-x: clip;
+}
+
+.project-progress-rail {
+  position: relative;
+  height: 2px;
+  min-width: 96px;
+  overflow: visible;
+  background: rgb(11 13 12 / 0.18);
+}
+
+.project-progress-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  background: var(--color-ink);
+  opacity: 0.55;
+}
+
+.project-progress-head {
+  position: absolute;
+  top: calc(50% - 3.5px);
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  background: var(--color-acid);
+  box-shadow: 0 0 0 1px var(--color-ink);
+}
+
+.project-source {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 2px solid color-mix(in srgb, var(--color-ink) 55%, transparent);
+}
+
+/* Two-column body under the cover: copy on the left, actions on the right.
+   Number/title/note/metrics/tags share one left edge. Year/live/repo share
+   one right column. Subgrid keeps the header rule on a single baseline so
+   the old hanging index + 0.3fr aside cannot open a void in the middle. */
+.project-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.15rem clamp(0.9rem, 1.6vw, 1.35rem) 0.95rem;
+  border-top: 2px solid var(--color-ink);
+}
+
+.project-main,
+.project-aside {
+  min-width: 0;
+}
+
+.project-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.625rem;
+  margin: 0 0 0.5rem;
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.project-number {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+
+.project-kicker-rule {
+  display: block;
+  align-self: center;
+  width: 1.75rem;
+  height: 1px;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+.project-note {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #3a3b36;
+}
+
+.project-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+  padding: 0.7rem 0 0;
+  list-style: none;
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.project-stack-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project-year {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4c4d46;
+}
+
+.project-year-value {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--color-ink);
+}
+
+.project-copy-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.project-actions {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .project-meta {
+    grid-template-columns: minmax(0, 1fr) 13.75rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+    column-gap: clamp(1.25rem, 2.4vw, 2rem);
+    row-gap: 0;
+  }
+
+  .project-main,
+  .project-aside {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-row: 1 / span 2;
+  }
+
+  .project-copy-head,
+  .project-year {
+    min-width: 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  }
+
+  .project-copy-body,
+  .project-actions {
+    padding-top: 0.85rem;
+  }
+
+  .project-actions {
+    justify-content: flex-end;
+  }
+
+  .project-note {
+    margin-bottom: 0.15rem;
+  }
+}
+
+@media (min-width: 768px) and (max-height: 820px) {
+  .project-note {
+    -webkit-line-clamp: 2;
+  }
+
+  .project-metrics {
+    padding-block: 0.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .project-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  }
+
+  .project-note {
+    margin-bottom: 0;
+  }
+}
+
 @keyframes hero-path-flow {
   to {
     stroke-dashoffset: -1;
@@ -189,6 +480,14 @@
 }
 
 @layer base {
+  /* Set by CursorGlow once it mounts (fine pointers only). Static CSS must
+     never hide the native cursor: if the bundle fails to boot the class never
+     lands, and the visitor keeps a working pointer instead of an invisible one. */
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none;
+  }
+
   html {
     background: var(--color-ink);
     overflow-x: clip;
@@ -311,6 +610,12 @@
     clip-path: none !important;
   }
 
+  .project-card {
+    opacity: 1 !important;
+    box-shadow: none;
+    pointer-events: auto !important;
+  }
+
   .project-main,
   .project-aside {
     opacity: 1 !important;
@@ -331,7 +636,6 @@
   }
 
   .scroll-progress,
-  .cursor-glow,
   .system-packet,
   .data-packet,
   .hero-packet,
@@ -383,6 +687,7 @@
     rotate: none !important;
     clip-path: none !important;
     opacity: 1 !important;
+    pointer-events: auto !important;
   }
 
   .project-art-motion {

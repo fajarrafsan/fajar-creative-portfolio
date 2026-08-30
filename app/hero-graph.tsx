@@ -14,6 +14,8 @@ import {
 } from "./motion";
 import { TechIcon } from "./tech-icons";
 import { useIntroReady } from "./intro";
+import { copy } from "./content";
+import { useT } from "./i18n";
 
 const CORE = { x: 500, y: 500, r: 128 };
 const CARD = { w: 240, h: 90 };
@@ -67,6 +69,7 @@ type HeroGraphProps = {
 };
 
 export function HeroGraph({ rotate, y }: HeroGraphProps) {
+  const t = useT();
   const reduced = Boolean(useReducedMotion());
   const introReady = useIntroReady();
   const finePointer = useMediaQuery("(pointer: fine)");
@@ -231,7 +234,7 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               style={{ x: "-50%", y: "-50%" }}
               className="absolute top-1/2 left-1/2 z-[4] flex aspect-square w-[28%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_18px_rgba(216,255,62,0.06),0_0_70px_rgba(216,255,62,0.28)]"
             >
-              <small className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[7px]">Core</small>
+              <small className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[7px]">{t(copy.graphCore)}</small>
               <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em] max-[420px]:text-[12px]">FULL</strong>
               <span className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[7px]">Stack</span>
             </motion.div>

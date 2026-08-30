@@ -1,7 +1,7 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { motion } from "motion/react";
+import { useState, type CSSProperties } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   graphBoxFrame,
   graphContentPhase,
@@ -18,6 +18,8 @@ import {
   useMediaQuery,
 } from "./motion";
 import { TechIcon } from "./tech-icons";
+import { copy } from "./content";
+import { dual, useT, type Dual } from "./i18n";
 
 /**
  * Architecture diagram.
@@ -49,7 +51,7 @@ export type GraphNode = {
   id: string;
   index: string;
   title: string;
-  sub: string;
+  sub: Dual | string;
   proto: string;
   icon?: string;
   x: number;
@@ -69,9 +71,9 @@ type ArchitectureGraphProps = {
 
 const backendNodes: GraphNode[] = [
   { id: "client", index: "01", title: "Client", sub: "React 19 SPA", proto: "HTTPS", x: 500, y: 140, flow: "in" },
-  { id: "gateway", index: "02", title: "Gateway", sub: "Route & secure", proto: "HTTP", x: 245, y: 245, flow: "in" },
+  { id: "gateway", index: "02", title: "Gateway", sub: dual("Rute & amankan", "Route & secure"), proto: "HTTP", x: 245, y: 245, flow: "in" },
   { id: "auth", index: "03", title: "Auth", sub: "JWT / OAuth2", proto: "Bearer", x: 755, y: 245, flow: "both" },
-  { id: "service", index: "04", title: "Service", sub: "Business logic", proto: "Bean", x: 860, y: 500, flow: "both" },
+  { id: "service", index: "04", title: "Service", sub: dual("Logika bisnis", "Business logic"), proto: "Bean", x: 860, y: 500, flow: "both" },
   { id: "data", index: "05", title: "Data", sub: "PostgreSQL", proto: "JDBC", x: 755, y: 755, flow: "out" },
   { id: "payments", index: "06", title: "Payments", sub: "Xendit", proto: "Webhook", x: 500, y: 860, flow: "in" },
   { id: "events", index: "07", title: "Events", sub: "RabbitMQ", proto: "AMQP", x: 245, y: 755, flow: "out" },
@@ -79,8 +81,8 @@ const backendNodes: GraphNode[] = [
 ];
 
 const frontendNodes: GraphNode[] = [
-  { id: "views", index: "01", title: "Views", sub: "SPA screens", proto: "UI", icon: "react", x: 500, y: 140, flow: "in" },
-  { id: "components", index: "02", title: "Components", sub: "Reusable UI", proto: "JSX", icon: "javascript", x: 245, y: 245, flow: "in" },
+  { id: "views", index: "01", title: "Views", sub: dual("Layar SPA", "SPA screens"), proto: "UI", icon: "react", x: 500, y: 140, flow: "in" },
+  { id: "components", index: "02", title: "Components", sub: dual("UI pakai-ulang", "Reusable UI"), proto: "JSX", icon: "javascript", x: 245, y: 245, flow: "in" },
   { id: "types", index: "03", title: "Types", sub: "TypeScript", proto: "TS", icon: "typescript", x: 755, y: 245, flow: "both" },
   { id: "styling", index: "04", title: "Styling", sub: "Tailwind v4", proto: "CSS", icon: "tailwind", x: 860, y: 500, flow: "both" },
   { id: "bundler", index: "05", title: "Bundler", sub: "Vite", proto: "ESM", icon: "vite", x: 755, y: 755, flow: "out" },
@@ -138,6 +140,7 @@ function ArchitectureGraph({
   // diagram switches to the roomier card at exactly the point its layout
   // already goes single-column. Desktop (`CARD`) is completely untouched.
   const compact = useMediaQuery("(max-width: 1000px)");
+  const t = useT();
   const card = compact ? CARD_COMPACT : CARD;
   const legs = nodes.map((node) => ({ node, ...connector(node, card) }));
   // Same "(pointer: fine)" convention HeroGraph/Magnetic already use: without
@@ -145,6 +148,9 @@ function ArchitectureGraph({
   // `:hover`, and neither reliably clears until the visitor taps elsewhere —
   // a card can be left looking "stuck" highlighted on mobile.
   const finePointer = useMediaQuery("(pointer: fine)");
+  const reduced = Boolean(useReducedMotion());
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const dimSiblings = finePointer && !reduced && hoveredId !== null;
   const haloId = `${idPrefix}-halo`;
   const strokeId = `${idPrefix}-leg`;
 
@@ -243,7 +249,11 @@ function ArchitectureGraph({
 
           <motion.g variants={graphFormationShell}>
             {legs.map(({ node, d, to }, index) => (
-              <g key={node.id} className="graph-leg">
+              <g
+                key={node.id}
+                className="graph-leg transition-opacity duration-300"
+                style={{ opacity: dimSiblings && hoveredId !== node.id ? 0.42 : 1 }}
+              >
                 <motion.path
                   id={`${idPrefix}-leg-${node.id}`}
                   className="graph-route"
@@ -284,7 +294,7 @@ function ArchitectureGraph({
           style={{ x: "-50%", y: "-50%" }}
           className="graph-core absolute top-1/2 left-1/2 z-[5] flex aspect-square w-[26%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_20px_rgba(216,255,62,0.06),0_0_80px_rgba(216,255,62,0.26)]"
         >
-          <small className="font-mono text-[9px] tracking-[0.16em] uppercase opacity-70 max-[420px]:text-[7px]">Core</small>
+          <small className="font-mono text-[9px] tracking-[0.16em] uppercase opacity-70 max-[420px]:text-[7px]">{t(copy.graphCore)}</small>
           <strong className="font-display my-[2px] -mb-0.5 text-[clamp(17px,2.4vw,38px)] font-[780] leading-[0.88] tracking-[-0.065em] uppercase max-[420px]:text-[12px]">
             {coreTitle}
           </strong>
@@ -321,7 +331,7 @@ function ArchitectureGraph({
             // is what made the octagon look lopsided even with correct math).
             <div
               key={node.id}
-              className="absolute z-[6]"
+              className={`absolute transition-opacity duration-300 ${hoveredId === node.id ? "z-[8]" : "z-[6]"}`}
               style={
                 {
                   left: pct(node.x),
@@ -329,17 +339,26 @@ function ArchitectureGraph({
                   width: pct(card.w),
                   height: pct(card.h),
                   transform: "translate(-50%, -50%)",
+                  // Unhovered siblings stay faintly visible — never 0. Touch
+                  // skips this so a tap cannot leave the rest of the diagram blank.
+                  opacity: dimSiblings && hoveredId !== node.id ? 0.46 : 1,
                 } as CSSProperties
               }
+              onPointerEnter={() => {
+                if (finePointer) setHoveredId(node.id);
+              }}
+              onPointerLeave={() => {
+                setHoveredId((current) => (current === node.id ? null : current));
+              }}
             >
               <motion.div
                 variants={graphNode}
                 whileHover={finePointer ? { y: -3 } : undefined}
                 transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 className={`graph-node flex size-full flex-col justify-center gap-1.5 overflow-hidden border px-2.5 py-2 backdrop-blur-sm transition-colors duration-250 max-[420px]:gap-1 max-[420px]:px-1.5 max-[420px]:py-1 ${
-                  active
+                  active || hoveredId === node.id
                     ? "border-acid bg-[#141a10]/95 text-acid"
-                    : "border-paper/20 bg-ink/92 text-paper [@media(pointer:fine)]:hover:border-acid/45 [@media(pointer:fine)]:hover:bg-[#12150f]/95"
+                    : "border-paper/40 bg-ink/92 text-paper [@media(pointer:fine)]:hover:border-acid/45 [@media(pointer:fine)]:hover:bg-[#12150f]/95"
                 }`}
               >
                 <div className="flex min-w-0 items-baseline gap-1.5">
@@ -353,8 +372,8 @@ function ArchitectureGraph({
                   </strong>
                 </div>
                 <div className="flex min-w-0 items-center justify-between gap-1.5 max-[420px]:gap-1">
-                  <small className={`min-w-0 flex-1 truncate text-[9px] tracking-[0.05em] uppercase ${active ? "text-acid/75" : "text-[#9a9c92]"} max-[420px]:text-[7px]`}>
-                    {node.sub}
+                  <small className={`min-w-0 flex-1 truncate text-[9px] tracking-[0.05em] uppercase ${active || hoveredId === node.id ? "text-acid/75" : "text-[#9a9c92]"} max-[420px]:text-[7px]`}>
+                    {t(node.sub)}
                   </small>
                   {node.icon ? <TechIcon name={node.icon} className="size-3 shrink-0 text-[#b7b9ae] max-[420px]:size-2.5" /> : null}
                 </div>
@@ -368,6 +387,7 @@ function ArchitectureGraph({
 }
 
 export function SystemGraph() {
+  const t = useT();
   return (
     <ArchitectureGraph
       idPrefix="be"
@@ -381,7 +401,7 @@ export function SystemGraph() {
       // instead of a scaled-down copy of the desktop layout. Desktop's
       // `w-[min(100%,720px)]` sizing is untouched above 1000px.
       className="relative z-[3] w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:mt-[50px] max-[1000px]:w-screen max-[1000px]:mx-[calc(50%-50vw)]"
-      ariaLabel="Diagram arsitektur: klien, gateway, autentikasi, service, data, cache, events, dan pembayaran mengelilingi inti Spring Boot"
+      ariaLabel={t(copy.backendGraphAria)}
     />
   );
 }
@@ -393,6 +413,7 @@ export function FrontEndGraph({
   activeId?: string;
   className?: string;
 }) {
+  const t = useT();
   return (
     <ArchitectureGraph
       idPrefix="fe"
@@ -401,7 +422,7 @@ export function FrontEndGraph({
       nodes={frontendNodes}
       activeId={activeId}
       className={className}
-      ariaLabel="Diagram arsitektur front-end: views, komponen, tipe, styling, bundler, auth, realtime, dan checkout mengelilingi inti Front End"
+      ariaLabel={t(copy.frontendGraphAria)}
     />
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type Ref } from "react";
 import { MotionConfig, motion } from "motion/react";
 import {
   capabilities,
+  copy,
   cvFile,
   email,
   experience,
@@ -45,8 +46,11 @@ import { ProjectStack } from "./project-stack";
 import { SiteHeader } from "./site-header";
 import { SystemGraph } from "./system-graph";
 import { SocialIcon, TechIcon } from "./tech-icons";
+import { CertificatesSection } from "./certificates-section";
 import { CvPreview, openCvPreview } from "./cv-preview";
 import { IntroGate, useIntroReady } from "./intro";
+import { useT } from "./i18n";
+import { PaperField } from "./paper-field";
 
 function SectionLabel({ index, label }: { index: string; label: string }) {
   return (
@@ -147,6 +151,7 @@ function MarqueeTrack({
 }
 
 function CopyEmail() {
+  const t = useT();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -155,7 +160,7 @@ function CopyEmail() {
     return () => window.clearTimeout(timer);
   }, [copied]);
 
-  const copy = async () => {
+  const copyAddress = async () => {
     try {
       await navigator.clipboard.writeText(email);
       setCopied(true);
@@ -170,16 +175,16 @@ function CopyEmail() {
     <Magnetic className="max-[420px]:w-full">
       <button
         type="button"
-        onClick={copy}
+        onClick={copyAddress}
         data-cursor
         className="group/copy inline-flex min-h-12 w-full max-w-full cursor-pointer items-center justify-center gap-3 border border-ink/35 px-5 text-[12px] tracking-[0.08em] uppercase transition-colors duration-200 hover:border-ink hover:bg-ink hover:text-acid max-[420px]:justify-between max-[420px]:px-3"
       >
         <span className="font-mono min-w-0 truncate normal-case tracking-normal">{email}</span>
         <span aria-hidden="true" className="text-[11px] opacity-60 transition-opacity duration-200 group-hover/copy:opacity-100">
-          {copied ? "tersalin" : "salin"}
+          {copied ? t(copy.copiedEmail) : t(copy.copyEmail)}
         </span>
         <span className="sr-only" role="status">
-          {copied ? "Alamat email tersalin ke papan klip" : ""}
+          {copied ? t(copy.copiedStatus) : ""}
         </span>
       </button>
     </Magnetic>
@@ -200,6 +205,7 @@ export default function Home() {
 }
 
 function Portfolio() {
+  const t = useT();
   const heroRef = useRef<HTMLElement>(null);
   const { gridY, systemRotate, systemY } = useHeroParallax(heroRef);
   const introReady = useIntroReady();
@@ -234,7 +240,7 @@ function Portfolio() {
           className="hero-meta relative z-[1] mb-[clamp(28px,4vh,54px)] flex items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:items-start max-[680px]:mb-auto max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
           <div className="hero-kicker flex items-center gap-3 max-[680px]:max-w-[200px] max-[680px]:leading-[1.35] max-[420px]:max-w-none">
             <span className="status-dot size-[9px] animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
-            Open for fullstack opportunities
+            {t(copy.heroKicker)}
           </div>
           <p className="m-0 text-right leading-[1.35] max-[420px]:text-left">Java · Spring · React · TypeScript<br />© 2026</p>
         </motion.div>
@@ -267,17 +273,34 @@ function Portfolio() {
           <div className="relative min-w-0 w-full">
             <span className="pointer-events-none absolute -inset-x-3 -inset-y-4 -z-[1] bg-[linear-gradient(90deg,var(--color-ink)_0%,var(--color-ink)_62%,transparent_100%)] max-[680px]:-inset-x-2 max-[420px]:inset-x-[-6px] max-[420px]:bg-[linear-gradient(to_top,var(--color-ink)_0%,var(--color-ink)_78%,transparent_100%)]" aria-hidden="true" />
             <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.3] tracking-[-0.026em] text-paper/85 [text-shadow:0_1px_16px_rgba(11,13,12,0.9)] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:mb-4 max-[420px]:max-w-none max-[420px]:text-[15px] max-[420px]:leading-[1.45]">
-              <strong className="hero-lede-name font-[750] tracking-[-0.03em] text-paper">Saya Fajar Rafsan.</strong>{" "}
-              Fullstack developer: <em className="hero-lede-token font-semibold text-acid not-italic">API Java</em> yang andal{" "}
-              <span className="text-paper/50">di belakang,</span> <em className="hero-lede-token font-semibold text-acid not-italic">interface React</em> yang jelas{" "}
-              <span className="text-paper/50">di depan.</span>
+              {t(copy.heroLede).map((segment, index) => {
+                if (segment.kind === "name")
+                  return (
+                    <strong key={index} className="hero-lede-name font-[750] tracking-[-0.03em] text-paper">
+                      {segment.text}
+                    </strong>
+                  );
+                if (segment.kind === "token")
+                  return (
+                    <em key={index} className="hero-lede-token font-semibold text-acid not-italic">
+                      {segment.text}
+                    </em>
+                  );
+                if (segment.kind === "dim")
+                  return (
+                    <span key={index} className="text-paper/50">
+                      {segment.text}
+                    </span>
+                  );
+                return <span key={index}>{segment.text}</span>;
+              })}
             </p>
             <motion.div
               variants={heroChipParent}
               initial="hidden"
               animate={introReady ? "shown" : "hidden"}
               className="mb-5 grid grid-cols-2 gap-2 min-[681px]:mb-5 min-[681px]:flex min-[681px]:flex-wrap min-[681px]:items-center max-[420px]:mb-4"
-              aria-label="Stack utama"
+              aria-label={t(copy.heroStackAria)}
             >
               {[
                 ["java", "Java"],
@@ -302,7 +325,7 @@ function Portfolio() {
                   href="#work"
                   data-cursor
                 >
-                  Lihat proyek <span aria-hidden="true">↓</span>
+                  {t(copy.viewProjects)} <span aria-hidden="true">↓</span>
                 </a>
               </Magnetic>
               <div className="grid grid-cols-2 gap-2.5 min-[681px]:contents">
@@ -313,7 +336,7 @@ function Portfolio() {
                     onClick={openCvPreview}
                     data-cursor
                   >
-                    Lihat CV
+                    {t(copy.viewCv)}
                   </button>
                 </Magnetic>
                 <Magnetic className="w-full min-[681px]:w-auto [&_a]:w-full">
@@ -331,14 +354,14 @@ function Portfolio() {
             </div>
           </div>
           <Magnetic className="max-[680px]:hidden">
-            <a className="circle-link grid size-[62px] shrink-0 place-items-center rounded-full border border-paper bg-ink text-[22px] transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink" href="#work" aria-label="Gulir ke proyek pilihan">
+            <a className="circle-link grid size-[62px] shrink-0 place-items-center rounded-full border border-paper bg-ink text-[22px] transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink" href="#work" aria-label={t(copy.scrollToProjects)}>
               <span aria-hidden="true">↓</span>
             </a>
           </Magnetic>
         </motion.div>
       </section>
 
-      <section className="overflow-hidden border-y border-ink bg-acid text-ink" aria-label="Teknologi utama">
+      <section className="overflow-hidden border-y border-ink bg-acid text-ink" aria-label={t(copy.marqueeAria)}>
         <div className="border-b border-ink/15 pt-[18px] pb-4">
           <MarqueeTrack words={marqueeTop} />
         </div>
@@ -348,16 +371,9 @@ function Portfolio() {
       </section>
 
       <section className="manifesto relative overflow-hidden bg-paper px-[3vw] py-[clamp(98px,13vw,210px)] text-ink max-[680px]:px-[18px] max-[680px]:pt-[92px] max-[680px]:pb-[110px] max-[420px]:px-3.5" id="profile" aria-labelledby="manifesto-title">
-        <div
-          className="pointer-events-none absolute -top-[18%] -left-[12%] size-[min(720px,58vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.16),transparent_68%)]"
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute right-[8%] bottom-[-12%] size-[min(520px,40vw)] rounded-full bg-[radial-gradient(circle,rgba(255,97,60,0.1),transparent_70%)]"
-          aria-hidden="true"
-        />
+        <PaperField variant="profile" />
         <motion.div className="relative mb-[clamp(52px,7vw,96px)]" {...reveal}>
-          <SectionLabel index="01" label="Profile" />
+          <SectionLabel index="01" label={t(copy.sectionProfile)} />
         </motion.div>
 
         <div className="relative grid grid-cols-[minmax(240px,0.78fr)_minmax(0,1.55fr)] items-start gap-x-[5vw] gap-y-14 max-[1000px]:grid-cols-1">
@@ -379,16 +395,26 @@ function Portfolio() {
           className="system-copy relative z-[5]"
         >
           <motion.div variants={staggerChild}>
-            <SectionLabel index="02" label="Motion architecture" />
+            <SectionLabel index="02" label={t(copy.sectionArchitecture)} />
           </motion.div>
-          <motion.p variants={staggerChild} className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">Backend in motion</motion.p>
+          <motion.p variants={staggerChild} className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">{t(copy.architectureEyebrow)}</motion.p>
           <motion.h2 variants={staggerChild} id="system-title" className="font-display mb-7 max-w-[670px] text-[clamp(46px,5.4vw,88px)] leading-[0.93] font-[560] tracking-[-0.066em] min-[1001px]:max-[1200px]:text-[clamp(44px,4.8vw,62px)] max-[1000px]:max-w-[850px] max-[680px]:text-[clamp(44px,13vw,68px)] max-[420px]:text-[clamp(32px,10vw,44px)]">
-            Setiap <span className="text-acid">request</span> punya jalur. Setiap <span className="text-acid">event</span> punya tujuan.
+            {t(copy.architectureHeading).map((segment, index) =>
+              segment.tone === "acid" ? (
+                <span key={index} className="text-acid">{segment.text}</span>
+              ) : (
+                <span key={index}>{segment.text}</span>
+              ),
+            )}
           </motion.h2>
           <motion.p variants={staggerChild} className="system-description mb-0 max-w-[480px] leading-[1.5] text-[#aeb0a8]">
-            Visualisasi cara saya memikirkan backend: <em className="hero-lede-token font-medium text-paper not-italic">modular</em>,{" "}
-            <em className="hero-lede-token font-medium text-paper not-italic">observable</em>, dan{" "}
-            <em className="hero-lede-token font-medium text-paper not-italic">terhubung</em> tanpa kehilangan batas tanggung jawab.
+            {t(copy.architectureBody).map((segment, index) =>
+              segment.tone === "strong" ? (
+                <em key={index} className="hero-lede-token font-medium text-paper not-italic">{segment.text}</em>
+              ) : (
+                <span key={index}>{segment.text}</span>
+              ),
+            )}
           </motion.p>
         </motion.div>
 
@@ -402,13 +428,14 @@ function Portfolio() {
         panels={frontendArchitecture.panels}
       />
 
-      <section className="work-section bg-paper px-[3vw] py-[clamp(96px,11vw,180px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5" id="work" aria-labelledby="work-title">
-        <motion.div className="section-heading flex items-end justify-between gap-8 border-b border-ink pb-7 max-[680px]:flex-col max-[680px]:items-start max-[680px]:gap-[52px]" {...reveal}>
+      <section className="work-section relative bg-paper px-[3vw] py-[clamp(96px,11vw,180px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5" id="work" aria-labelledby="work-title">
+        <PaperField variant="work" />
+        <motion.div className="section-heading relative z-[1] flex items-end justify-between gap-8 border-b border-ink pb-7 max-[680px]:flex-col max-[680px]:items-start max-[680px]:gap-[52px]" {...reveal}>
           <div className="flex items-center gap-4.5 pb-1 text-[11px] tracking-[0.1em] uppercase">
             <span className="grid size-[38px] place-items-center rounded-full border border-ink">03</span>
-            <p className="m-0">Selected repositories / 2026</p>
+            <p className="m-0">{t(copy.sectionWork)}</p>
           </div>
-          <h2 id="work-title" className="font-display m-0 text-[clamp(52px,8vw,132px)] leading-[0.76] font-[650] tracking-[-0.08em] max-[680px]:text-[clamp(48px,15vw,84px)] max-[420px]:text-[clamp(36px,11.4vw,48px)]">Built systems</h2>
+          <h2 id="work-title" className="font-display m-0 text-[clamp(52px,8vw,132px)] leading-[0.76] font-[650] tracking-[-0.08em] max-[680px]:text-[clamp(48px,15vw,84px)] max-[420px]:text-[clamp(36px,11.4vw,48px)]">{t(copy.workTitle)}</h2>
         </motion.div>
 
         <ProjectStack />
@@ -420,13 +447,13 @@ function Portfolio() {
           aria-hidden="true"
         />
         <motion.div className="relative mb-[clamp(56px,7vw,96px)] grid grid-cols-[1fr_2.4fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
-          <SectionLabel index="04" label="Core stack" />
+          <SectionLabel index="04" label={t(copy.sectionStack)} />
           <div className="max-[1000px]:mt-10">
             <h2 id="capabilities-title" className="font-display mb-4 max-w-[18ch] text-[clamp(40px,5vw,72px)] leading-[0.94] font-[540] tracking-[-0.07em] max-[680px]:text-[clamp(36px,11vw,54px)] max-[420px]:text-[clamp(30px,9.4vw,36px)]">
-              Dari endpoint pertama sampai layar.
+              {t(copy.capabilitiesTitle)}
             </h2>
             <p className="m-0 max-w-[46ch] text-[15px] leading-[1.55] text-[#a7a99f]">
-              Empat lapisan yang saya pakai membangun sistem: service, data, jaringan service, dan interface.
+              {t(copy.capabilitiesBody)}
             </p>
           </div>
         </motion.div>
@@ -458,9 +485,9 @@ function Portfolio() {
               </div>
               <div>
                 <h3 className="mt-10 mb-3 text-[clamp(26px,2.6vw,36px)] leading-[1.05] font-[590] tracking-[-0.05em] max-[420px]:mt-8 max-[420px]:text-[22px]">
-                  {item.title}
+                  {t(item.title)}
                 </h3>
-                <p className="m-0 max-w-[46ch] text-sm leading-[1.5] text-[#a7a99f]">{item.detail}</p>
+                <p className="m-0 max-w-[46ch] text-sm leading-[1.5] text-[#a7a99f]">{t(item.detail)}</p>
               </div>
             </motion.article>
           ))}
@@ -478,16 +505,16 @@ function Portfolio() {
         />
         <div className="relative">
           <motion.div className="mb-[clamp(52px,6.5vw,88px)] grid grid-cols-[1fr_2.4fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
-            <SectionLabel index="05" label="Toolchain" />
+            <SectionLabel index="05" label={t(copy.sectionToolchain)} />
             <div className="max-[1000px]:mt-10">
               <h2
                 id="toolchain-title"
                 className="font-display mb-4 max-w-[16ch] text-[clamp(36px,4.6vw,64px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.5vw,52px)] max-[420px]:text-[clamp(28px,8.8vw,34px)]"
               >
-                Alat yang saya pakai setiap hari.
+                {t(copy.toolchainTitle)}
               </h2>
               <p className="m-0 max-w-[52ch] text-[15px] leading-[1.55] text-[#a7a99f]">
-                Bukan daftar semua yang pernah saya sentuh — hanya yang benar-benar dipakai di ketiga sistem di atas.
+                {t(copy.toolchainBody)}
               </p>
             </div>
           </motion.div>
@@ -502,13 +529,13 @@ function Portfolio() {
             {stackGroups.map((group, index) => (
               <motion.div
                 className="flex flex-col border border-paper/12 bg-ink p-5 max-[680px]:p-4"
-                key={group.label}
+                key={group.items[0].name}
                 variants={staggerChild}
               >
                 <p className="mb-5 flex items-center justify-between gap-3 text-[10px] tracking-[0.12em] text-[#8d8f85] uppercase">
                   <span className="flex items-center gap-2.5">
                     <i className="h-px w-5 shrink-0 bg-acid not-italic" aria-hidden="true" />
-                    {group.label}
+                    {t(group.label)}
                   </span>
                   <span className="font-mono text-acid/80">{String(index + 1).padStart(2, "0")}</span>
                 </p>
@@ -530,28 +557,38 @@ function Portfolio() {
         </div>
       </section>
 
-      <section className="experience bg-paper-deep px-[3vw] py-[clamp(100px,12vw,190px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5" id="experience" aria-labelledby="experience-title">
-        <motion.div {...reveal}>
-          <SectionLabel index="06" label="Experience & education" />
+      <section className="experience relative bg-paper-deep px-[3vw] py-[clamp(100px,12vw,190px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5" id="experience" aria-labelledby="experience-title">
+        <PaperField variant="experience" />
+        <motion.div className="relative z-[1]" {...reveal}>
+          <SectionLabel index="06" label={t(copy.sectionExperience)} />
         </motion.div>
-        <motion.div className="experience-heading mt-[clamp(62px,8vw,120px)] mb-[clamp(92px,10vw,150px)] grid grid-cols-[0.8fr_2fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
-          <p className="mb-2 text-sm leading-[1.5]">Accounting trained my precision.<br />Engineering gave it a system.</p>
-          <h2 id="experience-title" className="font-display m-0 text-[clamp(50px,7.6vw,122px)] leading-[0.86] font-[560] tracking-[-0.075em] max-[680px]:text-[clamp(40px,12.4vw,72px)] max-[420px]:text-[clamp(26px,8.1vw,32px)]">Belajar dalam.<br /><em className="stroke-text">Mengajar kembali.</em></h2>
+        <motion.div className="experience-heading relative z-[1] mt-[clamp(62px,8vw,120px)] mb-[clamp(92px,10vw,150px)] grid grid-cols-[0.8fr_2fr] items-end gap-[5vw] max-[1000px]:grid-cols-1" {...reveal}>
+          <p className="mb-2 text-sm leading-[1.5]">
+            {t(copy.experienceLead).split("\n").map((line, index) => (
+              <span key={line}>
+                {index > 0 ? <br /> : null}
+                {line}
+              </span>
+            ))}
+          </p>
+          <h2 id="experience-title" className="font-display m-0 text-[clamp(50px,7.6vw,122px)] leading-[0.86] font-[560] tracking-[-0.075em] max-[680px]:text-[clamp(40px,12.4vw,72px)] max-[420px]:text-[clamp(26px,8.1vw,32px)]">{t(copy.experienceTitle)}<br /><em className="stroke-text">{t(copy.experienceTitleEm)}</em></h2>
         </motion.div>
-        <div className="experience-list border-t border-ink">
+        <div className="experience-list relative z-[1] border-t border-ink">
           {experience.map((item, index) => (
-            <motion.article className="grid min-h-[180px] grid-cols-[50px_0.6fr_1fr_1fr] items-start gap-[22px] border-b border-ink/25 py-[22px] max-[1000px]:grid-cols-[42px_0.65fr_1.1fr] max-[680px]:grid-cols-[30px_1fr] max-[680px]:gap-4 max-[680px]:py-[26px]" key={item.role} {...reveal}>
+            <motion.article className="grid min-h-[180px] grid-cols-[50px_0.6fr_1fr_1fr] items-start gap-[22px] border-b border-ink/25 py-[22px] max-[1000px]:grid-cols-[42px_0.65fr_1.1fr] max-[680px]:grid-cols-[30px_1fr] max-[680px]:gap-4 max-[680px]:py-[26px]" key={item.place + item.period.id} {...reveal}>
               <span className="text-[10px] tracking-[0.1em] uppercase">{String(index + 1).padStart(2, "0")}</span>
-              <p className="text-[10px] tracking-[0.1em] uppercase max-[680px]:col-start-2">{item.period}</p>
+              <p className="text-[10px] tracking-[0.1em] uppercase max-[680px]:col-start-2">{t(item.period)}</p>
               <div className="max-[680px]:col-start-2">
-                <h3 className="mb-2 text-[clamp(25px,2.5vw,40px)] leading-none tracking-[-0.05em] max-[420px]:text-[22px] max-[420px]:leading-snug">{item.role}</h3>
+                <h3 className="mb-2 text-[clamp(25px,2.5vw,40px)] leading-none tracking-[-0.05em] max-[420px]:text-[22px] max-[420px]:leading-snug">{t(item.role)}</h3>
                 <strong className="text-xs font-[560]">{item.place}</strong>
               </div>
-              <p className="mb-0 max-w-[420px] text-sm leading-[1.48] text-[#4c4d46] max-[1000px]:col-start-3 max-[680px]:col-start-2">{item.detail}</p>
+              <p className="mb-0 max-w-[420px] text-sm leading-[1.48] text-[#4c4d46] max-[1000px]:col-start-3 max-[680px]:col-start-2">{t(item.detail)}</p>
             </motion.article>
           ))}
         </div>
       </section>
+
+      <CertificatesSection />
 
       <motion.section
         variants={contactParent}
@@ -565,10 +602,10 @@ function Portfolio() {
         <div className="absolute -top-[10vw] -right-[8vw] aspect-square w-[48vw] animate-contact-ring rounded-full border border-ink/25 shadow-[inset_0_0_0_8vw_rgba(11,13,12,0.04),inset_0_0_0_16vw_rgba(11,13,12,0.04)]" aria-hidden="true" />
         <div className="contact-top relative z-[1] flex items-start justify-between gap-[30px] max-[680px]:flex-col">
           <motion.div variants={contactItem}>
-            <SectionLabel index="07" label="Connect" />
+            <SectionLabel index="08" label={t(copy.sectionConnect)} />
           </motion.div>
           <motion.p variants={contactItem} className="m-0 max-w-[480px] text-[clamp(17px,1.5vw,23px)] leading-[1.28]">
-            Terbuka untuk kesempatan fullstack, kolaborasi produk, dan diskusi sistem ujung ke ujung.
+            {t(copy.contactBlurb)}
           </motion.p>
         </div>
         <h2
@@ -580,12 +617,12 @@ function Portfolio() {
               stroke shaved off at the top and bottom edges. */}
           <span className="block overflow-hidden py-[0.08em]">
             <motion.span variants={contactLine} custom={0} className="block origin-bottom-left will-change-transform">
-              LET&apos;S BUILD
+              {t(copy.contactLine1)}
             </motion.span>
           </span>
           <span className="block overflow-hidden py-[0.08em]">
             <motion.span variants={contactLine} custom={1} className="block origin-bottom-left will-change-transform">
-              <em className="stroke-text">RELIABLE.</em>
+              <em className="stroke-text">{t(copy.contactLine2)}</em>
             </motion.span>
           </span>
         </h2>
@@ -601,10 +638,10 @@ function Portfolio() {
             <Magnetic className="max-[420px]:w-full [&_a]:w-full">
               <a
                 className="inline-flex min-h-12 items-center justify-center gap-3 border border-ink bg-ink px-5 text-[12px] tracking-[0.08em] text-acid uppercase transition-colors duration-200 hover:bg-transparent hover:text-ink"
-                href={`mailto:${email}?subject=Peluang%20Fullstack`}
+                href={`mailto:${email}?subject=${encodeURIComponent(t(copy.mailSubject))}`}
                 data-cursor
               >
-                Kirim email <span aria-hidden="true">↗</span>
+                {t(copy.sendEmail)} <span aria-hidden="true">↗</span>
               </a>
             </Magnetic>
           </motion.div>
@@ -619,7 +656,7 @@ function Portfolio() {
                 download={cvFile.download}
                 data-cursor
               >
-                Unduh CV <span aria-hidden="true">↓</span>
+                {t(copy.downloadCv)} <span aria-hidden="true">↓</span>
               </a>
             </Magnetic>
           </motion.div>
@@ -641,8 +678,8 @@ function Portfolio() {
           variants={contactFoot}
           className="relative z-[1] flex justify-between gap-6 pt-5 text-[10px] tracking-[0.1em] uppercase max-[680px]:items-end max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3"
         >
-          <p className="m-0 max-[680px]:max-w-[210px] max-[680px]:leading-[1.45] max-[420px]:max-w-none">© 2026 Fajar Rafsan. Fullstack Developer.</p>
-          <a className="-my-[15px] inline-flex min-h-11 shrink-0 items-center py-[15px] transition-opacity duration-200 hover:opacity-60" href="#top">Kembali ke atas ↑</a>
+          <p className="m-0 max-[680px]:max-w-[210px] max-[680px]:leading-[1.45] max-[420px]:max-w-none">{t(copy.footer)}</p>
+          <a className="-my-[15px] inline-flex min-h-11 shrink-0 items-center py-[15px] transition-opacity duration-200 hover:opacity-60" href="#top">{t(copy.backToTop)}</a>
         </motion.footer>
       </motion.section>
     </main>

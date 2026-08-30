@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { LocaleProvider } from "./i18n";
+import { SkipLink } from "./skip-link";
 import "./globals.css";
 
 // Geist, Geist Mono, and the Archivo display face are self-hosted from
@@ -39,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description,
     applicationName: "Fajar Rafsan Portfolio",
-    authors: [{ name: "Fajar Rafsan", url: "https://github.com/fajarrafsan02-bit" }],
+    authors: [{ name: "Fajar Rafsan", url: "https://github.com/fajarrafsan" }],
     creator: "Fajar Rafsan",
     keywords: [
       "Fajar Rafsan",
@@ -121,7 +123,7 @@ const personSchema = {
     "TypeScript",
   ],
   sameAs: [
-    "https://github.com/fajarrafsan02-bit",
+    "https://github.com/fajarrafsan",
     "https://www.linkedin.com/in/fajar-rafsan-80822b394/",
   ],
 };
@@ -155,10 +157,10 @@ export default function RootLayout({
               nothing would ever animate it back to visible. */}
           <style>{`[style*="opacity"]{opacity:1!important;transform:none!important}.intro-overlay{display:none!important}`}</style>
         </noscript>
-        <a className="skip-link" href="#work">
-          Lompat ke konten utama
-        </a>
-        {children}
+        <LocaleProvider>
+          <SkipLink />
+          {children}
+        </LocaleProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
