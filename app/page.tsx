@@ -32,6 +32,7 @@ import {
   heroChip,
   heroChipParent,
   heroLine,
+  LatchedReveal,
   reveal,
   staggerChild,
   staggerParent,
@@ -372,9 +373,9 @@ function Portfolio() {
 
       <section className="manifesto relative overflow-hidden bg-paper px-[3vw] py-[clamp(98px,13vw,210px)] text-ink max-[680px]:px-[18px] max-[680px]:pt-[92px] max-[680px]:pb-[110px] max-[420px]:px-3.5" id="profile" aria-labelledby="manifesto-title">
         <PaperField variant="profile" />
-        <motion.div className="relative mb-[clamp(52px,7vw,96px)]" {...reveal}>
+        <LatchedReveal className="relative mb-[clamp(52px,7vw,96px)]">
           <SectionLabel index="01" label={t(copy.sectionProfile)} />
-        </motion.div>
+        </LatchedReveal>
 
         <div className="relative grid grid-cols-[minmax(240px,0.78fr)_minmax(0,1.55fr)] items-start gap-x-[5vw] gap-y-14 max-[1000px]:grid-cols-1">
           {/* ProfilePortrait stages its own multi-part entrance (wipe, corner

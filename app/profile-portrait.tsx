@@ -29,6 +29,7 @@ import {
   profileItem,
   profileParent,
   profileWord,
+  useLatchedInView,
   useMediaQuery,
 } from "./motion";
 import { TechIcon } from "./tech-icons";
@@ -86,7 +87,11 @@ const portraitFigcaption: Variants = {
 
 export function ProfilePortrait() {
   const t = useT();
-  const reduced = useReducedMotion();
+  const rootRef = useRef<HTMLElement>(null);
+  const { reduced, shown } = useLatchedInView(rootRef, {
+    margin: "0px 0px -20% 0px",
+    amount: 0.3,
+  });
   const finePointer = useMediaQuery("(pointer: fine)");
   const tilt = finePointer && !reduced;
   const [hovered, setHovered] = useState(false);
@@ -113,10 +118,10 @@ export function ProfilePortrait() {
 
   return (
     <motion.figure
+      ref={rootRef}
       className="relative mx-auto w-full max-w-[400px] min-[1001px]:mx-0 min-[1001px]:sticky min-[1001px]:top-28"
-      initial="hidden"
-      whileInView="shown"
-      viewport={{ once: true, margin: "0px 0px -20% 0px", amount: 0.3 }}
+      initial={shown ? false : reduced ? "shown" : "hidden"}
+      animate={shown ? "shown" : "hidden"}
     >
       <motion.div
         variants={portraitEyebrow}
@@ -206,16 +211,20 @@ export function ProfilePortrait() {
 }
 
 export function ProfileCopy() {
-  const reduced = useReducedMotion();
   const t = useT();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { reduced, shown } = useLatchedInView(rootRef, {
+    margin: "0px 0px -20% 0px",
+    amount: 0.12,
+  });
 
   return (
     <motion.div
+      ref={rootRef}
       className="manifesto-copy min-w-0"
       variants={profileParent}
-      initial={reduced ? "shown" : "hidden"}
-      whileInView="shown"
-      viewport={{ once: true, margin: "0px 0px -20% 0px", amount: 0.12 }}
+      initial={shown ? false : reduced ? "shown" : "hidden"}
+      animate={shown ? "shown" : "hidden"}
     >
       <motion.p className="eyebrow mb-5 text-[11px] tracking-[0.1em] uppercase" variants={profileItem}>
         {t(copy.aboutMe)}
@@ -226,7 +235,7 @@ export function ProfileCopy() {
         className="font-display mb-7 max-w-[920px] text-[clamp(40px,5.2vw,82px)] leading-[0.92] font-[560] tracking-[-0.07em] max-[680px]:mb-6 max-[680px]:text-[clamp(32px,9.6vw,56px)] max-[420px]:text-[clamp(26px,8.2vw,32px)]"
       >
         {profileHeadline.map((line, lineIndex) => (
-          <span className="block overflow-hidden py-[0.04em] [perspective:700px]" key={line.text.id}>
+          <span className="block overflow-hidden py-[0.04em] [perspective:700px]" key={lineIndex}>
             <motion.span
               className={`relative isolate inline-block origin-bottom-left will-change-transform ${
                 line.accent ? "text-ink" : ""
@@ -239,9 +248,8 @@ export function ProfileCopy() {
                   <motion.span
                     className="absolute inset-x-[-0.06em] bottom-[0.08em] z-0 h-[0.32em] bg-acid"
                     initial={{ scaleX: reduced ? 1 : 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: reduced ? 0 : 0.65, ease, delay: reduced ? 0 : 0.42 }}
+                    animate={{ scaleX: shown ? 1 : 0 }}
+                    transition={{ duration: reduced ? 0 : 0.65, ease, delay: reduced || !shown ? 0 : 0.42 }}
                     style={{ originX: 0 }}
                     aria-hidden="true"
                   />
@@ -272,8 +280,8 @@ export function ProfileCopy() {
       </motion.ul>
 
       <motion.div className="flex max-w-[62ch] flex-col gap-5 text-[17px] leading-[1.65] text-[#3f4038] max-[680px]:text-base">
-        {t(profileAbout).map((paragraph) => (
-          <motion.p className="m-0" key={paragraph.map((segment) => segment.text).join("").slice(0, 48)} variants={profileItem}>
+        {t(profileAbout).map((paragraph, paragraphIndex) => (
+          <motion.p className="m-0" key={paragraphIndex} variants={profileItem}>
             {paragraph.map((segment, index) => {
               if (!segment.tone) return <span key={index}>{segment.text}</span>;
               if (segment.tone === "java")

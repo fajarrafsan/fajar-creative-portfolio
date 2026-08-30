@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import {
   motion,
+  useInView,
   useMotionValue,
   useReducedMotion,
   useScroll,
@@ -28,6 +29,49 @@ export const reveal = {
   viewport: { once: true, margin: "0px 0px -120px 0px", amount: 0.25 },
   transition: { duration: 0.72, ease },
 } as const;
+
+/**
+ * Scroll-entrance that survives locale re-renders.
+ *
+ * `whileInView` with `once` lives inside Motion's visual element. A language
+ * switch re-renders copy (and remounts any child whose React key is the
+ * translated string). New children inherit `initial: "hidden"` while the
+ * parent has already finished its in-view cycle, so they stay at opacity 0.
+ * Latched React state plus `animate` is the higher-priority target, so a
+ * remount plays into "shown" instead of getting stuck.
+ */
+export function useLatchedInView(
+  ref: RefObject<Element | null>,
+  options: { margin?: string; amount?: number } = {},
+) {
+  const reduced = useReducedMotion() === true;
+  const inView = useInView(ref, { once: true, ...options });
+  return { reduced, shown: reduced || inView };
+}
+
+/** Same entrance as `reveal`, held in React state so a locale switch cannot rewind it. */
+export function LatchedReveal({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { reduced, shown } = useLatchedInView(ref, { margin: "0px 0px -120px 0px", amount: 0.25 });
+
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={shown ? false : reduced ? false : { opacity: 0, y: 44, filter: "blur(6px)" }}
+      animate={shown ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0, y: 44, filter: "blur(6px)" }}
+      transition={{ duration: 0.72, ease }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 /** Parent/child pair for lists that should cascade rather than pop in together. */
 export const staggerParent: Variants = {
