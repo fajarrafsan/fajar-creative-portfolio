@@ -13,6 +13,7 @@ import {
 import { ease } from "./motion";
 import { copy } from "./content";
 import { useT } from "./i18n";
+import { HeroAtmosphere } from "./hero-atmosphere";
 
 const IntroReadyContext = createContext(true);
 
@@ -122,15 +123,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
         ))}
       </div>
 
-      <div
-        className="pointer-events-none absolute inset-0 z-[1] opacity-[0.22]"
-        aria-hidden="true"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(240,239,232,0.09) 1px, transparent 1px), linear-gradient(90deg, rgba(240,239,232,0.09) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
-        }}
-      />
+      <HeroAtmosphere variant="intro" />
 
       <motion.span
         className="pointer-events-none absolute inset-x-0 z-[2] h-px bg-acid/80"

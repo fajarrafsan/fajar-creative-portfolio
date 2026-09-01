@@ -47,6 +47,7 @@ import {
 } from "./motion";
 import { HorizontalScrollSection } from "./horizontal-scroll-section";
 import { HeroGraph } from "./hero-graph";
+import { HeroAtmosphere } from "./hero-atmosphere";
 import { ProfileBackdrop } from "./profile-backdrop";
 import { ProfileCopy, ProfilePortrait } from "./profile-portrait";
 import { ProjectStack, UtilityProjects } from "./project-stack";
@@ -370,13 +371,7 @@ function Portfolio() {
       <CvPreview />
 
       <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col overflow-x-clip px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-8 max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-6" id="top" aria-labelledby="hero-title">
-        <div className="pointer-events-none absolute inset-0 -z-[2] overflow-hidden" aria-hidden="true">
-          <motion.div
-            className="hero-grid absolute inset-x-0 -inset-y-[15%] will-change-transform bg-[image:linear-gradient(rgba(240,239,232,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.25)_1px,transparent_1px)] bg-[size:25vw_25vw] max-[1000px]:bg-[size:50vw_50vw]"
-            style={{ y: gridY }}
-          />
-        </div>
-        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_78%_52%,rgba(216,255,62,0.1),transparent_36%)] max-[1000px]:bg-[radial-gradient(circle_at_50%_82%,rgba(216,255,62,0.08),transparent_42%)]" aria-hidden="true" />
+        <HeroAtmosphere scrollY={gridY} />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
