@@ -370,24 +370,24 @@ function Portfolio() {
       <SiteHeader />
       <CvPreview />
 
-      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col overflow-x-clip px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-8 max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-6" id="top" aria-labelledby="hero-title">
+      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col overflow-x-clip px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-8 max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-6 max-[360px]:px-2.5 max-[360px]:pt-[84px] max-[360px]:pb-5" id="top" aria-labelledby="hero-title">
         <HeroAtmosphere scrollY={gridY} />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.06 : 0 }}
-          className="hero-meta relative z-[2] mb-4 flex shrink-0 items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:mb-5 max-[680px]:items-start max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
-          <div className="hero-kicker flex max-w-[calc(100%-14rem)] items-center gap-3 whitespace-nowrap leading-[1.45] max-[680px]:max-w-none max-[680px]:whitespace-normal">
+          className="hero-meta relative z-[2] mb-4 flex shrink-0 items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:mb-5 max-[680px]:items-start max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3 max-[360px]:mb-4 max-[360px]:gap-2 max-[360px]:text-[10px]">
+          <div className="hero-kicker flex max-w-[calc(100%-14rem)] items-center gap-3 whitespace-nowrap leading-[1.45] max-[680px]:max-w-none max-[680px]:whitespace-normal max-[360px]:gap-2">
             <span className="status-dot size-[9px] shrink-0 animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
             {t(copy.availability)}
           </div>
           <p className="m-0 shrink-0 text-right leading-[1.35] max-[420px]:text-left">Java · Spring · React · TypeScript<br />© 2026</p>
         </motion.div>
 
-        <div className="relative z-[2] flex min-h-0 w-full flex-1 flex-col gap-10 max-[1000px]:flex-none min-[1001px]:grid min-[1001px]:grid-cols-[minmax(0,1.08fr)_minmax(300px,0.92fr)] min-[1001px]:items-center min-[1001px]:gap-x-[clamp(2rem,4.5vw,5.5rem)] min-[1001px]:gap-y-0 max-[680px]:gap-8">
+        <div className="relative z-[2] flex min-h-0 w-full flex-1 flex-col gap-10 max-[1000px]:flex-none min-[1001px]:grid min-[1001px]:grid-cols-[minmax(0,1.08fr)_minmax(300px,0.92fr)] min-[1001px]:items-center min-[1001px]:gap-x-[clamp(2rem,4.5vw,5.5rem)] min-[1001px]:gap-y-0 max-[680px]:gap-8 max-[360px]:gap-6">
           <div className="min-w-0 max-[1000px]:contents">
-          <h1 id="hero-title" className="font-display relative m-0 text-[clamp(52px,8vw,120px)] leading-[0.96] font-[770] tracking-[-0.05em] uppercase max-[1000px]:order-1 max-[1000px]:text-[clamp(56px,13.5vw,104px)] max-[1000px]:leading-[0.96] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
+          <h1 id="hero-title" className="font-display relative m-0 text-[clamp(52px,8vw,120px)] leading-[0.96] font-[770] tracking-[-0.05em] uppercase max-[1000px]:order-1 max-[1000px]:text-[clamp(56px,13.5vw,104px)] max-[1000px]:leading-[0.96] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(34px,11vw,46px)]">
             {[
               ["FULL", "block w-fit overflow-hidden py-[0.06em] pr-[0.08em]"],
               ["STACK", "block w-fit overflow-hidden py-[0.06em] pr-[0.08em] pl-[0.12em] text-acid"],
@@ -411,9 +411,9 @@ function Portfolio() {
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.58 : 0 }}
-          className="hero-foot relative mt-[clamp(28px,3.6vh,44px)] border-t border-paper/25 pt-4.5 max-[1000px]:order-3 max-[1000px]:mt-0 max-[420px]:pt-5 max-[420px]:pb-1">
+          className="hero-foot relative mt-[clamp(28px,3.6vh,44px)] border-t border-paper/25 pt-4.5 max-[1000px]:order-3 max-[1000px]:mt-0 max-[420px]:pt-5 max-[420px]:pb-1 max-[360px]:pt-4">
           <div className="relative min-w-0 w-full">
-            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.3] tracking-[-0.026em] text-paper/85 max-[680px]:text-base max-[420px]:mb-4 max-[420px]:text-[15px] max-[420px]:leading-[1.45]">
+            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.3] tracking-[-0.026em] text-paper/85 max-[680px]:text-base max-[420px]:mb-4 max-[420px]:text-[15px] max-[420px]:leading-[1.45] max-[360px]:mb-3.5 max-[360px]:text-[14px] max-[360px]:leading-[1.42]">
               {t(copy.heroLede).map((segment, index) => {
                 if (segment.kind === "name")
                   return (
@@ -440,7 +440,7 @@ function Portfolio() {
               variants={heroChipParent}
               initial="hidden"
               animate={introReady ? "shown" : "hidden"}
-              className="mb-5 grid grid-cols-2 gap-2 min-[681px]:mb-5 min-[681px]:flex min-[681px]:flex-wrap min-[681px]:items-center max-[420px]:mb-4"
+              className="mb-5 grid grid-cols-2 gap-2 min-[681px]:mb-5 min-[681px]:flex min-[681px]:flex-wrap min-[681px]:items-center max-[420px]:mb-4 max-[360px]:mb-3.5 max-[360px]:gap-1.5"
               aria-label={t(copy.heroStackAria)}
             >
               {[
@@ -452,28 +452,28 @@ function Portfolio() {
                 <motion.span
                   key={label}
                   variants={heroChip}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 border border-paper/25 bg-ink px-3 text-[10px] tracking-[0.1em] uppercase will-change-transform min-[681px]:justify-start"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 border border-paper/25 bg-ink px-3 text-[10px] tracking-[0.1em] uppercase will-change-transform min-[681px]:justify-start max-[360px]:min-h-9 max-[360px]:gap-1.5 max-[360px]:px-2 max-[360px]:text-[9px]"
                 >
-                  <TechIcon name={icon} className="size-3.5 shrink-0 text-acid" />
+                  <TechIcon name={icon} className="size-3.5 shrink-0 text-acid max-[360px]:size-3" />
                   {label}
                 </motion.span>
               ))}
             </motion.div>
-            <div className="flex flex-col gap-2.5 text-[11px] tracking-[0.09em] uppercase min-[681px]:flex-row min-[681px]:flex-wrap min-[681px]:items-center min-[681px]:gap-3">
+            <div className="flex flex-col gap-2.5 text-[11px] tracking-[0.09em] uppercase min-[681px]:flex-row min-[681px]:flex-wrap min-[681px]:items-center min-[681px]:gap-3 max-[360px]:gap-2 max-[360px]:text-[10px]">
               <Magnetic className="w-full min-[681px]:w-auto [&_a]:w-full">
                 <a
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-ink hover:text-acid min-[681px]:w-auto"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-acid bg-acid px-5 text-ink transition-colors duration-200 hover:bg-ink hover:text-acid min-[681px]:w-auto max-[360px]:min-h-11 max-[360px]:gap-2 max-[360px]:px-3"
                   href="#work"
                   data-cursor
                 >
                   {t(copy.viewProjects)} <span aria-hidden="true">↓</span>
                 </a>
               </Magnetic>
-              <div className="grid grid-cols-2 gap-2.5 min-[681px]:contents">
+              <div className="grid grid-cols-2 gap-2.5 min-[681px]:contents max-[360px]:gap-2">
                 <Magnetic className="w-full min-[681px]:w-auto [&_button]:w-full">
                   <button
                     type="button"
-                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink min-[681px]:w-auto"
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink min-[681px]:w-auto max-[360px]:min-h-11 max-[360px]:gap-2 max-[360px]:px-3"
                     onClick={openCvPreview}
                     data-cursor
                   >
@@ -482,13 +482,13 @@ function Portfolio() {
                 </Magnetic>
                 <Magnetic className="w-full min-[681px]:w-auto [&_a]:w-full">
                   <a
-                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink min-[681px]:w-auto"
+                    className="inline-flex min-h-12 w-full items-center justify-center gap-3 border border-paper/35 bg-ink px-5 transition-colors duration-200 hover:border-paper hover:bg-paper hover:text-ink min-[681px]:w-auto max-[360px]:min-h-11 max-[360px]:gap-2 max-[360px]:px-3"
                     href={githubUrl}
                     target="_blank"
                     rel="noreferrer"
                     data-cursor
                   >
-                    <SocialIcon name="github" className="size-3.5" /> GitHub <span aria-hidden="true">↗</span>
+                    <SocialIcon name="github" className="size-3.5 max-[360px]:size-3" /> GitHub <span aria-hidden="true">↗</span>
                   </a>
                 </Magnetic>
               </div>

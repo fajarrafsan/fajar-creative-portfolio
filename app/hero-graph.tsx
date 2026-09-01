@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue } from "motion/react";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue, type Variants } from "motion/react";
 import {
   graphCore,
   graphFormationShell,
@@ -24,6 +24,7 @@ const MAX_TILT = 6;
 type Node = {
   id: string;
   label: string;
+  mobileLabel: string;
   sub: string;
   icon: string;
   x: number;
@@ -32,11 +33,32 @@ type Node = {
 };
 
 const nodes: Node[] = [
-  { id: "java", label: "Java", sub: "SE / EE", icon: "java", x: 220, y: 500, flow: "in" },
-  { id: "spring", label: "Spring", sub: "Boot API", icon: "springboot", x: 500, y: 220, flow: "in" },
-  { id: "react", label: "React", sub: "19 SPA", icon: "react", x: 780, y: 500, flow: "out" },
-  { id: "ts", label: "TypeScript", sub: "Contracts", icon: "typescript", x: 500, y: 780, flow: "out" },
+  { id: "java", label: "Java", mobileLabel: "Java", sub: "SE / EE", icon: "java", x: 220, y: 500, flow: "in" },
+  { id: "spring", label: "Spring", mobileLabel: "Spring", sub: "Boot API", icon: "springboot", x: 500, y: 220, flow: "in" },
+  { id: "react", label: "React", mobileLabel: "React", sub: "19 SPA", icon: "react", x: 780, y: 500, flow: "out" },
+  { id: "ts", label: "TypeScript", mobileLabel: "TS", sub: "Contracts", icon: "typescript", x: 500, y: 780, flow: "out" },
 ];
+
+const mobileGraphCore: Variants = {
+  hidden: { scale: 0.72, opacity: 0, filter: "blur(7px)" },
+  shown: {
+    scale: 1,
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: { type: "spring", stiffness: 105, damping: 18, mass: 0.9 },
+  },
+};
+
+const mobileGraphNode: Variants = {
+  hidden: { scale: 0.86, opacity: 0, y: 10, filter: "blur(5px)" },
+  shown: {
+    scale: 1,
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { type: "spring", stiffness: 115, damping: 20, mass: 0.82 },
+  },
+};
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -78,8 +100,8 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
   const mobileMotion = !wideLayout && !reduced && introReady;
   const rootRef = useRef<HTMLDivElement>(null);
   const neutralRotate = useMotionValue(0);
-  const mobileRotateTarget = useTransform(rotate ?? neutralRotate, (value) => value * 0.12);
-  const mobileRotate = useSpring(mobileRotateTarget, { stiffness: 85, damping: 22, mass: 0.7 });
+  const mobileRotateTarget = useTransform(rotate ?? neutralRotate, (value) => value * 0.1);
+  const mobileRotate = useSpring(mobileRotateTarget, { stiffness: 48, damping: 17, mass: 1.05 });
   const rotateX = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
   const rotateY = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
   const tiltX = useTransform(rotateX, (value) => clamp(Number.isFinite(value) ? value : 0, -MAX_TILT, MAX_TILT));
@@ -135,7 +157,7 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
   return (
     <div
       ref={rootRef}
-      className="hero-system pointer-events-none relative z-0 aspect-square w-[min(100%,40vw,560px)] max-[1000px]:w-[min(72vw,380px)] max-[680px]:w-[min(86vw,320px)]"
+      className="hero-system pointer-events-none relative z-0 aspect-square w-[min(100%,40vw,560px)] max-[1000px]:w-[min(72vw,380px)] max-[680px]:w-[clamp(244px,76vw,320px)]"
       aria-hidden="true"
     >
       <motion.div
@@ -145,9 +167,16 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
         <motion.div
           className="relative size-full will-change-transform"
           initial={false}
-          animate={mobileMotion ? { y: [0, -6, 0], scale: [1, 1.012, 1] } : { y: 0, scale: 1 }}
+          animate={mobileMotion
+            ? {
+                x: [0, 2.5, -1.5, 0],
+                y: [0, -5, -1.5, 0],
+                rotate: [0, 0.7, -0.45, 0],
+                scale: [1, 1.009, 1.003, 1],
+              }
+            : { x: 0, y: 0, rotate: 0, scale: 1 }}
           transition={mobileMotion
-            ? { duration: 5.6, repeat: Infinity, ease: "easeInOut" }
+            ? { duration: 8.8, repeat: Infinity, times: [0, 0.32, 0.7, 1], ease: [0.37, 0, 0.63, 1] }
             : { duration: 0.24, ease: "easeOut" }}
         >
           <motion.div
@@ -205,7 +234,7 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               </defs>
 
               {legs.map(({ node, d, from, to }, index) => (
-                <motion.g key={node.id} variants={graphNode}>
+                <motion.g key={node.id} variants={wideLayout ? graphNode : mobileGraphNode}>
                   <motion.path
                     id={`hero-leg-${node.id}`}
                     variants={{
@@ -245,13 +274,13 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
             </motion.svg>
 
             <motion.div
-              variants={graphCore}
+              variants={wideLayout ? graphCore : mobileGraphCore}
               style={{ x: "-50%", y: "-50%" }}
-              className="absolute top-1/2 left-1/2 z-[4] flex aspect-square w-[28%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_18px_rgba(216,255,62,0.06),0_0_70px_rgba(216,255,62,0.28)]"
+              className="absolute top-1/2 left-1/2 z-[4] flex aspect-square w-[28%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_18px_rgba(216,255,62,0.06),0_0_70px_rgba(216,255,62,0.28)] max-[420px]:w-[26%] max-[420px]:shadow-[0_0_0_10px_rgba(216,255,62,0.06),0_0_42px_rgba(216,255,62,0.24)]"
             >
-              <small className="text-[8px] tracking-[0.16em] uppercase">{t(copy.graphCore)}</small>
-              <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em]">FULL</strong>
-              <span className="text-[8px] tracking-[0.16em] uppercase">Stack</span>
+              <small className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[6px]">{t(copy.graphCore)}</small>
+              <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em] max-[420px]:text-[13px]">FULL</strong>
+              <span className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[6px]">Stack</span>
             </motion.div>
 
             {nodes.map((node) => (
@@ -264,19 +293,22 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               // actually applies, leaving every card offset from its point.
               <div
                 key={node.id}
-                className="absolute z-[5] h-[min(44px,9%)] w-[min(158px,26%)]"
+                className="absolute z-[5] h-[min(44px,9%)] w-[min(158px,26%)] max-[420px]:h-8 max-[420px]:w-[29%]"
                 style={{ left: pct(node.x), top: pct(node.y), transform: "translate(-50%, -50%)" }}
               >
                 <motion.div
-                  variants={graphNode}
-                  className="flex size-full items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm"
+                  variants={wideLayout ? graphNode : mobileGraphNode}
+                  className="flex size-full items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm max-[420px]:gap-1 max-[420px]:px-1"
                 >
-                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6">
-                    <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3" />
+                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6 max-[420px]:size-5">
+                    <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3 max-[420px]:size-2.5" />
                   </span>
                   <span className="min-w-0">
-                    <strong className="block truncate text-[12px] leading-none tracking-[-0.03em]">{node.label}</strong>
-                    <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase">{node.sub}</small>
+                    <strong className="block truncate text-[12px] leading-none tracking-[-0.03em] max-[420px]:text-[9px]">
+                      <span className="max-[420px]:hidden">{node.label}</span>
+                      <span className="hidden max-[420px]:inline">{node.mobileLabel}</span>
+                    </strong>
+                    <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase max-[420px]:hidden">{node.sub}</small>
                   </span>
                 </motion.div>
               </div>

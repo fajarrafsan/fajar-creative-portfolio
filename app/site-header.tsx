@@ -127,10 +127,10 @@ export function SiteHeader() {
         initial={reduced ? false : { y: -28, opacity: 0 }}
         animate={reduced || introReady ? { y: 0, opacity: 1 } : { y: -28, opacity: 0 }}
         transition={{ duration: 0.7, ease, delay: introReady ? 0.08 : 0 }}
-        className="site-nav pointer-events-none fixed inset-x-0 top-0 z-[80] px-[3vw] pt-[max(10px,env(safe-area-inset-top))] max-[680px]:px-[18px] max-[420px]:px-3"
+        className="site-nav pointer-events-none fixed inset-x-0 top-0 z-[80] px-[3vw] pt-[max(10px,env(safe-area-inset-top))] max-[680px]:px-[18px] max-[420px]:px-3 max-[360px]:px-2.5"
       >
         <div
-          className={`pointer-events-auto relative flex h-16 items-center justify-between gap-4 overflow-hidden border px-3 text-[11px] tracking-[0.1em] uppercase backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 max-[680px]:h-14 max-[420px]:gap-2 max-[420px]:px-2 ${
+          className={`pointer-events-auto relative flex h-16 items-center justify-between gap-4 overflow-hidden border px-3 text-[11px] tracking-[0.1em] uppercase backdrop-blur-xl transition-[background-color,border-color,box-shadow] duration-300 max-[680px]:h-14 max-[420px]:gap-2 max-[420px]:px-2 max-[360px]:h-13 max-[360px]:gap-1 max-[360px]:px-1.5 ${
             scrolled
               ? "border-paper/20 bg-ink/90 shadow-[0_18px_50px_rgba(0,0,0,0.38)]"
               : "border-paper/15 bg-ink/62"
@@ -141,8 +141,8 @@ export function SiteHeader() {
             href="#top"
             aria-label={t(copy.brandHome)}
           >
-            <span className="flex size-11 shrink-0 items-center justify-center border border-paper/25 bg-ink transition-colors duration-200 group-hover:border-acid group-hover:bg-acid group-hover:text-ink max-[680px]:size-10">
-              <span className="font-display text-[15px] leading-none font-[800] tracking-[-0.04em] whitespace-nowrap max-[680px]:text-[14px]">
+            <span className="flex size-11 shrink-0 items-center justify-center border border-paper/25 bg-ink transition-colors duration-200 group-hover:border-acid group-hover:bg-acid group-hover:text-ink max-[680px]:size-10 max-[360px]:size-9">
+              <span className="font-display text-[15px] leading-none font-[800] tracking-[-0.04em] whitespace-nowrap max-[680px]:text-[14px] max-[360px]:text-[13px]">
                 F<span className="text-acid group-hover:text-ink" aria-hidden="true">/</span>R
               </span>
             </span>
@@ -188,7 +188,7 @@ export function SiteHeader() {
             </ul>
           </nav>
 
-          <div className="flex flex-1 items-center justify-end gap-2">
+          <div className="flex flex-1 items-center justify-end gap-2 max-[360px]:gap-1">
             {/* Five nav links leave less room than four did, so the status
                 strip only appears once there is genuinely space for it. */}
             <p className="nav-location m-0 hidden h-11 items-center gap-2 whitespace-nowrap min-[1620px]:flex">
@@ -202,7 +202,7 @@ export function SiteHeader() {
             <LocaleToggle />
             <button
               type="button"
-              className="inline-flex h-11 shrink-0 items-center border border-paper/25 px-3.5 text-paper transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[680px]:px-3 max-[420px]:px-2.5"
+              className="inline-flex h-11 shrink-0 items-center border border-paper/25 px-3.5 text-paper transition-colors duration-200 hover:border-acid hover:bg-acid hover:text-ink max-[680px]:px-3 max-[420px]:px-2.5 max-[360px]:px-2"
               onClick={openCvPreview}
               data-cursor
             >
