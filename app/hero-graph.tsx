@@ -72,8 +72,9 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
   const t = useT();
   const reduced = Boolean(useReducedMotion());
   const introReady = useIntroReady();
+  const wideLayout = useMediaQuery("(min-width: 1001px)");
   const finePointer = useMediaQuery("(pointer: fine)");
-  const tilt = finePointer && !reduced && introReady;
+  const tilt = wideLayout && finePointer && !reduced && introReady;
   const rootRef = useRef<HTMLDivElement>(null);
   const rotateX = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
   const rotateY = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
@@ -133,7 +134,10 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
       className="hero-system pointer-events-none relative z-0 aspect-square w-[min(100%,40vw,560px)] max-[1000px]:w-[min(72vw,380px)] max-[680px]:w-[min(86vw,320px)]"
       aria-hidden="true"
     >
-      <motion.div className="size-full origin-center will-change-transform" style={{ rotate, y }}>
+      <motion.div
+        className="size-full origin-center will-change-transform"
+        style={wideLayout ? { rotate, y } : undefined}
+      >
         <div className="relative size-full">
           <motion.div
             variants={heroGraphParent}

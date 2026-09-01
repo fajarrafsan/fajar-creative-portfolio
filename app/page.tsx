@@ -386,8 +386,8 @@ function Portfolio() {
         </motion.div>
 
         <div className="relative z-[2] flex min-h-0 w-full flex-1 flex-col gap-10 max-[1000px]:flex-none min-[1001px]:grid min-[1001px]:grid-cols-[minmax(0,1.08fr)_minmax(300px,0.92fr)] min-[1001px]:items-center min-[1001px]:gap-x-[clamp(2rem,4.5vw,5.5rem)] min-[1001px]:gap-y-0 max-[680px]:gap-8">
-          <div className="min-w-0 max-[680px]:flex max-[680px]:min-h-[calc(100svh-12.5rem)] max-[680px]:flex-col">
-          <h1 id="hero-title" className="font-display relative m-0 text-[clamp(52px,8vw,120px)] leading-[0.96] font-[770] tracking-[-0.05em] uppercase max-[1000px]:text-[clamp(56px,13.5vw,104px)] max-[1000px]:leading-[0.96] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
+          <div className="min-w-0 max-[1000px]:contents">
+          <h1 id="hero-title" className="font-display relative m-0 text-[clamp(52px,8vw,120px)] leading-[0.96] font-[770] tracking-[-0.05em] uppercase max-[1000px]:order-1 max-[1000px]:text-[clamp(56px,13.5vw,104px)] max-[1000px]:leading-[0.96] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
             {[
               ["FULL", "block w-fit overflow-hidden py-[0.06em] pr-[0.08em]"],
               ["STACK", "block w-fit overflow-hidden py-[0.06em] pr-[0.08em] pl-[0.12em] text-acid"],
@@ -411,7 +411,7 @@ function Portfolio() {
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.58 : 0 }}
-          className="hero-foot relative mt-[clamp(28px,3.6vh,44px)] border-t border-paper/25 pt-4.5 max-[420px]:mt-7 max-[420px]:pt-5 max-[420px]:pb-1">
+          className="hero-foot relative mt-[clamp(28px,3.6vh,44px)] border-t border-paper/25 pt-4.5 max-[1000px]:order-3 max-[1000px]:mt-0 max-[420px]:pt-5 max-[420px]:pb-1">
           <div className="relative min-w-0 w-full">
             <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.3] tracking-[-0.026em] text-paper/85 max-[680px]:text-base max-[420px]:mb-4 max-[420px]:text-[15px] max-[420px]:leading-[1.45]">
               {t(copy.heroLede).map((segment, index) => {
@@ -502,7 +502,7 @@ function Portfolio() {
         </motion.div>
           </div>
 
-          <div className="flex w-full items-center justify-center min-[1001px]:justify-end">
+          <div className="flex w-full items-center justify-center max-[1000px]:order-2 min-[1001px]:justify-end">
             <HeroGraph rotate={systemRotate} />
           </div>
         </div>
