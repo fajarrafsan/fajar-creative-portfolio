@@ -27,17 +27,17 @@ function sineLane(y: number, amp: number, cycles: number, x0: number, x1: number
   return d;
 }
 
-const lanes = Array.from({ length: 10 }, (_, i) => {
+const lanes = Array.from({ length: 6 }, (_, i) => {
   const color = COLORS[i % COLORS.length];
   return {
     id: i,
-    d: sineLane(96 + i * 40, 46, 0.7, -40, 1180),
+    d: sineLane(56 + i * 22, 16, 0.42, -28, 720),
     color,
-    width: color === "#d8ff3e" ? 1.55 : 1.15,
-    rail: color === "#d8ff3e" ? 0.16 : 0.09,
-    flow: color === "#d8ff3e" ? 0.82 : 0.48,
-    duration: `${18 + (i % 5) * 2.2}s`,
-    delay: `${(i * 0.55).toFixed(2)}s`,
+    width: color === "#d8ff3e" ? 1.4 : 1.05,
+    rail: color === "#d8ff3e" ? 0.14 : 0.07,
+    flow: color === "#d8ff3e" ? 0.5 : 0.28,
+    duration: `${20 + (i % 4) * 2.4}s`,
+    delay: `${(i * 0.7).toFixed(2)}s`,
   };
 });
 
@@ -53,14 +53,13 @@ export function BackgroundPaths({
 
   return (
     <div
-      className={`hero-paths pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(90deg,#000_0%,#000_48%,transparent_76%),linear-gradient(180deg,#000_0%,#000_60%,transparent_88%)] [mask-composite:intersect] [-webkit-mask-image:linear-gradient(90deg,#000_0%,#000_48%,transparent_76%),linear-gradient(180deg,#000_0%,#000_60%,transparent_88%)] [-webkit-mask-composite:source-in] ${className ?? ""}`}
-      style={{ opacity: active ? 1 : 0, transition: "opacity 0.8s ease" }}
+      className={`hero-paths pointer-events-none absolute top-[20%] left-[38%] z-0 h-[22%] w-[26%] overflow-hidden transition-opacity duration-700 max-[1000px]:top-[16%] max-[1000px]:left-[8%] max-[1000px]:h-[22%] max-[1000px]:w-[42%] max-[680px]:top-[24%] max-[680px]:left-[4%] max-[680px]:h-[16%] max-[680px]:w-[48%] ${active ? "opacity-100 max-[680px]:opacity-30" : "opacity-0"} ${className ?? ""}`}
       aria-hidden="true"
     >
       <svg
         className="absolute inset-0 size-full"
         viewBox="0 0 1600 900"
-        preserveAspectRatio="xMinYMid slice"
+        preserveAspectRatio="xMinYMin slice"
         fill="none"
       >
         {lanes.map((lane) => (

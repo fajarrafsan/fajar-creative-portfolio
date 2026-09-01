@@ -26,9 +26,9 @@ function rng(seed: number) {
   };
 }
 
-function buildMotes(seed: number): Mote[] {
+function buildMotes(seed: number, count: number): Mote[] {
   const next = rng(seed);
-  return Array.from({ length: 32 }, (_, id) => {
+  return Array.from({ length: count }, (_, id) => {
     const roll = next();
     const kind: Kind = roll < 0.34 ? "plus" : roll < 0.62 ? "sq" : "dot";
     const tone: Tone = id % 6 === 0 ? "acid" : id % 10 === 0 ? "violet" : "paper";
@@ -47,9 +47,9 @@ function buildMotes(seed: number): Mote[] {
 }
 
 const TONE: Record<Tone, string> = {
-  paper: "text-paper/35",
-  acid: "text-acid/70",
-  violet: "text-violet/45",
+  paper: "text-paper/28",
+  acid: "text-acid/40",
+  violet: "text-violet/28",
 };
 
 function Mark({ kind }: { kind: Kind }) {
@@ -69,22 +69,35 @@ function Mark({ kind }: { kind: Kind }) {
 export function InkParticles({
   className,
   seed = 20260822,
+  count = 32,
+  variant = "default",
+  live = true,
 }: {
   className?: string;
   seed?: number;
+  count?: number;
+  /** `copy` keeps motes on the text side so they do not sit on graph nodes. */
+  variant?: "default" | "copy";
+  /** Parent field pauses motes when off-screen. */
+  live?: boolean;
 }) {
   const reduced = Boolean(useReducedMotion());
-  const motes = buildMotes(seed);
+  const motes = buildMotes(seed, count);
+  const drifting = live && !reduced;
+  const mask =
+    variant === "copy"
+      ? "[mask-image:linear-gradient(90deg,#000_0%,#000_34%,transparent_56%)] max-[1000px]:[mask-image:linear-gradient(180deg,#000_0%,#000_40%,transparent_76%)]"
+      : "[mask-image:linear-gradient(90deg,#000_0%,#000_46%,transparent_74%)] max-[1000px]:[mask-image:linear-gradient(180deg,#000_0%,#000_58%,transparent_90%)]";
 
   return (
     <div
-      className={`pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(90deg,#000_0%,#000_46%,transparent_74%)] max-[1000px]:[mask-image:linear-gradient(180deg,#000_0%,#000_58%,transparent_90%)] ${className ?? ""}`}
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${mask} ${className ?? ""}`}
       aria-hidden="true"
     >
       {motes.map((mote) => (
         <span
           key={mote.id}
-          className={`architecture-mote absolute ${TONE[mote.tone]} ${reduced ? "" : "is-live"}`}
+          className={`architecture-mote absolute ${TONE[mote.tone]} ${drifting ? "is-live" : ""}`}
           style={{
             left: mote.x,
             top: mote.y,

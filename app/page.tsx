@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type Ref } from "react";
-import { MotionConfig, motion } from "motion/react";
+import { MotionConfig, motion, useReducedMotion } from "motion/react";
 import {
   capabilities,
   copy,
@@ -33,17 +33,23 @@ import {
   heroChipParent,
   heroLine,
   LatchedReveal,
+  archItem,
+  archMeta,
+  archMetaParent,
+  archParent,
+  archWord,
+  ease,
   reveal,
   staggerChild,
   staggerParent,
   useHeroParallax,
+  useLatchedInView,
 } from "./motion";
 import { HorizontalScrollSection } from "./horizontal-scroll-section";
 import { HeroGraph } from "./hero-graph";
-import { InkParticles } from "./ink-particles";
-import { BackgroundPaths } from "../components/ui/background-paths";
+import { ProfileBackdrop } from "./profile-backdrop";
 import { ProfileCopy, ProfilePortrait } from "./profile-portrait";
-import { ProjectStack } from "./project-stack";
+import { ProjectStack, UtilityProjects } from "./project-stack";
 import { SiteHeader } from "./site-header";
 import { SystemGraph } from "./system-graph";
 import { SocialIcon, TechIcon } from "./tech-icons";
@@ -52,15 +58,157 @@ import { CvPreview, openCvPreview } from "./cv-preview";
 import { IntroGate, useIntroReady } from "./intro";
 import { useT } from "./i18n";
 import { PaperField } from "./paper-field";
+import { MotionInk } from "./ink-field";
 
-function SectionLabel({ index, label }: { index: string; label: string }) {
+function SectionLabel({ index, label, lively }: { index: string; label: string; lively?: boolean }) {
+  const reduced = useReducedMotion();
+  const slide = lively && !reduced;
+
   return (
     <div className="flex items-center gap-5 text-[11px] uppercase tracking-[0.1em]">
-      <span className="grid size-[38px] shrink-0 place-items-center rounded-full border border-current">
-        {index}
+      <span className="relative grid size-[38px] shrink-0 place-items-center overflow-hidden rounded-full border border-current">
+        {slide ? (
+          <motion.span
+            className="absolute inset-x-0 bottom-0 h-1/2 origin-bottom bg-acid"
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ duration: 0.55, ease, delay: 0.12 }}
+            aria-hidden="true"
+          />
+        ) : null}
+        <span className="relative z-[1] overflow-hidden leading-none">
+          <motion.span
+            className="block"
+            initial={slide ? { y: "120%" } : false}
+            animate={{ y: "0%" }}
+            transition={{ duration: slide ? 0.65 : 0, ease, delay: slide ? 0.18 : 0 }}
+          >
+            {index}
+          </motion.span>
+        </span>
       </span>
-      <p className="m-0">{label}</p>
+      <p className="m-0 overflow-hidden">
+        <motion.span
+          className="block"
+          initial={slide ? { y: "110%", opacity: 0 } : false}
+          animate={{ y: "0%", opacity: 1 }}
+          transition={{ duration: slide ? 0.6 : 0, ease, delay: slide ? 0.22 : 0 }}
+        >
+          {label}
+        </motion.span>
+      </p>
     </div>
+  );
+}
+
+function ArchitecturePanel() {
+  const t = useT();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { reduced, shown } = useLatchedInView(rootRef, {
+    margin: "0px 0px -12% 0px",
+    amount: 0.16,
+  });
+  const enter = shown ? "shown" : "hidden";
+  const initial = shown ? false : reduced ? "shown" : "hidden";
+
+  return (
+    <>
+      <motion.header
+        ref={rootRef}
+        className="relative z-[5] col-span-full min-w-0"
+        variants={archParent}
+        initial={initial}
+        animate={enter}
+      >
+        <div className="mb-[clamp(22px,2.8vw,36px)] flex items-end justify-between gap-6 max-[680px]:mb-5 max-[680px]:flex-col max-[680px]:items-start max-[680px]:gap-4">
+          <motion.div variants={archItem}>
+            <SectionLabel index="02" label={t(copy.sectionArchitecture)} lively />
+          </motion.div>
+          <motion.p
+            variants={archItem}
+            className="m-0 flex items-center gap-2.5 text-[12px] tracking-[0.16em] text-acid uppercase"
+          >
+            <i className="size-1.5 shrink-0 bg-acid" aria-hidden="true" />
+            {t(copy.architectureEyebrow)}
+          </motion.p>
+        </div>
+
+        <h2
+          id="system-title"
+          className="font-display m-0 text-[clamp(40px,5.8vw,84px)] leading-[0.88] font-[560] tracking-[-0.07em] max-[680px]:text-[clamp(36px,10.4vw,52px)] max-[420px]:text-[clamp(32px,9.6vw,42px)]"
+        >
+          {t(copy.architectureHeading).map((line, lineIndex) => (
+            <span
+              className={`block overflow-hidden pt-[0.04em] pb-[0.1em] [perspective:800px] ${lineIndex === 1 ? "mt-[0.06em]" : ""}`}
+              key={lineIndex}
+            >
+              <motion.span className="inline-block origin-bottom-left" variants={archWord} custom={lineIndex}>
+                {line.map((segment, index) =>
+                  segment.tone === "acid" ? (
+                    <span key={index} className="relative text-acid">
+                      <motion.span
+                        className="absolute inset-x-[-0.02em] bottom-[0.06em] z-0 h-[2px] origin-left bg-acid"
+                        initial={false}
+                        animate={{ scaleX: shown ? 1 : 0 }}
+                        transition={{ duration: reduced ? 0 : 0.7, ease, delay: reduced || !shown ? 0 : 0.28 + lineIndex * 0.1 }}
+                        aria-hidden="true"
+                      />
+                      <span className="relative z-[1]">{segment.text}</span>
+                    </span>
+                  ) : (
+                    <span key={index} className={segment.wrap === "sm" ? "max-[720px]:block" : undefined}>
+                      {segment.text}
+                    </span>
+                  ),
+                )}
+              </motion.span>
+            </span>
+          ))}
+        </h2>
+      </motion.header>
+
+      <motion.div
+        className="system-copy relative z-[5] min-w-0 min-[1001px]:self-center"
+        variants={archParent}
+        initial={initial}
+        animate={enter}
+      >
+        <motion.p
+          variants={archItem}
+          className="system-description mb-0 max-w-[58ch] text-[18px] leading-[1.65] text-[#c4c6bc] max-[680px]:text-[16.5px] max-[680px]:leading-[1.62]"
+        >
+          {t(copy.architectureBody).map((segment, index) =>
+            segment.tone === "strong" ? (
+              <em key={index} className="arch-token not-italic">
+                {segment.text}
+              </em>
+            ) : (
+              <span key={index}>{segment.text}</span>
+            ),
+          )}
+        </motion.p>
+
+        <motion.ul
+          className="mt-[clamp(28px,3.4vw,40px)] grid list-none grid-cols-3 gap-0 border-t border-paper/15 p-0 max-[420px]:grid-cols-1"
+          variants={archMetaParent}
+        >
+          {t(copy.architectureMeta).map((item) => (
+            <motion.li
+              key={item.value}
+              variants={archMeta}
+              className="flex min-h-[72px] flex-col justify-between border-l border-paper/15 px-3.5 py-3.5 first:border-l-0 first:pl-0 max-[420px]:min-h-0 max-[420px]:border-l-0 max-[420px]:border-t max-[420px]:px-0 max-[420px]:first:border-t-0"
+            >
+              <strong className="font-display text-[clamp(20px,2vw,30px)] leading-[0.9] font-[560] tracking-[-0.05em] text-paper">
+                {item.value}
+              </strong>
+              <span className="text-[10px] tracking-[0.14em] text-paper/55 uppercase">{item.label}</span>
+            </motion.li>
+          ))}
+        </motion.ul>
+      </motion.div>
+
+      <SystemGraph />
+    </>
   );
 }
 
@@ -208,7 +356,7 @@ export default function Home() {
 function Portfolio() {
   const t = useT();
   const heroRef = useRef<HTMLElement>(null);
-  const { gridY, systemRotate, systemY } = useHeroParallax(heroRef);
+  const { gridY, systemRotate } = useHeroParallax(heroRef);
   const introReady = useIntroReady();
 
   return (
@@ -221,59 +369,56 @@ function Portfolio() {
       <SiteHeader />
       <CvPreview />
 
-      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col justify-end overflow-x-clip px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:min-h-[900px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-6 max-[420px]:min-h-svh max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-5" id="top" aria-labelledby="hero-title">
+      <section ref={heroRef} className="hero relative isolate flex min-h-svh flex-col overflow-x-clip px-[3vw] pt-33 pb-7 max-[1000px]:pt-[110px] max-[680px]:px-[18px] max-[680px]:pt-[102px] max-[680px]:pb-8 max-[420px]:px-3.5 max-[420px]:pt-[92px] max-[420px]:pb-6" id="top" aria-labelledby="hero-title">
         <div className="pointer-events-none absolute inset-0 -z-[2] overflow-hidden" aria-hidden="true">
           <motion.div
             className="hero-grid absolute inset-x-0 -inset-y-[15%] will-change-transform bg-[image:linear-gradient(rgba(240,239,232,0.25)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.25)_1px,transparent_1px)] bg-[size:25vw_25vw] max-[1000px]:bg-[size:50vw_50vw]"
             style={{ y: gridY }}
           />
         </div>
-        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-          <BackgroundPaths active={introReady} />
-        </div>
-        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_78%_18%,rgba(216,255,62,0.1),transparent_32%)]" aria-hidden="true" />
-        <HeroGraph rotate={systemRotate} y={systemY} />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_78%_52%,rgba(216,255,62,0.1),transparent_36%)] max-[1000px]:bg-[radial-gradient(circle_at_50%_82%,rgba(216,255,62,0.08),transparent_42%)]" aria-hidden="true" />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.06 : 0 }}
-          className="hero-meta relative z-[1] mb-[clamp(28px,4vh,54px)] flex items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:items-start max-[680px]:mb-auto max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
-          <div className="hero-kicker flex items-center gap-3 max-[680px]:max-w-[200px] max-[680px]:leading-[1.35] max-[420px]:max-w-none">
-            <span className="status-dot size-[9px] animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
-            {t(copy.heroKicker)}
+          className="hero-meta relative z-[2] mb-4 flex shrink-0 items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:mb-5 max-[680px]:items-start max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3">
+          <div className="hero-kicker flex max-w-[calc(100%-14rem)] items-center gap-3 whitespace-nowrap leading-[1.45] max-[680px]:max-w-none max-[680px]:whitespace-normal">
+            <span className="status-dot size-[9px] shrink-0 animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
+            {t(copy.availability)}
           </div>
-          <p className="m-0 text-right leading-[1.35] max-[420px]:text-left">Java · Spring · React · TypeScript<br />© 2026</p>
+          <p className="m-0 shrink-0 text-right leading-[1.35] max-[420px]:text-left">Java · Spring · React · TypeScript<br />© 2026</p>
         </motion.div>
 
-        <h1 id="hero-title" className="font-display relative z-[1] m-0 text-[clamp(66px,11.4vw,182px)] leading-[0.77] font-[770] tracking-[-0.086em] uppercase [text-shadow:0_0_28px_rgba(11,13,12,0.8)] max-[1000px]:text-[clamp(62px,16.4vw,126px)] max-[1000px]:leading-[0.79] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
-          {[
-            ["FULL", "block overflow-hidden pr-[0.08em]"],
-            ["STACK", "block overflow-hidden pr-[0.08em] pl-[13.7vw] text-acid max-[1000px]:pl-[7vw] max-[420px]:pl-[4vw]"],
-            ["DEVELOPER.", "block overflow-hidden pr-[0.08em]"],
-          ].map(([word, maskClass], index) => (
-            <span className={maskClass} key={word}>
-              <motion.span
-                className="hero-word block origin-bottom-left will-change-transform"
-                variants={heroLine}
-                custom={index}
-                initial="hidden"
-                animate={introReady ? "shown" : "hidden"}
-              >
-                {word}
-              </motion.span>
-            </span>
-          ))}
-        </h1>
+        <div className="relative z-[2] flex min-h-0 w-full flex-1 flex-col gap-10 max-[1000px]:flex-none min-[1001px]:grid min-[1001px]:grid-cols-[minmax(0,1.08fr)_minmax(300px,0.92fr)] min-[1001px]:items-center min-[1001px]:gap-x-[clamp(2rem,4.5vw,5.5rem)] min-[1001px]:gap-y-0 max-[680px]:gap-8">
+          <div className="min-w-0 max-[680px]:flex max-[680px]:min-h-[calc(100svh-12.5rem)] max-[680px]:flex-col">
+          <h1 id="hero-title" className="font-display relative m-0 text-[clamp(52px,8vw,120px)] leading-[0.96] font-[770] tracking-[-0.05em] uppercase max-[1000px]:text-[clamp(56px,13.5vw,104px)] max-[1000px]:leading-[0.96] max-[680px]:text-[clamp(48px,15.2vw,91px)] max-[420px]:text-[clamp(38px,12vw,48px)]">
+            {[
+              ["FULL", "block w-fit overflow-hidden py-[0.06em] pr-[0.08em]"],
+              ["STACK", "block w-fit overflow-hidden py-[0.06em] pr-[0.08em] pl-[0.12em] text-acid"],
+              ["DEVELOPER.", "block w-fit overflow-hidden py-[0.06em] pr-[0.08em]"],
+            ].map(([word, maskClass], index) => (
+              <span className={maskClass} key={word}>
+                <motion.span
+                  className="hero-word block origin-bottom-left will-change-transform"
+                  variants={heroLine}
+                  custom={index}
+                  initial="hidden"
+                  animate={introReady ? "shown" : "hidden"}
+                >
+                  {word}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.58 : 0 }}
-          className="hero-foot relative z-[1] mt-[clamp(30px,4vh,50px)] flex items-end justify-between gap-6 border-t border-paper/25 pt-4.5 max-[680px]:items-stretch max-[680px]:gap-5 max-[420px]:mt-7 max-[420px]:flex-col max-[420px]:pt-5 max-[420px]:pb-1">
+          className="hero-foot relative mt-[clamp(28px,3.6vh,44px)] border-t border-paper/25 pt-4.5 max-[420px]:mt-7 max-[420px]:pt-5 max-[420px]:pb-1">
           <div className="relative min-w-0 w-full">
-            <span className="pointer-events-none absolute -inset-x-3 -inset-y-4 -z-[1] bg-[linear-gradient(90deg,var(--color-ink)_0%,var(--color-ink)_62%,transparent_100%)] max-[680px]:-inset-x-2 max-[420px]:inset-x-[-6px] max-[420px]:bg-[linear-gradient(to_top,var(--color-ink)_0%,var(--color-ink)_78%,transparent_100%)]" aria-hidden="true" />
-            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.3] tracking-[-0.026em] text-paper/85 [text-shadow:0_1px_16px_rgba(11,13,12,0.9)] max-[680px]:max-w-[82%] max-[680px]:text-base max-[420px]:mb-4 max-[420px]:max-w-none max-[420px]:text-[15px] max-[420px]:leading-[1.45]">
+            <p className="mb-5 max-w-[640px] text-[clamp(17px,1.55vw,25px)] leading-[1.3] tracking-[-0.026em] text-paper/85 max-[680px]:text-base max-[420px]:mb-4 max-[420px]:text-[15px] max-[420px]:leading-[1.45]">
               {t(copy.heroLede).map((segment, index) => {
                 if (segment.kind === "name")
                   return (
@@ -352,14 +497,20 @@ function Portfolio() {
                   </a>
                 </Magnetic>
               </div>
+              <Magnetic className="max-[680px]:hidden">
+                <a className="circle-link grid size-12 shrink-0 place-items-center rounded-full border border-paper bg-ink text-[22px] transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink" href="#work" aria-label={t(copy.scrollToProjects)}>
+                  <span aria-hidden="true">↓</span>
+                </a>
+              </Magnetic>
             </div>
           </div>
-          <Magnetic className="max-[680px]:hidden">
-            <a className="circle-link grid size-[62px] shrink-0 place-items-center rounded-full border border-paper bg-ink text-[22px] transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink" href="#work" aria-label={t(copy.scrollToProjects)}>
-              <span aria-hidden="true">↓</span>
-            </a>
-          </Magnetic>
         </motion.div>
+          </div>
+
+          <div className="flex w-full items-center justify-center min-[1001px]:justify-end">
+            <HeroGraph rotate={systemRotate} />
+          </div>
+        </div>
       </section>
 
       <section className="overflow-hidden border-y border-ink bg-acid text-ink" aria-label={t(copy.marqueeAria)}>
@@ -373,11 +524,12 @@ function Portfolio() {
 
       <section className="manifesto relative overflow-hidden bg-paper px-[3vw] py-[clamp(98px,13vw,210px)] text-ink max-[680px]:px-[18px] max-[680px]:pt-[92px] max-[680px]:pb-[110px] max-[420px]:px-3.5" id="profile" aria-labelledby="manifesto-title">
         <PaperField variant="profile" />
+        <ProfileBackdrop />
         <LatchedReveal className="relative mb-[clamp(52px,7vw,96px)]">
-          <SectionLabel index="01" label={t(copy.sectionProfile)} />
+          <SectionLabel index="01" label={t(copy.sectionProfile)} lively />
         </LatchedReveal>
 
-        <div className="relative grid grid-cols-[minmax(240px,0.78fr)_minmax(0,1.55fr)] items-start gap-x-[5vw] gap-y-14 max-[1000px]:grid-cols-1">
+        <div className="relative grid grid-cols-[minmax(280px,0.92fr)_minmax(0,1.42fr)] items-stretch gap-x-[4.5vw] gap-y-16 max-[1000px]:grid-cols-1">
           {/* ProfilePortrait stages its own multi-part entrance (wipe, corner
               marks, badge, caption) — wrapping it in the generic `reveal`
               fade would just add a second, conflicting fade on top. */}
@@ -386,40 +538,15 @@ function Portfolio() {
         </div>
       </section>
 
-      <section className="system-showcase relative grid grid-cols-[0.82fr_1.18fr] items-center gap-[5vw] overflow-hidden bg-ink bg-[image:radial-gradient(circle_at_70%_50%,rgba(57,124,255,0.12),transparent_34%)] px-[3vw] py-[clamp(110px,11vw,176px)] min-[1001px]:max-[1200px]:grid-cols-[minmax(0,0.9fr)_minmax(500px,1.1fr)] min-[1001px]:max-[1200px]:gap-[3vw] max-[1000px]:grid-cols-1 max-[1000px]:py-[110px] max-[680px]:px-[18px] max-[420px]:px-3.5 max-[420px]:py-16" id="architecture" aria-labelledby="system-title">
-        <InkParticles className="z-0" />
-        <motion.div
-          variants={staggerParent}
-          initial="hidden"
-          whileInView="shown"
-          viewport={{ once: true, amount: 0.65, margin: "0px 0px -150px 0px" }}
-          className="system-copy relative z-[5]"
-        >
-          <motion.div variants={staggerChild}>
-            <SectionLabel index="02" label={t(copy.sectionArchitecture)} />
-          </motion.div>
-          <motion.p variants={staggerChild} className="eyebrow mt-[70px] mb-5 text-[11px] tracking-[0.1em] text-acid uppercase min-[1001px]:max-[1200px]:mt-12 max-[680px]:mt-[52px]">{t(copy.architectureEyebrow)}</motion.p>
-          <motion.h2 variants={staggerChild} id="system-title" className="font-display mb-7 max-w-[670px] text-[clamp(46px,5.4vw,88px)] leading-[0.93] font-[560] tracking-[-0.066em] min-[1001px]:max-[1200px]:text-[clamp(44px,4.8vw,62px)] max-[1000px]:max-w-[850px] max-[680px]:text-[clamp(44px,13vw,68px)] max-[420px]:text-[clamp(32px,10vw,44px)]">
-            {t(copy.architectureHeading).map((segment, index) =>
-              segment.tone === "acid" ? (
-                <span key={index} className="text-acid">{segment.text}</span>
-              ) : (
-                <span key={index}>{segment.text}</span>
-              ),
-            )}
-          </motion.h2>
-          <motion.p variants={staggerChild} className="system-description mb-0 max-w-[480px] leading-[1.5] text-[#aeb0a8]">
-            {t(copy.architectureBody).map((segment, index) =>
-              segment.tone === "strong" ? (
-                <em key={index} className="hero-lede-token font-medium text-paper not-italic">{segment.text}</em>
-              ) : (
-                <span key={index}>{segment.text}</span>
-              ),
-            )}
-          </motion.p>
-        </motion.div>
-
-        <SystemGraph />
+      <MotionInk>
+      <section
+        className="system-showcase relative px-[3vw] py-[clamp(110px,11vw,176px)] max-[1000px]:py-[110px] max-[680px]:px-[18px] max-[420px]:px-3.5 max-[420px]:py-16"
+        id="architecture"
+        aria-labelledby="system-title"
+      >
+        <div className="relative z-[5] grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start gap-x-[4.5vw] gap-y-[clamp(36px,4.2vw,64px)] min-[1001px]:max-[1200px]:grid-cols-[minmax(0,0.92fr)_minmax(500px,1.08fr)] min-[1001px]:max-[1200px]:gap-x-[3vw] max-[1000px]:grid-cols-1">
+          <ArchitecturePanel />
+        </div>
       </section>
 
       <HorizontalScrollSection
@@ -428,6 +555,7 @@ function Portfolio() {
         heading={frontendArchitecture.heading}
         panels={frontendArchitecture.panels}
       />
+      </MotionInk>
 
       <section className="work-section relative bg-paper px-[3vw] py-[clamp(96px,11vw,180px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5" id="work" aria-labelledby="work-title">
         <PaperField variant="work" />
@@ -440,6 +568,7 @@ function Portfolio() {
         </motion.div>
 
         <ProjectStack />
+        <UtilityProjects />
       </section>
 
       <section className="capabilities relative overflow-hidden bg-ink px-[3vw] py-[clamp(100px,12vw,190px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5" id="stack" aria-labelledby="capabilities-title">
@@ -516,6 +645,9 @@ function Portfolio() {
               </h2>
               <p className="m-0 max-w-[52ch] text-[15px] leading-[1.55] text-[#a7a99f]">
                 {t(copy.toolchainBody)}
+              </p>
+              <p className="mt-3 mb-0 max-w-[52ch] text-[13px] leading-[1.5] text-[#8d8f85]">
+                {t(copy.toolchainNote)}
               </p>
             </div>
           </motion.div>
@@ -605,9 +737,14 @@ function Portfolio() {
           <motion.div variants={contactItem}>
             <SectionLabel index="08" label={t(copy.sectionConnect)} />
           </motion.div>
-          <motion.p variants={contactItem} className="m-0 max-w-[480px] text-[clamp(17px,1.5vw,23px)] leading-[1.28]">
-            {t(copy.contactBlurb)}
-          </motion.p>
+          <motion.div variants={contactItem} className="m-0 max-w-[480px]">
+            <p className="m-0 text-[clamp(17px,1.5vw,23px)] leading-[1.28]">
+              {t(copy.contactBlurb)}
+            </p>
+            <p className="mt-3 mb-0 text-[11px] tracking-[0.09em] uppercase leading-[1.45]">
+              {t(copy.availability)}
+            </p>
+          </motion.div>
         </div>
         <h2
           id="contact-title"

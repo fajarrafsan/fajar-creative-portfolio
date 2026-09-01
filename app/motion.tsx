@@ -84,10 +84,10 @@ export const staggerChild: Variants = {
   shown: { opacity: 1, x: 0, transition: { duration: 0.72, ease } },
 };
 
-/** Profile: short headline words, then copy and stats. Stagger stays under 50ms. */
+/** Profile: headline, chips, copy, then a nested stats stagger. */
 export const profileParent: Variants = {
   hidden: {},
-  shown: { transition: { staggerChildren: 0.045, delayChildren: 0.08 } },
+  shown: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
 };
 
 // A soft blur-to-focus riding along with the fade is what makes this read as
@@ -95,35 +95,87 @@ export const profileParent: Variants = {
 // difference between a mechanical opacity tween and something that feels shot
 // on camera with a rack focus.
 export const profileItem: Variants = {
-  hidden: { opacity: 0, y: 18, filter: "blur(6px)" },
-  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.65, ease } },
+  hidden: { opacity: 0, y: 22, filter: "blur(6px)" },
+  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.62, ease } },
 };
 
 export const profileChipParent: Variants = {
   hidden: {},
-  shown: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } },
+  shown: { transition: { staggerChildren: 0.07, delayChildren: 0.02 } },
 };
 
 export const profileChip: Variants = {
-  hidden: { opacity: 0, scale: 0.9, y: 14, filter: "blur(4px)" },
+  hidden: { opacity: 0, scale: 0.84, y: 18, filter: "blur(4px)" },
   shown: {
     opacity: 1,
     scale: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: { type: "spring", stiffness: 260, damping: 22, mass: 0.6 },
+    transition: { type: "spring", stiffness: 280, damping: 18, mass: 0.55 },
   },
 };
 
+/** SplitText-style line lockup, in Motion — two headline lines only. */
 export const profileWord: Variants = {
-  hidden: { y: "108%", rotateX: -42, opacity: 0, filter: "blur(4px)" },
+  hidden: { y: "110%", rotateX: -52, opacity: 0, filter: "blur(5px)" },
   shown: (index: number) => ({
     y: "0%",
     rotateX: 0,
     opacity: 1,
     filter: "blur(0px)",
-    transition: { duration: 0.7, ease, delay: 0.04 + index * 0.045 },
+    transition: { duration: 0.78, ease, delay: 0.05 + index * 0.08 },
   }),
+};
+
+export const profileStatParent: Variants = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+};
+
+export const profileStat: Variants = {
+  hidden: { opacity: 0, y: 32, filter: "blur(6px)" },
+  shown: {
+    opacity: 1,
+    y: 0,
+    filter: "blur(0px)",
+    transition: { duration: 0.55, ease },
+  },
+};
+
+/**
+ * Architecture copy on ink. Same latch + lockup idea as profile so a locale
+ * remount cannot rewind `whileInView` `once`. Stagger lives on the text
+ * column only — never wrap SystemGraph in this parent.
+ */
+export const archParent: Variants = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.07, delayChildren: 0.06 } },
+};
+
+export const archItem: Variants = {
+  hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
+  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.62, ease } },
+};
+
+export const archWord: Variants = {
+  hidden: { y: "108%", rotateX: -38, opacity: 0, filter: "blur(5px)" },
+  shown: (index: number) => ({
+    y: "0%",
+    rotateX: 0,
+    opacity: 1,
+    filter: "blur(0px)",
+    transition: { duration: 0.82, ease, delay: 0.04 + index * 0.1 },
+  }),
+};
+
+export const archMetaParent: Variants = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.08, delayChildren: 0.02 } },
+};
+
+export const archMeta: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 
 /**

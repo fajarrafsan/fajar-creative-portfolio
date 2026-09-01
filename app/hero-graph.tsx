@@ -130,7 +130,7 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
   return (
     <div
       ref={rootRef}
-      className="hero-system pointer-events-none absolute top-[max(72px,6%)] right-[3vw] z-0 w-[min(46vw,700px)] aspect-square max-[1000px]:top-[12%] max-[1000px]:right-[18px] max-[1000px]:w-[min(64vw,560px)] max-[680px]:top-[10%] max-[680px]:w-[min(78vw,440px)] max-[420px]:top-[88px] max-[420px]:right-3.5 max-[420px]:w-[min(88vw,300px)]"
+      className="hero-system pointer-events-none relative z-0 aspect-square w-[min(100%,40vw,560px)] max-[1000px]:w-[min(72vw,380px)] max-[680px]:w-[min(86vw,320px)]"
       aria-hidden="true"
     >
       <motion.div className="size-full origin-center will-change-transform" style={{ rotate, y }}>
@@ -234,9 +234,9 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               style={{ x: "-50%", y: "-50%" }}
               className="absolute top-1/2 left-1/2 z-[4] flex aspect-square w-[28%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_18px_rgba(216,255,62,0.06),0_0_70px_rgba(216,255,62,0.28)]"
             >
-              <small className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[7px]">{t(copy.graphCore)}</small>
-              <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em] max-[420px]:text-[12px]">FULL</strong>
-              <span className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[7px]">Stack</span>
+              <small className="text-[8px] tracking-[0.16em] uppercase">{t(copy.graphCore)}</small>
+              <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em]">FULL</strong>
+              <span className="text-[8px] tracking-[0.16em] uppercase">Stack</span>
             </motion.div>
 
             {nodes.map((node) => (
@@ -249,19 +249,19 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               // actually applies, leaving every card offset from its point.
               <div
                 key={node.id}
-                className="absolute z-[5] h-[min(44px,9%)] w-[min(158px,24%)] max-[420px]:h-[min(48px,10%)] max-[420px]:w-[min(170px,27%)]"
+                className="absolute z-[5] h-[min(44px,9%)] w-[min(158px,26%)]"
                 style={{ left: pct(node.x), top: pct(node.y), transform: "translate(-50%, -50%)" }}
               >
                 <motion.div
                   variants={graphNode}
-                  className="flex size-full items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm max-[420px]:gap-1 max-[420px]:px-1"
+                  className="flex size-full items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm"
                 >
-                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6 max-[420px]:size-4">
-                    <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3 max-[420px]:size-2" />
+                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6">
+                    <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3" />
                   </span>
                   <span className="min-w-0">
-                    <strong className="block truncate text-[12px] leading-none tracking-[-0.03em] max-[420px]:text-[8px]">{node.label}</strong>
-                    <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase max-[420px]:hidden">{node.sub}</small>
+                    <strong className="block truncate text-[12px] leading-none tracking-[-0.03em]">{node.label}</strong>
+                    <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase">{node.sub}</small>
                   </span>
                 </motion.div>
               </div>

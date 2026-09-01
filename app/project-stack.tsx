@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform, type MotionValue } from "motion/react";
-import { artThemes, copy, projects, type Project } from "./content";
-import anistreamCover from "./covers/anistream.jpg";
-import glowmarketCover from "./covers/glowmarket.jpg";
-import roomlyCover from "./covers/roomly.jpg";
-import siaCover from "./covers/sia.jpg";
-import { useMediaQuery } from "./motion";
+import { motion, useReducedMotion, type Variants } from "motion/react";
+import { artThemes, copy, projects, utilityProjects, type Project, type UtilityProject } from "./content";
+import anistreamCover from "./covers/anistream.webp";
+import arunikaCover from "./covers/arunika.webp";
+import glowmarketCover from "./covers/glowmarket.webp";
+import goldPriceCover from "./covers/gold-price.webp";
+import roomlyCover from "./covers/roomly.webp";
+import siaCover from "./covers/sia.webp";
+import { LatchedReveal, ease, useMediaQuery } from "./motion";
 import { useT, dual } from "./i18n";
 import { PaperField } from "./paper-field";
 import { ArrowOut, Chevron, SocialIcon } from "./tech-icons";
@@ -18,204 +20,110 @@ function bundledSrc(image: string | { src: string }) {
 
 const bundledCovers: Record<string, string> = {
   anistream: bundledSrc(anistreamCover),
+  arunika: bundledSrc(arunikaCover),
   glowmarket: bundledSrc(glowmarketCover),
+  goldprice: bundledSrc(goldPriceCover),
   roomly: bundledSrc(roomlyCover),
   sia: bundledSrc(siaCover),
 };
 
-const containCovers = new Set(["glowmarket", "sia"]);
+/**
+ * Where the first card pins, clear of the fixed site header.
+ */
+const STACK_TOP = 104;
+/** How much lower each following card pins. This gap is the whole effect: it
+ *  leaves the previous card's top edge showing, so the deck reads as a stack
+ *  rather than as one card being replaced by another. */
+const STACK_STEP = 16;
+/** Depth lift per card against the deck's perspective, in px. */
+const STACK_LIFT = 12;
+/**
+ * How many card edges the deck ever shows.
+ *
+ * Without this the offset grows with every project, so each new one added
+ * would push the deck further down the viewport and eat into the card's own
+ * height. Capping it means the stack looks identical whether there are four
+ * projects or fourteen — only the scroll gets longer.
+ */
+const STACK_PEEK_MAX = 3;
+/**
+ * Space a pinned card gives up: the deepest pin plus a little breathing room
+ * at the bottom. A card is sized to the viewport minus this, which is what
+ * guarantees its footer — metrics, stack chips, the live links — is on screen
+ * rather than hanging below the fold.
+ */
+const DECK_INSET = STACK_TOP + STACK_PEEK_MAX * STACK_STEP + 26;
 
 /**
- * The stack is a tall scroll track with a sticky viewport inside it. Each card
- * reads the track's own progress and derives its transform from it, so the
- * whole sequence is a pure function of scroll position — nothing imperative,
- * and no pinning plugin involved.
+ * Entrance cascade for a card's regions.
  *
- * The budget is split into a lead-in, one segment per hand-off, and a tail, so
- * the first and last cards hold still at either end of the track.
- *
- * Below `md` and for `prefers-reduced-motion`, stylesheet rules marked
- * `!important` neutralise these inline transforms and the cards simply stack in
- * normal flow — see the matching blocks in globals.css.
+ * Driven by `whileInView` — one state change per card, not a value recomputed
+ * on every frame. The previous version scrubbed a dozen transforms per card
+ * off a hand-rolled scroll sampler; this leaves the pinning to the browser and
+ * spends JS only when a card first arrives.
  */
-const LEAD = 0.18;
-const TAIL = 0.1;
-/**
- * Share of a segment spent moving. The remainder is dwell: the card sits still
- * and fully legible before the next one starts climbing over it. Kept under
- * half so the copy can actually be read, not just flashed.
- */
-const MOVE = 0.36;
-/** Incoming cards start just below the slot so a rotate never peeks a sliver. */
-const ENTER_FROM = 106;
-/** How far a settled previous card peeks above the current one, per layer. */
-const PEEK = 3.45;
-const PEEK_LAYERS = 2;
-const SCALE_IN = 0.974;
-const SCALE_RECESS = 0.022;
-const ROTATE_IN = 0.7;
-const DIM_BASE = 0.07;
-const DIM_STEP = 0.04;
-const DIM_MAX = 0.15;
-const ART_ZOOM = 1.05;
-
-export function timings(index: number, total: number) {
-  const step = (1 - LEAD - TAIL) / Math.max(1, total - 1);
-  const enterStart = LEAD + (index - 1) * step;
-  const exitStart = LEAD + index * step;
-  return {
-    step,
-    move: step * MOVE,
-    enterStart,
-    enterEnd: enterStart + step * MOVE,
-    exitStart,
-    exitEnd: exitStart + step * MOVE,
-  };
-}
-
-function clamp01(value: number) {
-  return Math.min(1, Math.max(0, value));
-}
-
-/** C2 smootherstep — zero 1st/2nd derivative at the ends, so reverse scroll doesn't kick. */
-function smootherstep(value: number) {
-  const x = clamp01(value);
-  return x * x * x * (x * (x * 6 - 15) + 10);
-}
-
-function unit(progress: number, start: number, duration: number) {
-  if (duration <= 0) return progress >= start ? 1 : 0;
-  return smootherstep((progress - start) / duration);
-}
-
-function layersAbove(progress: number, index: number, total: number) {
-  if (index >= total - 1) return 0;
-  let layers = 0;
-  for (let i = index + 1; i < total; i++) {
-    const t = timings(i, total);
-    if (progress <= t.enterStart) break;
-    layers += unit(progress, t.enterStart, t.move);
-  }
-  return Math.min(PEEK_LAYERS, layers);
-}
-
-function cardY(progress: number, index: number, total: number) {
-  const t = timings(index, total);
-  let enter = 0;
-  if (index !== 0) {
-    if (progress <= t.enterStart) enter = ENTER_FROM;
-    else if (progress < t.enterEnd) enter = ENTER_FROM * (1 - unit(progress, t.enterStart, t.move));
-    else enter = 0;
-  }
-  return `${enter - layersAbove(progress, index, total) * PEEK}%`;
-}
-
-function cardScale(progress: number, index: number, total: number) {
-  const t = timings(index, total);
-  if (index !== 0 && progress < t.enterEnd) {
-    const u = progress <= t.enterStart ? 0 : unit(progress, t.enterStart, t.move);
-    return SCALE_IN + (1 - SCALE_IN) * u;
-  }
-  return 1 - SCALE_RECESS * layersAbove(progress, index, total);
-}
-
-function cardRotate(progress: number, index: number, total: number) {
-  if (index === 0) return 0;
-  const t = timings(index, total);
-  if (progress >= t.enterEnd) return 0;
-  if (progress <= t.enterStart) return ROTATE_IN;
-  return ROTATE_IN * (1 - unit(progress, t.enterStart, t.move));
-}
-
-function cardDim(progress: number, index: number, total: number) {
-  if (index >= total - 1) return 0;
-  const layers = layersAbove(progress, index, total);
-  if (layers <= 0) return 0;
-  return Math.min(DIM_MAX, DIM_BASE + DIM_STEP * layers);
-}
-
-function cardCopy(progress: number, index: number, total: number) {
-  const t = timings(index, total);
-  const isFirst = index === 0;
-  const isLast = index === total - 1;
-  const fadeIn = t.move * 0.16;
-  const fadeOut = t.move * 0.42;
-
-  if (isFirst) {
-    if (progress <= t.exitStart) return 1;
-    return 1 - smootherstep((progress - t.exitStart) / fadeOut);
-  }
-  if (isLast) {
-    if (progress >= t.enterEnd) return 1;
-    if (progress <= t.enterStart + fadeIn) return 0;
-    return smootherstep((progress - t.enterStart - fadeIn) / Math.max(0.0001, t.move - fadeIn));
-  }
-  if (progress <= t.enterStart + fadeIn) return 0;
-  if (progress < t.enterEnd) {
-    return smootherstep((progress - t.enterStart - fadeIn) / Math.max(0.0001, t.move - fadeIn));
-  }
-  if (progress <= t.exitStart) return 1;
-  return 1 - smootherstep((progress - t.exitStart) / fadeOut);
-}
-
-function cardArtScale(progress: number, index: number, total: number) {
-  if (index === 0) return 1;
-  const t = timings(index, total);
-  if (progress >= t.enterEnd) return 1;
-  if (progress <= t.enterStart) return ART_ZOOM;
-  return ART_ZOOM - (ART_ZOOM - 1) * unit(progress, t.enterStart, t.move);
-}
-
-function topCardIndex(progress: number, total: number) {
-  for (let i = total - 1; i >= 1; i--) {
-    if (progress > timings(i, total).enterStart) return i;
-  }
-  return 0;
-}
+const deckStagger: Variants = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.085, delayChildren: 0.12 } },
+};
+const deckPiece: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
+};
+const deckArt: Variants = {
+  hidden: { opacity: 0, scale: 1.06 },
+  shown: { opacity: 1, scale: 1, transition: { duration: 0.9, ease } },
+};
+const deckEdge: Variants = {
+  hidden: { scaleX: 0 },
+  shown: { scaleX: 1, transition: { duration: 0.75, ease } },
+};
 
 function ProjectCard({
   project,
   index,
-  total,
-  progress,
-  inert,
   stacked,
 }: {
   project: Project;
   index: number;
-  total: number;
-  progress: MotionValue<number>;
-  inert: boolean;
   stacked: boolean;
 }) {
   const translate = useT();
   const reduced = Boolean(useReducedMotion());
   const cover = bundledCovers[project.variant] ?? project.cover;
 
-  const y = useTransform(progress, (p) => cardY(p, index, total));
-  const scale = useTransform(progress, (p) => cardScale(p, index, total));
-  const rotate = useTransform(progress, (p) => cardRotate(p, index, total));
-  const dimOpacity = useTransform(progress, (p) => cardDim(p, index, total));
-  const copyOpacity = useTransform(progress, (p) => cardCopy(p, index, total));
-  const artScale = useTransform(progress, (p) => cardArtScale(p, index, total));
-  const pointerEvents = useTransform(progress, (p) =>
-    index === topCardIndex(p, total) ? "auto" : "none",
-  );
-
   return (
     <motion.article
-      className="project-card group/art relative min-w-0 overflow-hidden border-2 border-ink bg-paper md:absolute md:inset-[92px_0_36px] md:grid md:grid-rows-[minmax(0,1fr)_auto] md:overflow-hidden md:will-change-transform"
-      style={{
-        y,
-        scale,
-        rotate,
-        originX: 0.5,
-        originY: 0,
-        zIndex: index + 1,
-        pointerEvents: stacked ? pointerEvents : "auto",
-      }}
-      {...(inert ? { inert: true } : {})}
+      data-card-index={index}
+      className="project-card group/art relative min-w-0 overflow-hidden border-2 border-ink bg-paper md:sticky md:grid md:grid-rows-[minmax(0,1fr)_auto] md:overflow-hidden"
+      style={
+        stacked
+          ? {
+              // The browser owns the pinning. There is no scroll listener and
+              // no per-frame maths anywhere in this component any more.
+              top: STACK_TOP + Math.min(index, STACK_PEEK_MAX) * STACK_STEP,
+              // Sized to what is actually left of the viewport, so the card's
+              // footer never falls below the fold. The image row flexes and
+              // the meta row is `auto`, so the copy keeps its height and the
+              // cover gives way instead.
+              height: `calc(100svh - ${DECK_INSET}px)`,
+              zIndex: index + 1,
+              z: Math.min(index, STACK_PEEK_MAX) * STACK_LIFT,
+              backfaceVisibility: "hidden",
+            }
+          : undefined
+      }
+      initial={reduced ? false : "hidden"}
+      whileInView="shown"
+      viewport={{ once: true, amount: 0.25 }}
+      variants={deckStagger}
     >
+      {/* Acid top hairline on the active card — the focal edge of the deck. */}
+      <motion.span
+        className="pointer-events-none absolute inset-x-0 top-0 z-40 h-[3px] origin-left bg-acid"
+        variants={deckEdge}
+        aria-hidden="true"
+      />
       <div
         className={`project-art relative h-[min(56vw,770px)] min-h-[520px] overflow-hidden md:h-full md:min-h-0 max-[680px]:h-[108vw] max-[680px]:min-h-0 max-[420px]:h-[100vw] ${artThemes[project.variant]}`}
         data-cursor
@@ -225,7 +133,7 @@ function ProjectCard({
           className={`project-art-motion absolute grid place-items-center transition-[filter] duration-300 will-change-transform group-hover/art:saturate-[1.1] ${
             cover ? "inset-0" : "-inset-[8%]"
           }`}
-          style={{ scale: artScale }}
+          variants={deckArt}
         >
           {cover ? (
             <>
@@ -233,16 +141,8 @@ function ProjectCard({
                 src={cover}
                 alt=""
                 draggable={false}
-                className={
-                  containCovers.has(project.variant)
-                    ? "pointer-events-none absolute inset-0 size-full object-contain object-center"
-                    : "pointer-events-none absolute inset-0 size-full object-cover"
-                }
-                style={
-                  containCovers.has(project.variant)
-                    ? undefined
-                    : { objectPosition: project.coverPosition ?? "50% 50%" }
-                }
+                className="pointer-events-none absolute inset-0 size-full object-cover"
+                style={{ objectPosition: project.coverPosition ?? "50% 50%" }}
               />
               <span
                 className={
@@ -250,7 +150,11 @@ function ProjectCard({
                     ? "absolute inset-0 bg-linear-to-t from-[#27180d]/20 via-transparent to-[#27180d]/8"
                     : project.variant === "sia"
                       ? "absolute inset-0 bg-linear-to-t from-[#12233a]/28 via-transparent to-[#12233a]/10"
-                      : "absolute inset-0 bg-linear-to-t from-ink/42 via-ink/8 to-ink/14"
+                      : project.variant === "arunika"
+                        ? "absolute inset-0 bg-linear-to-t from-[#1a110c]/32 via-transparent to-[#1a110c]/12"
+                        : project.variant === "goldprice"
+                          ? "absolute inset-0 bg-linear-to-t from-[#1c1810]/28 via-transparent to-[#1c1810]/10"
+                          : "absolute inset-0 bg-linear-to-t from-ink/42 via-ink/8 to-ink/14"
                 }
               />
               {project.variant === "anistream" && (
@@ -313,8 +217,11 @@ function ProjectCard({
       </div>
 
       <div className="project-meta">
-        <motion.div className="project-main" style={{ opacity: copyOpacity }}>
-          <div className="project-copy-head">
+        <motion.div className="project-main">
+          <motion.div
+            className="project-copy-head"
+            variants={deckPiece}
+          >
             <div className="project-kicker">
               <span className="project-number">{project.number}</span>
               <span className="project-kicker-rule" aria-hidden="true" />
@@ -329,8 +236,11 @@ function ProjectCard({
                 <ArrowOut className="size-full" />
               </span>
             </h3>
-          </div>
-          <div className="project-copy-body">
+          </motion.div>
+          <motion.div
+            className="project-copy-body"
+            variants={deckPiece}
+          >
             <p className="project-note">{translate(project.note)}</p>
             <ul className="project-metrics">
               {project.metrics.map(([label, value]) => (
@@ -350,9 +260,9 @@ function ProjectCard({
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
         </motion.div>
-        <motion.div className="project-aside" style={{ opacity: copyOpacity }}>
+        <motion.div className="project-aside" variants={deckPiece}>
           <div className="project-year">
             <span>{translate(copy.year)}</span>
             <span className="project-year-value">{project.year}</span>
@@ -416,136 +326,242 @@ function ProjectCard({
           </div>
         </motion.div>
       </div>
-      <motion.span
-        className="project-dim pointer-events-none absolute inset-0 z-30 bg-ink"
-        style={{ opacity: dimOpacity }}
-      />
     </motion.article>
   );
 }
 
 export function ProjectStack() {
-  const stageRef = useRef<HTMLDivElement>(null);
   const total = projects.length;
   const [active, setActive] = useState(0);
-  // Cards only take turns on the pinned desktop stage; on mobile every card is
+  // Cards only take turns on the pinned desktop deck; on mobile every card is
   // on screen in flow and must stay reachable by keyboard.
   const stacked = useMediaQuery("(min-width: 768px)");
+  const deckRef = useRef<HTMLDivElement>(null);
 
   /**
-   * Window-scroll progress of the track (`start start` → `end end`).
-   * Motion's `useScroll({ target })` is accelerated via CSS view timelines in
-   * Chromium, and those freeze at 0 when an ancestor uses `overflow-x: clip`
-   * (html, body, and main all do). Sampling the track's box on animation
-   * frames follows native scroll and Lenis without listening to a hijacked
-   * wheel stream.
+   * Which card currently owns the top of the deck.
+   *
+   * Read from an IntersectionObserver, not from scroll position. The stacking
+   * itself is plain `position: sticky`, so there is no scroll progress to
+   * sample — and sampling one purely to light up a progress indicator would
+   * put JS back on every frame, which is the thing this rewrite removed.
    */
-  const scrollYProgress = useMotionValue(0);
   useEffect(() => {
-    const el = stageRef.current;
-    if (!el) return;
-
-    let frame = 0;
-    let cancelled = false;
-    let running = false;
-
-    const tick = () => {
-      if (cancelled || !running) return;
-      const rect = el.getBoundingClientRect();
-      const range = rect.height - window.innerHeight;
-      scrollYProgress.set(range <= 0 ? 0 : clamp01(-rect.top / range));
-      frame = requestAnimationFrame(tick);
-    };
+    const deck = deckRef.current;
+    if (!deck) return;
+    const cards = deck.querySelectorAll<HTMLElement>("[data-card-index]");
+    if (!cards.length) return;
 
     const io = new IntersectionObserver(
-      ([entry]) => {
-        const next = Boolean(entry?.isIntersecting);
-        if (next && !running) {
-          running = true;
-          frame = requestAnimationFrame(tick);
-        } else if (!next && running) {
-          running = false;
-          cancelAnimationFrame(frame);
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const next = Number(entry.target.getAttribute("data-card-index"));
+          setActive((current) => (current === next ? current : next));
         }
       },
-      { rootMargin: "100% 0px" },
+      // A band across the upper part of the viewport: a card claims the deck
+      // once its top has settled near where it pins.
+      { rootMargin: "-12% 0px -60% 0px", threshold: 0 },
     );
-    io.observe(el);
+    for (const card of cards) io.observe(card);
+    return () => io.disconnect();
+  }, [stacked]);
 
-    return () => {
-      cancelled = true;
-      running = false;
-      cancelAnimationFrame(frame);
-      io.disconnect();
-    };
-  }, [scrollYProgress]);
-  const playhead = useTransform(scrollYProgress, (p) => `${(clamp01(p) * 100).toFixed(2)}%`);
-
-  const step = (1 - LEAD - TAIL) / Math.max(1, total - 1);
-  useMotionValueEvent(scrollYProgress, "change", (p) => {
-    // Flip the index at the midpoint of each hand-off, so the card that now
-    // covers the stack is the one that can be focused and clicked.
-    const u = (p - LEAD) / step;
-    const next = Math.min(total - 1, Math.max(0, Math.floor(u + 1 - MOVE / 2)));
-    setActive((current) => (current === next ? current : next));
-  });
+  const travelled = (active + 1) / total;
 
   return (
     <div className="project-pin-shell mt-8">
-      <div
-        ref={stageRef}
-        className="project-track relative md:h-(--track-height)"
-        style={{ "--track-height": `${(total + 1.2) * 100}vh` } as React.CSSProperties}
-      >
-        <div className="project-stage relative z-[1] bg-paper md:sticky md:top-0 md:isolate md:h-svh md:min-h-[700px] md:overflow-hidden">
-          <div className="hidden md:contents">
-            <PaperField variant="work" />
-          </div>
-          <div
-            className="project-stage-progress pointer-events-none absolute inset-x-0 top-7 z-20 hidden grid-cols-[auto_minmax(120px,1fr)_auto_auto] items-center gap-4 text-[10px] tracking-[0.14em] text-ink uppercase md:grid"
-            aria-hidden="true"
-          >
-            <span className="font-display text-[13px] font-semibold tracking-[0.08em] tabular-nums">
-              {String(active + 1).padStart(2, "0")}
-              <span className="mx-1.5 font-sans text-[10px] font-medium tracking-[0.14em] text-[#6f7068]">/</span>
-              {String(total).padStart(2, "0")}
-            </span>
-            <span className="project-progress-rail">
-              <motion.i className="project-progress-fill" style={{ scaleX: scrollYProgress }} />
-              <motion.i className="project-progress-head" style={{ left: playhead }} />
-            </span>
-            <span className="max-w-[18ch] truncate text-[#4c4d46]">{projects[active]?.title}</span>
-            <ol className="m-0 flex list-none items-center gap-1.5 p-0">
-              {projects.map((project, index) => (
-                <li
-                  className={
-                    index === active
-                      ? "size-2 border border-ink bg-acid"
-                      : index < active
-                        ? "size-1.5 bg-ink"
-                        : "size-1.5 border border-ink/40"
-                  }
-                  key={project.number}
-                />
-              ))}
-            </ol>
-          </div>
+      <div className="hidden md:contents">
+        <PaperField variant="work" />
+      </div>
 
-          <div className="project-list relative z-[1] grid gap-[clamp(100px,12vw,190px)] pt-8 md:absolute md:inset-0 md:block md:pt-0 max-[680px]:gap-[98px]">
-            {projects.map((project, index) => (
-              <ProjectCard
-                key={project.number}
-                project={project}
-                index={index}
-                total={total}
-                progress={scrollYProgress}
-                inert={stacked && index !== active}
-                stacked={stacked}
-              />
-            ))}
+      <div
+        className="project-deck-progress pointer-events-none sticky top-0 z-30 hidden grid-cols-[auto_minmax(120px,1fr)_auto_auto] items-center gap-4 bg-paper/85 py-5 text-[10px] tracking-[0.14em] text-ink uppercase backdrop-blur-sm md:grid"
+        aria-hidden="true"
+      >
+        <span className="font-display text-[13px] font-semibold tracking-[0.08em] tabular-nums">
+          {String(active + 1).padStart(2, "0")}
+          <span className="mx-1.5 font-sans text-[10px] font-medium tracking-[0.14em] text-[#6f7068]">/</span>
+          {String(total).padStart(2, "0")}
+        </span>
+        <span className="project-progress-rail">
+          <motion.i
+            className="project-progress-fill"
+            style={{ originX: 0 }}
+            animate={{ scaleX: travelled }}
+            transition={{ duration: 0.5, ease }}
+          />
+          <motion.i
+            className="project-progress-head"
+            animate={{ left: `${(travelled * 100).toFixed(2)}%` }}
+            transition={{ duration: 0.5, ease }}
+          />
+        </span>
+        <span className="max-w-[18ch] truncate text-[#4c4d46]">{projects[active]?.title}</span>
+        <ol className="m-0 flex list-none items-center gap-1.5 p-0">
+          {projects.map((project, index) => (
+            <li
+              className={
+                index === active
+                  ? "size-2 border border-ink bg-acid"
+                  : index < active
+                    ? "size-1.5 bg-ink"
+                    : "size-1.5 border border-ink/40"
+              }
+              key={project.number}
+            />
+          ))}
+        </ol>
+      </div>
+
+      {/* A block container with margins between cards, deliberately not a grid.
+          A grid item's containing block is its own grid area, so each card
+          could only stick within its own row and then let go — which left the
+          tail padding below as dead space rather than dwell. As plain blocks
+          every card shares the deck as its containing block, so the stack
+          holds together and the tail is what keeps the last card pinned for a
+          beat instead of flicking past. */}
+      <div
+        ref={deckRef}
+        className="project-deck relative z-[1] space-y-[clamp(100px,12vw,190px)] pt-8 md:space-y-[clamp(48px,7vh,96px)] md:pt-2 max-[680px]:space-y-[98px]"
+        style={{ perspective: "1200px" }}
+      >
+        {projects.map((project, index) => (
+          <ProjectCard key={project.number} project={project} index={index} stacked={stacked} />
+        ))}
+        {/* The deck's tail, as a real box in flow rather than padding on the
+            deck. A sticky element is constrained by its containing block, and
+            for a block-level child that is the parent's CONTENT box — padding
+            sits outside it. As padding this gave the last card no room to pin
+            at all: it slid straight past while leaving 600px of empty deck
+            behind it. In flow, it is what the last card pins against. */}
+        <div aria-hidden="true" className="hidden md:block md:h-[58vh]" />
+      </div>
+    </div>
+  );
+}
+
+function UtilityProjectCard({ project }: { project: UtilityProject }) {
+  const translate = useT();
+  const cover = bundledCovers[project.variant] ?? project.cover;
+
+  return (
+    <article className="utility-card group/art relative z-[1] grid min-w-0 overflow-hidden border-2 border-ink bg-paper md:grid-cols-[minmax(220px,0.38fr)_minmax(0,1fr)]">
+      <div
+        className={`relative h-[min(42vw,280px)] min-h-[200px] overflow-hidden md:h-full md:min-h-[240px] max-[420px]:h-[56vw] max-[420px]:min-h-[180px] ${artThemes[project.variant]}`}
+        aria-hidden="true"
+      >
+        {cover ? (
+          <>
+            <img
+              src={cover}
+              alt=""
+              draggable={false}
+              className="pointer-events-none absolute inset-0 size-full object-cover object-center"
+            />
+            <span className="absolute inset-0 bg-linear-to-t from-[#1c1810]/30 via-transparent to-[#1c1810]/8" />
+          </>
+        ) : null}
+        <span className="pointer-events-none absolute inset-[2.5%_2%] z-[5] border border-current/20" />
+      </div>
+
+      <div className="flex min-w-0 flex-col gap-4 p-5 max-[420px]:p-4">
+        <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-6">
+          <div className="min-w-0">
+            <div className="project-kicker">
+              <span className="inline-flex min-h-7 items-center border border-ink/25 px-2 text-[9px] font-semibold tracking-[0.14em] uppercase">
+                {translate(copy.utilityEyebrow)}
+              </span>
+              <span className="project-number">{project.number}</span>
+              <span className="project-kicker-rule" aria-hidden="true" />
+              <span className="min-w-0">{translate(project.type)}</span>
+            </div>
+            <h3 className="font-display m-0 text-[clamp(28px,6vw,40px)] leading-[0.9] font-bold tracking-[-0.06em] max-[420px]:text-[clamp(24px,8vw,32px)]">
+              {project.title}
+            </h3>
+          </div>
+          <div className="project-year shrink-0 md:pt-1">
+            <span>{translate(copy.year)}</span>
+            <span className="project-year-value">{project.year}</span>
+          </div>
+        </div>
+
+        <p className="m-0 text-[15px] leading-[1.55] text-[#3a3b36] max-[420px]:text-sm">{translate(project.note)}</p>
+
+        <ul className="project-metrics !border-0 !pt-0">
+          {project.metrics.map(([label, value]) => (
+            <li className="flex min-w-0 items-baseline gap-2" key={typeof label === "string" ? label : label.en}>
+              <span className="text-[#6f7068]">{translate(label)}</span>
+              <span className="font-semibold text-ink">{translate(value)}</span>
+            </li>
+          ))}
+        </ul>
+
+        <ul className="project-stack-list" aria-label={translate(dual(`Teknologi ${project.title}`, `${project.title} technologies`))}>
+          {project.stack.map((item) => (
+            <li
+              className="border border-ink/25 px-2.5 py-1.5 text-[10px] font-medium tracking-[0.12em] whitespace-nowrap uppercase"
+              key={item}
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-auto flex flex-col gap-2 min-[520px]:flex-row">
+          {project.demo ? (
+            <a
+              className="group/live relative inline-flex min-h-11 flex-1 items-center justify-between gap-3 overflow-hidden border-2 border-ink bg-ink px-3.5 font-semibold tracking-[0.12em] text-acid uppercase transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink"
+              href={project.demo}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span className="relative flex items-center gap-2">
+                <i className="size-[7px] shrink-0 animate-pulse-dot rounded-full bg-current not-italic" aria-hidden="true" />
+                {translate(copy.liveDemo)}
+              </span>
+              <ArrowOut className="size-3.5 shrink-0" />
+            </a>
+          ) : null}
+          <div className="project-source flex-1">
+            {project.links.map(([label, href], linkIndex) => {
+              const github = href.includes("github.com");
+              return (
+                <a
+                  className="group/link flex min-h-11 items-center justify-between gap-3 px-2.5 text-[10px] font-medium tracking-[0.12em] uppercase transition-colors duration-250 hover:bg-ink hover:text-acid focus-visible:bg-ink focus-visible:text-acid"
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    {github ? (
+                      <SocialIcon name="github" className="size-3.5 shrink-0 opacity-70" />
+                    ) : (
+                      <i className="not-italic opacity-45">{String(linkIndex + 1).padStart(2, "0")}</i>
+                    )}
+                    <span className="min-w-0">{label}</span>
+                  </span>
+                  <ArrowOut className="size-3.5 shrink-0" />
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>
-    </div>
+    </article>
+  );
+}
+
+export function UtilityProjects() {
+  return (
+    <LatchedReveal className="relative z-[1] mt-[clamp(36px,5vw,64px)]">
+      <div className="flex flex-col gap-5">
+        {utilityProjects.map((project) => (
+          <UtilityProjectCard key={project.number} project={project} />
+        ))}
+      </div>
+    </LatchedReveal>
   );
 }

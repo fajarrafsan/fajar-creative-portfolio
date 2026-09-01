@@ -175,24 +175,183 @@
   background: radial-gradient(ellipse at 50% 42%, transparent 46%, rgba(11, 13, 12, 0.055) 100%);
 }
 
-/* Sticky project stack: clip sideways rotate, keep the paper field behind
-   cards, and never let the progress rail intercept the Live / GitHub hits. */
-/* The sticky stage clips rotated cards. Do not clip `.project-pin-shell`:
-   overflow-x other than `visible` makes it a scroll container, and Chromium
-   view-timelines then freeze card progress at 0. */
+/* MotionInk wraps architecture + frontend and only supplies the ink `text`
+   tone. Each stage paints its OWN `InkField` (architecture body, the sticky
+   pin viewport, the stacked layout) so the dark wash is confined to the
+   visible content and scrolls naturally — it is never stretched across the
+   frontend's long horizontal-pin track. */
+.motion-ink {
+  background-color: transparent;
+}
 
-.project-stage-progress {
+.ink-field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.ink-field-grid,
+.ink-field-ticks,
+.ink-field-fiber,
+.ink-field-dust {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  background-position: 0 0;
+}
+
+.ink-field-grid {
+  background-image:
+    linear-gradient(rgba(240, 239, 232, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 239, 232, 0.028) 1px, transparent 1px);
+  background-size: 96px 96px;
+}
+
+.ink-field.is-live .ink-field-grid {
+  animation: ink-grid 18s ease-in-out infinite;
+  animation-delay: var(--ink-grid-delay, 0s);
+}
+
+@keyframes ink-grid {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.ink-field-ticks {
+  opacity: 0.38;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cg fill='none' stroke='%23f0efe8' stroke-opacity='.16' stroke-width='1'%3E%3Cpath d='M42 36v10M37 41h10'/%3E%3Cpath d='M268 214v10M263 219h10'/%3E%3C/g%3E%3Cg fill='%23f0efe8' fill-opacity='.12'%3E%3Crect x='188' y='72' width='2' height='2'/%3E%3Ccircle cx='96' cy='288' r='1'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 360px 360px;
+}
+
+.ink-field-fiber {
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='pulp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23pulp)'/%3E%3C/svg%3E");
+}
+
+.ink-field.is-live .ink-field-fiber {
+  animation: ink-fiber 28s ease-in-out infinite;
+  animation-delay: var(--ink-fiber-delay, 0s);
+}
+
+@keyframes ink-fiber {
+  0%,
+  100% {
+    opacity: 0.07;
+  }
+  50% {
+    opacity: 0.11;
+  }
+}
+
+.ink-field-dust {
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='dust'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.15' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23dust)'/%3E%3C/svg%3E");
+}
+
+.ink-field.is-live .ink-field-dust {
+  animation: ink-dust 22s ease-in-out infinite;
+  animation-delay: var(--ink-dust-delay, 0s);
+}
+
+@keyframes ink-dust {
+  0%,
+  100% {
+    opacity: 0.045;
+  }
+  50% {
+    opacity: 0.08;
+  }
+}
+
+/* Viewport-sampled light so both clones share one lamp — no brightness
+   jump at the architecture / frontend join. Not a floating orb. */
+.ink-field-leak {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 58% 42% at 36% 22%, rgba(216, 255, 62, 0.05), transparent 70%),
+    radial-gradient(ellipse 72% 48% at 54% 30%, rgba(240, 239, 232, 0.028), transparent 72%);
+}
+
+.ink-field.is-live .ink-field-leak {
+  animation: ink-breathe 16s ease-in-out infinite;
+  animation-delay: var(--ink-breathe-delay, 0s);
+}
+
+@keyframes ink-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.ink-field-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 120% 90% at 50% 40%, transparent 52%, rgba(11, 13, 12, 0.16) 100%);
+}
+
+.system-showcase,
+#frontend,
+.frontend-pin,
+.frontend-stack {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+.arch-token {
+  padding-inline: 4px;
+  color: var(--color-paper);
+  font-weight: 600;
+  font-style: normal;
+  background-image: linear-gradient(transparent 58%, rgba(216, 255, 62, 0.22) 58%);
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 100% 42%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Project deck. Each card pins itself with `position: sticky`, so the browser
+   owns the stacking and no JS runs while scrolling. Do not give
+   `.project-pin-shell` an overflow other than `visible`: that would make it a
+   scroll container, and the cards would then stick to it rather than to the
+   viewport. */
+
+.project-deck-progress {
   pointer-events: none;
 }
 
-.project-stage > .paper-field {
+.project-pin-shell > .paper-field {
   z-index: 0;
 }
 
 .project-card {
+  /* Static on purpose. This used to swap between a resting and an elevated
+     shadow as each card won the top of the stack, but box-shadow is a paint
+     property: every hand-off forced a full repaint of a ~700px card carrying a
+     70px blur, right at the moment the deck was moving fastest. Elevation is
+     carried by lift, scale and dim instead — all compositor-only — so the
+     scrub never leaves the GPU. */
   box-shadow:
-    0 1px 0 rgba(11, 13, 12, 0.06),
-    0 24px 48px -26px rgba(11, 13, 12, 0.42);
+    0 1px 0 rgba(11, 13, 12, 0.07),
+    0 32px 58px -28px rgba(11, 13, 12, 0.5);
   overflow-x: clip;
 }
 
@@ -202,24 +361,28 @@
   min-width: 96px;
   overflow: visible;
   background: rgb(11 13 12 / 0.18);
+  border-radius: 999px;
 }
 
 .project-progress-fill {
   position: absolute;
   inset: 0;
   transform-origin: left center;
-  background: var(--color-ink);
-  opacity: 0.55;
+  background: linear-gradient(90deg, var(--color-ink), color-mix(in srgb, var(--color-acid) 70%, var(--color-ink)));
+  opacity: 1;
 }
 
 .project-progress-head {
   position: absolute;
-  top: calc(50% - 3.5px);
-  width: 7px;
-  height: 7px;
-  margin-left: -3.5px;
+  top: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 999px;
   background: var(--color-acid);
-  box-shadow: 0 0 0 1px var(--color-ink);
+  box-shadow:
+    0 0 0 1px var(--color-ink),
+    0 0 12px 2px color-mix(in srgb, var(--color-acid) 70%, transparent);
 }
 
 .project-source {
@@ -445,37 +608,61 @@
   -webkit-box-decoration-break: clone;
 }
 
-/* Profile section tokens — light-theme siblings of the hero highlighter.
-   Backend phrases get the java-orange marker, frontend phrases the acid
-   marker, echoing the packet colors of the architecture graphs. */
+/* Profile body marks — java for backend, acid for frontend. Weight + color
+   so meaning does not rely on hue alone. */
 .profile-token {
-  padding-inline: 3px;
+  padding-inline: 4px;
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 0% 44%;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
 .profile-token-java {
-  background-image: linear-gradient(transparent 58%, rgba(255, 97, 60, 0.14) 58%);
+  color: var(--color-ink);
+  background-image: linear-gradient(transparent 56%, rgba(255, 97, 60, 0.22) 56%);
 }
 
 .profile-token-react {
-  background-image: linear-gradient(transparent 58%, rgba(216, 255, 62, 0.45) 58%);
+  color: var(--color-ink);
+  background-image: linear-gradient(transparent 56%, rgba(216, 255, 62, 0.55) 56%);
 }
 
 @keyframes architecture-mote {
   0%,
   100% {
     transform: translate3d(0, 0, 0);
-    opacity: 0.22;
+    opacity: 0.14;
   }
   50% {
     transform: translate3d(var(--mote-x, 8px), var(--mote-y, -18px), 0);
-    opacity: 0.78;
+    opacity: 0.48;
   }
 }
 
 .architecture-mote.is-live {
   animation: architecture-mote var(--mote-dur, 12s) ease-in-out infinite;
+  animation-delay: var(--mote-delay, 0s);
+}
+
+/* Profile (paper) backdrop motes — same slow drift language as the dark-grid
+   motes, tuned for the light field: they rise slightly and pulse softly so
+   the modern aurora backdrop never reads as static. */
+@keyframes profile-mote {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.1;
+  }
+  50% {
+    transform: translate3d(var(--mote-x, 6px), var(--mote-y, -20px), 0);
+    opacity: 0.5;
+  }
+}
+
+.profile-mote.is-live {
+  animation: profile-mote var(--mote-dur, 14s) ease-in-out infinite;
   animation-delay: var(--mote-delay, 0s);
 }
 
@@ -586,6 +773,7 @@
   .frontend-pin {
     display: none !important;
     height: auto !important;
+    max-height: none !important;
     position: relative !important;
     overflow: visible !important;
   }
@@ -595,33 +783,22 @@
   }
 }
 
+/* Pin is a transparent stage — the spanning motion-ink field sits behind. */
+.frontend-pin {
+  background: transparent;
+}
+
 @media (max-width: 767px) {
   .frontend-pin {
     display: none !important;
     height: auto !important;
   }
 
-  .project-card,
-  .project-art-motion {
-    transform: none !important;
-    translate: none !important;
-    scale: none !important;
-    rotate: none !important;
-    clip-path: none !important;
-  }
-
   .project-card {
-    opacity: 1 !important;
     box-shadow: none;
-    pointer-events: auto !important;
   }
 
-  .project-main,
-  .project-aside {
-    opacity: 1 !important;
-  }
-
-  .project-dim {
+  .project-card > .bg-acid {
     display: none;
   }
 }
@@ -639,7 +816,7 @@
   .system-packet,
   .data-packet,
   .hero-packet,
-  .project-stage-progress {
+  .project-deck-progress {
     display: none;
   }
 
@@ -652,31 +829,26 @@
   .hero-paths,
   .hero-path-flow,
   .architecture-mote,
+  .profile-mote,
+  .ink-field-grid,
+  .ink-field-ticks,
+  .ink-field-fiber,
+  .ink-field-dust,
+  .ink-field-leak,
   .marquee-track {
     animation: none !important;
     transform: none !important;
   }
 
-  .project-track {
-    height: auto !important;
+  .project-deck {
+    padding-bottom: 0 !important;
+    perspective: none !important;
   }
 
-  .project-stage {
-    position: static !important;
+  /* Unpin the deck entirely: reduced motion should get a plain list. */
+  .project-card {
     height: auto !important;
     min-height: 0 !important;
-    overflow: visible !important;
-  }
-
-  .project-list {
-    position: relative !important;
-    inset: auto !important;
-    display: grid !important;
-    gap: clamp(100px, 12vw, 190px) !important;
-    padding-top: 32px !important;
-  }
-
-  .project-card {
     position: relative !important;
     inset: auto !important;
     display: block !important;
@@ -700,10 +872,6 @@
   .project-main,
   .project-aside {
     opacity: 1 !important;
-  }
-
-  .project-dim {
-    display: none;
   }
 
   .project-art {

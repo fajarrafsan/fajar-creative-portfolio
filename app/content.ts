@@ -12,7 +12,7 @@ export const profileRole = "Fullstack Developer";
 export const profileLocation = "Bandung, ID";
 export const profilePhotoSrc = "/profile.jpeg";
 
-export type AboutTone = "java" | "react" | "dim" | "strong";
+export type AboutTone = "java" | "react" | "strong";
 
 export type AboutSegment = {
   text: string;
@@ -27,15 +27,12 @@ export const profileAbout = dual<AboutSegment[][]>(
     [
       { text: "Saya merancang sistem ujung ke ujung: " },
       { text: "API Java/Spring", tone: "java" },
-      { text: " yang andal " },
-      { text: "di belakang,", tone: "dim" },
-      { text: " " },
+      { text: " yang andal di belakang, " },
       { text: "interface React 19 / TypeScript", tone: "react" },
-      { text: " yang jelas " },
-      { text: "di depan.", tone: "dim" },
+      { text: " yang jelas di depan." },
     ],
     [
-      { text: "Terbiasa bekerja mandiri maupun dalam tim dengan " },
+      { text: "Mandiri atau dalam tim — " },
       { text: "clean code", tone: "strong" },
       { text: ", " },
       { text: "komunikasi teknis yang rapi", tone: "strong" },
@@ -48,15 +45,12 @@ export const profileAbout = dual<AboutSegment[][]>(
     [
       { text: "I design systems end to end: reliable " },
       { text: "Java/Spring APIs", tone: "java" },
-      { text: " " },
-      { text: "behind,", tone: "dim" },
-      { text: " a clear " },
+      { text: " behind a clear " },
       { text: "React 19 / TypeScript interface", tone: "react" },
-      { text: " " },
-      { text: "in front.", tone: "dim" },
+      { text: "." },
     ],
     [
-      { text: "Used to working independently and in a team with " },
+      { text: "Independent or in a team — " },
       { text: "clean code", tone: "strong" },
       { text: ", " },
       { text: "tidy technical communication", tone: "strong" },
@@ -88,7 +82,11 @@ export const copy = {
   brandHome: dual("Fajar Rafsan — kembali ke atas", "Fajar Rafsan — back to top"),
   brandRole: dual("Fullstack · Bandung", "Fullstack · Bandung"),
   available: dual("Tersedia", "Available"),
-  availableBandung: dual("Tersedia · Bandung", "Available · Bandung"),
+  availableBandung: dual("Tersedia · Bandung & Jakarta", "Available · Bandung & Jakarta"),
+  availability: dual(
+    "Terbuka untuk magang dan junior · Bandung & Jakarta · remote / hybrid",
+    "Open to intern and junior roles · Bandung & Jakarta · remote / hybrid",
+  ),
   viewCv: dual("Lihat CV", "View CV"),
   mobileNav: dual("Navigasi", "Navigation"),
   portrait: dual("Potret", "Portrait"),
@@ -96,7 +94,6 @@ export const copy = {
   photoAlt: dual(`Foto profil ${profileName}`, `Profile photo of ${profileName}`),
   aboutMe: dual("Tentang saya", "About me"),
   skillsAria: dual("Keahlian utama", "Core skills"),
-  heroKicker: dual("Terbuka untuk kesempatan fullstack", "Open for fullstack opportunities"),
   heroStackAria: dual("Stack utama", "Primary stack"),
   viewProjects: dual("Lihat proyek", "View projects"),
   scrollToProjects: dual("Gulir ke proyek pilihan", "Scroll to selected projects"),
@@ -115,9 +112,14 @@ export const copy = {
   sectionToolchain: dual("Perangkat kerja", "Toolchain"),
   toolchainTitle: dual("Alat yang saya pakai setiap hari.", "The tools I use every day."),
   toolchainBody: dual(
-    "Bukan daftar semua yang pernah saya sentuh — hanya yang benar-benar dipakai di ketiga sistem di atas.",
-    "Not a list of everything I have ever touched — only what is actually used in the three systems above.",
+    "Bukan daftar semua yang pernah saya sentuh — hanya yang benar-benar dipakai di sistem-sistem di atas.",
+    "Not a list of everything I have ever touched — only what is actually used in the systems above.",
   ),
+  toolchainNote: dual(
+    "Di luar daftar harian: C dari pelatihan algoritma, Postman untuk uji API, dan Git Flow untuk alur cabang.",
+    "Outside the daily set: C from algorithm training, Postman for API checks, and Git Flow for branch workflow.",
+  ),
+  utilityEyebrow: dual("Utilitas", "Utility"),
   sectionExperience: dual("Pengalaman & pendidikan", "Experience & education"),
   experienceLead: dual(
     "Akuntansi melatih ketelitian saya.\nRekayasa memberinya sistem.",
@@ -182,38 +184,60 @@ export const copy = {
   ),
   architectureHeading: dual(
     [
-      { text: "Setiap " },
-      { text: "request", tone: "acid" as const },
-      { text: " punya jalur. Setiap " },
-      { text: "event", tone: "acid" as const },
-      { text: " punya tujuan." },
+      [
+        { text: "Setiap " },
+        { text: "request", tone: "acid" as const },
+        { text: " punya jalur.", wrap: "sm" as const },
+      ],
+      [
+        { text: "Setiap " },
+        { text: "event", tone: "acid" as const },
+        { text: " punya tujuan.", wrap: "sm" as const },
+      ],
     ],
     [
-      { text: "Every " },
-      { text: "request", tone: "acid" as const },
-      { text: " has a path. Every " },
-      { text: "event", tone: "acid" as const },
-      { text: " has a destination." },
+      [
+        { text: "Every " },
+        { text: "request", tone: "acid" as const },
+        { text: " has a path.", wrap: "sm" as const },
+      ],
+      [
+        { text: "Every " },
+        { text: "event", tone: "acid" as const },
+        { text: " has a destination.", wrap: "sm" as const },
+      ],
     ],
   ),
   architectureBody: dual(
     [
-      { text: "Visualisasi cara saya memikirkan backend: " },
+      { text: "Begini saya merancang backend: " },
       { text: "modular", tone: "strong" as const },
       { text: ", " },
       { text: "observable", tone: "strong" as const },
       { text: ", dan " },
       { text: "terhubung", tone: "strong" as const },
-      { text: " tanpa kehilangan batas tanggung jawab." },
+      { text: " — batas tanggung jawab tetap jelas." },
     ],
     [
-      { text: "A visualisation of how I think about backends: " },
+      { text: "How I design backends: " },
       { text: "modular", tone: "strong" as const },
       { text: ", " },
       { text: "observable", tone: "strong" as const },
       { text: ", and " },
       { text: "connected", tone: "strong" as const },
-      { text: " without losing the boundaries of responsibility." },
+      { text: " — the boundaries of responsibility stay clear." },
+    ],
+  ),
+  architectureMeta: dual(
+    [
+      { value: "08", label: "node" },
+      { value: "Spring Boot", label: "inti" },
+      { value: "HTTPS", label: "ke AMQP" },
+    ],
+    [
+      { value: "08", label: "nodes" },
+      { value: "Spring Boot", label: "core" },
+      { value: "HTTPS", label: "to AMQP" },
     ],
   ),
   backendGraphAria: dual(
@@ -244,8 +268,8 @@ export const projects = [
     ],
     variant: "anistream",
     mark: "ANI",
-    cover: "/projects/anistream.jpg",
-    coverPosition: "50% 28%",
+    cover: "/projects/anistream.webp",
+    coverPosition: "50% 50%",
     demo: "https://anistreasm-fe-nine.vercel.app",
     links: [
       ["Front-end", "https://github.com/fajarrafsan/ANISTREAM-FE"],
@@ -254,6 +278,30 @@ export const projects = [
   },
   {
     number: "02",
+    title: "ARUNIKA",
+    type: dual("Landing kopi specialty · HTML murni", "Specialty coffee landing · vanilla HTML"),
+    year: "2026",
+    note: dual(
+      "Landing page statis untuk brand kopi specialty Arunika: katalog minuman dan biji dari origin Indonesia, filter produk, kartu tilt 3D, dan cerita bean-to-cup. HTML, CSS, dan JavaScript murni — tanpa framework, responsif sampai 320px.",
+      "A static landing page for the specialty coffee brand Arunika: drinks and beans from Indonesian origins, product filters, 3D tilt cards, and a bean-to-cup story. Plain HTML, CSS, and JavaScript — no framework, responsive down to 320px.",
+    ),
+    stack: ["HTML5", "CSS3", "JavaScript", "Motion"],
+    metrics: [
+      ["Pattern", dual("Statis", "Static")],
+      ["Motion", "Motion"],
+      ["Deploy", "Vercel"],
+    ],
+    variant: "arunika",
+    mark: "ARU",
+    cover: "/projects/arunika.webp",
+    coverPosition: "50% 50%",
+    demo: "https://arunika-livid.vercel.app",
+    links: [
+      ["Repository", "https://github.com/fajarrafsan/ARUNIKA"],
+    ],
+  },
+  {
+    number: "03",
     title: "ROOMLY",
     type: dual("Microservices event-driven", "Event-driven microservices"),
     year: "2026",
@@ -261,7 +309,7 @@ export const projects = [
       "Ekosistem reservasi hotel: Eureka service discovery, API gateway, RabbitMQ untuk event antar-service, JWT, pembayaran Midtrans, dan invoice PDF. Dashboard React 19 + TypeScript dengan analitik real-time dan dwibahasa ID/EN.",
       "A hotel reservation ecosystem: Eureka service discovery, an API gateway, RabbitMQ for inter-service events, JWT, Midtrans payments, and PDF invoices. A React 19 + TypeScript dashboard with real-time analytics, bilingual ID/EN.",
     ),
-    stack: ["Spring Boot", "Eureka", "RabbitMQ", "Docker", "PostgreSQL", "TypeScript"],
+    stack: ["Spring Boot", "Eureka", "Hibernate", "RabbitMQ", "Docker", "PostgreSQL", "TypeScript"],
     metrics: [
       ["Pattern", "Event-driven"],
       ["Broker", "RabbitMQ"],
@@ -269,8 +317,8 @@ export const projects = [
     ],
     variant: "roomly",
     mark: "RML",
-    cover: "/projects/roomly.jpg",
-    coverPosition: "50% 42%",
+    cover: "/projects/roomly.webp",
+    coverPosition: "50% 50%",
     demo: null,
     links: [
       ["Front-end", "https://github.com/fajarrafsan/RoomlyHotel"],
@@ -278,7 +326,7 @@ export const projects = [
     ],
   },
   {
-    number: "03",
+    number: "04",
     title: "GLOWMARKET",
     type: dual("Sistem commerce & keuangan", "Commerce & financial system"),
     year: "2026",
@@ -286,7 +334,7 @@ export const projects = [
       "E-commerce perhiasan emas: pembayaran Xendit, ongkir RajaOngkir, chat real-time WebSocket/STOMP, poin loyalitas, dan pembukuan double-entry yang menjurnal setiap transaksi secara otomatis. Migrasi skema dikunci Flyway.",
       "A gold jewellery e-commerce build: Xendit payments, RajaOngkir shipping rates, real-time WebSocket/STOMP chat, loyalty points, and double-entry bookkeeping that journals every transaction automatically. Schema migrations are pinned with Flyway.",
     ),
-    stack: ["Spring Boot 4", "PostgreSQL", "Flyway", "WebSocket", "Xendit", "React 19"],
+    stack: ["Spring Boot 4", "PostgreSQL", "Hibernate", "Swagger", "Flyway", "WebSocket", "Xendit", "React 19"],
     metrics: [
       ["Ledger", "Double-entry"],
       ["Realtime", "STOMP / WS"],
@@ -294,8 +342,8 @@ export const projects = [
     ],
     variant: "glowmarket",
     mark: "GLW",
-    cover: "/projects/glowmarket.jpg",
-    coverPosition: "50% 58%",
+    cover: "/projects/glowmarket.webp",
+    coverPosition: "50% 50%",
     demo: "https://projek-react.vercel.app",
     links: [
       ["Front-end", "https://github.com/fajarrafsan/GLOWMARKET"],
@@ -303,7 +351,7 @@ export const projects = [
     ],
   },
   {
-    number: "04",
+    number: "05",
     title: "SIA",
     type: dual("Sistem informasi akuntansi", "Accounting information system"),
     year: "2024",
@@ -311,7 +359,7 @@ export const projects = [
       "Sistem Informasi Akuntansi untuk mendigitalkan pencatatan keuangan — jurnal, buku besar, dan laporan. Dibangun server-rendered dengan Thymeleaf, dan logika bisnisnya langsung memakai latar belakang akuntansi saya.",
       "An accounting information system that digitises financial records — journals, ledgers, and reports. Server-rendered with Thymeleaf, with business logic drawn straight from my accounting background.",
     ),
-    stack: ["Java", "Spring Boot", "Spring Security", "Thymeleaf", "MySQL"],
+    stack: ["Java", "Spring Boot", "Hibernate", "Spring Security", "Thymeleaf", "MySQL"],
     metrics: [
       ["Domain", dual("Akuntansi", "Accounting")],
       ["Render", "Server-side"],
@@ -319,7 +367,7 @@ export const projects = [
     ],
     variant: "sia",
     mark: "SIA",
-    cover: "/projects/sia.jpg",
+    cover: "/projects/sia.webp",
     coverPosition: "50% 50%",
     // Render's free tier sleeps, so the first visit can sit on a cold start
     // for up to a minute before the app answers.
@@ -329,6 +377,39 @@ export const projects = [
     ],
   },
 ];
+
+/**
+ * Smaller public utilities. Kept off `projects` so the flagship stack, the
+ * "05 systems" stat, and "Tiga SPA" copy stay accurate.
+ */
+export const utilityProjects = [
+  {
+    number: "06",
+    title: "Gold-Price-Manager",
+    type: dual("Utilitas harga emas · Express", "Gold-price utility · Express"),
+    year: "2025",
+    note: dual(
+      "Utilitas harga emas: input 24K, rasio 22K/18K otomatis, dan riwayat perubahan. UI HTML + Tailwind, API Express di memori — bukan platform commerce.",
+      "A gold-price utility: 24K input, automatic 22K/18K ratios, and a change log. HTML + Tailwind UI with an in-memory Express API — not a commerce platform.",
+    ),
+    stack: ["HTML5", "JavaScript", "Express", "Tailwind", "Node.js"],
+    metrics: [
+      ["Pattern", dual("Utilitas", "Utility")],
+      ["Karat", "24K · 22K · 18K"],
+      ["Deploy", "GitHub Pages"],
+    ],
+    variant: "goldprice",
+    mark: "GPM",
+    cover: "/projects/gold-price.webp",
+    coverPosition: "50% 50%",
+    demo: "https://fajarrafsan.github.io/Gold-Price-Manager/",
+    links: [
+      ["Repository", "https://github.com/fajarrafsan/Gold-Price-Manager"],
+    ],
+  },
+];
+
+export type UtilityProject = (typeof utilityProjects)[number];
 
 export const capabilities = [
   {
@@ -372,7 +453,7 @@ export const capabilities = [
 // Repository count is the live figure from the public GitHub profile.
 export const profileStats = [
   { value: "16", label: dual("Repositori publik", "Public repositories") },
-  { value: "04", label: dual("Sistem unggulan", "Flagship systems") },
+  { value: "05", label: dual("Sistem unggulan", "Flagship systems") },
   { value: "10", label: dual("Sertifikat pelatihan", "Training certificates") },
   { value: "3.64", label: dual("IPK", "GPA") },
 ];
@@ -635,26 +716,37 @@ export type RichTone = "acid" | "strong" | "dim";
 export type RichSegment = {
   text: string;
   tone?: RichTone;
+  wrap?: "sm";
 };
 
 export type RichText = RichSegment[];
 
 export const frontendArchitecture = {
   kicker: dual("Arsitektur front-end", "Front-end architecture"),
-  heading: dual<RichText>(
+  heading: dual(
     [
-      { text: "Setiap " },
-      { text: "layar", tone: "acid" },
-      { text: " punya state. Setiap " },
-      { text: "aksi", tone: "acid" },
-      { text: " punya tujuan." },
+      [
+        { text: "Setiap " },
+        { text: "layar", tone: "acid" as const },
+        { text: " punya state.", wrap: "sm" as const },
+      ],
+      [
+        { text: "Setiap " },
+        { text: "aksi", tone: "acid" as const },
+        { text: " punya tujuan.", wrap: "sm" as const },
+      ],
     ],
     [
-      { text: "Every " },
-      { text: "screen", tone: "acid" },
-      { text: " has state. Every " },
-      { text: "action", tone: "acid" },
-      { text: " has a destination." },
+      [
+        { text: "Every " },
+        { text: "screen", tone: "acid" as const },
+        { text: " has state.", wrap: "sm" as const },
+      ],
+      [
+        { text: "Every " },
+        { text: "action", tone: "acid" as const },
+        { text: " has a destination.", wrap: "sm" as const },
+      ],
     ],
   ),
   panels: [
@@ -801,13 +893,14 @@ export const frontendArchitecture = {
 
 export const artThemes: Record<string, string> = {
   anistream: "bg-[#0b0d12] text-[#e11d2e]",
+  arunika: "bg-[#1a110c] text-[#e4c9a0]",
   roomly: "bg-[#174846] text-acid",
   glowmarket: "bg-[#f4eee4] text-[#27180d]",
   sia: "bg-[#12233a] text-[#7fb2ff]",
+  goldprice: "bg-[#1c1810] text-[#e4c56a]",
 };
 
-
-export type Project = (typeof projects)[number];
+export type Project = (typeof projects)[number] | UtilityProject;
 
 export const marqueeTop = ["JAVA", "SPRING BOOT", "REACT", "TYPESCRIPT", "POSTGRESQL", "REDIS"];
 export const marqueeBottom = ["REST API", "MICROSERVICES", "TAILWIND", "JWT / OAUTH", "WEBSOCKET", "DOCKER"];
