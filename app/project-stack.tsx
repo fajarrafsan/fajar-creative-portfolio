@@ -27,6 +27,18 @@ const bundledCovers: Record<string, string> = {
   sia: bundledSrc(siaCover),
 };
 
+// Dashboard screenshots carry useful information all the way to their edges.
+// Keep those frames intact and let an ambient duplicate fill any spare space.
+const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia"]);
+
+const fullFrameTints: Record<string, string> = {
+  anistream: "bg-[#07070b]/58",
+  arunika: "bg-[#1a110c]/52",
+  roomly: "bg-[#081a31]/52",
+  glowmarket: "bg-[#fff8ed]/42",
+  sia: "bg-[#06172a]/62",
+};
+
 /**
  * Where the first card pins, clear of the fixed site header.
  */
@@ -91,6 +103,7 @@ function ProjectCard({
   const translate = useT();
   const reduced = Boolean(useReducedMotion());
   const cover = bundledCovers[project.variant] ?? project.cover;
+  const showFullFrame = fullFrameCovers.has(project.variant);
 
   return (
     <motion.article
@@ -137,13 +150,50 @@ function ProjectCard({
         >
           {cover ? (
             <>
-              <img
-                src={cover}
-                alt=""
-                draggable={false}
-                className="pointer-events-none absolute inset-0 size-full object-cover"
-                style={{ objectPosition: project.coverPosition ?? "50% 50%" }}
-              />
+              {showFullFrame ? (
+                <>
+                  <img
+                    src={cover}
+                    alt=""
+                    draggable={false}
+                    className="pointer-events-none absolute inset-0 size-full scale-110 object-cover opacity-45 blur-2xl"
+                    style={{ objectPosition: project.coverPosition ?? "50% 50%" }}
+                  />
+                  <span className={`absolute inset-0 ${fullFrameTints[project.variant] ?? "bg-ink/55"}`} />
+                  <div className="absolute inset-[5%_2.5%] grid grid-cols-[minmax(0,0.65fr)_minmax(0,1.5fr)_minmax(0,0.65fr)] gap-[clamp(6px,1vw,14px)] max-md:grid-cols-1">
+                    <span className="relative overflow-hidden border border-current/20 bg-ink/20 max-md:hidden">
+                      <img
+                        src={cover}
+                        alt=""
+                        draggable={false}
+                        className="pointer-events-none absolute inset-0 size-full object-cover object-left opacity-85"
+                      />
+                    </span>
+                    <img
+                      src={cover}
+                      alt=""
+                      draggable={false}
+                      className="pointer-events-none relative size-full object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.38)]"
+                    />
+                    <span className="relative overflow-hidden border border-current/20 bg-ink/20 max-md:hidden">
+                      <img
+                        src={cover}
+                        alt=""
+                        draggable={false}
+                        className="pointer-events-none absolute inset-0 size-full object-cover object-right opacity-85"
+                      />
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <img
+                  src={cover}
+                  alt=""
+                  draggable={false}
+                  className="pointer-events-none absolute inset-0 size-full object-cover"
+                  style={{ objectPosition: project.coverPosition ?? "50% 50%" }}
+                />
+              )}
               <span
                 className={
                   project.variant === "glowmarket"
@@ -458,7 +508,14 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
               src={cover}
               alt=""
               draggable={false}
-              className="pointer-events-none absolute inset-0 size-full object-cover object-center"
+              className="pointer-events-none absolute inset-0 size-full scale-110 object-cover object-center opacity-45 blur-xl"
+            />
+            <span className="absolute inset-0 bg-[#f4f1e8]/62" />
+            <img
+              src={cover}
+              alt=""
+              draggable={false}
+              className="pointer-events-none absolute inset-0 size-full object-contain object-center p-[2.5%] drop-shadow-[0_8px_22px_rgba(28,24,16,0.2)]"
             />
             <span className="absolute inset-0 bg-linear-to-t from-[#1c1810]/30 via-transparent to-[#1c1810]/8" />
           </>
