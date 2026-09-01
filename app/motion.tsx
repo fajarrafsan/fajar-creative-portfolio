@@ -613,8 +613,8 @@ export function CursorGlow() {
   // The dot is nearly rigid; the ring is looser and trails it.
   const dotX = useSpring(x, { stiffness: 1600, damping: 70, mass: 0.28 });
   const dotY = useSpring(y, { stiffness: 1600, damping: 70, mass: 0.28 });
-  const ringX = useSpring(x, { stiffness: 380, damping: 34, mass: 0.6 });
-  const ringY = useSpring(y, { stiffness: 380, damping: 34, mass: 0.6 });
+  const ringX = useSpring(x, { stiffness: 300, damping: 32, mass: 0.68 });
+  const ringY = useSpring(y, { stiffness: 300, damping: 32, mass: 0.68 });
 
   useEffect(() => {
     if (!finePointer) return;
@@ -684,8 +684,8 @@ export function CursorGlow() {
   // ring's own acid border matches the background exactly and contributes
   // nothing — so it is weighted for that worst case, not for ink.
   const ringShadow =
-    "0 0 0 1.5px rgba(11,13,12,0.62), 0 0 0 4px rgba(11,13,12,0.14), 0 0 24px 6px rgba(216,255,62,0.45)";
-  const dotShadow = "0 0 0 1.5px rgba(11,13,12,0.6), 0 0 14px 3px rgba(216,255,62,0.75)";
+    "0 0 0 1.5px rgba(11,13,12,0.62), 0 0 0 3px rgba(11,13,12,0.12), 0 0 16px 3px rgba(216,255,62,0.28)";
+  const dotShadow = "0 0 0 1.5px rgba(11,13,12,0.6), 0 0 10px 2px rgba(216,255,62,0.55)";
 
   return (
     <div className="cursor-glow pointer-events-none fixed inset-0 z-[300] overflow-hidden" aria-hidden="true">
@@ -693,11 +693,11 @@ export function CursorGlow() {
           the pointer readable against a busy photo or a dark card, and it is
           the only part that blurs. */}
       <motion.div
-        className="absolute top-0 left-0 -mt-8 -ml-8 size-16 rounded-full bg-acid/30 blur-xl"
+        className="absolute top-0 left-0 -mt-6 -ml-6 size-12 rounded-full bg-acid/20 blur-lg"
         style={{ x: reduced ? x : ringX, y: reduced ? y : ringY }}
         animate={{
           scale: (pressed ? 0.9 : 1) * (state === "view" ? 1.7 : state === "link" ? 1.25 : 1),
-          opacity: visible ? (state === "idle" ? 0.75 : 1) : 0,
+          opacity: visible ? (state === "idle" ? 0.42 : state === "link" ? 0.68 : 0.82) : 0,
         }}
         transition={springy}
       />
@@ -796,7 +796,7 @@ export function useHeroParallax(target: React.RefObject<HTMLElement | null>) {
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target, offset: ["start start", "end start"] });
 
-  const gridY = useTransform(scrollYProgress, [0, 1], ["-5%", "5%"]);
+  const gridY = useTransform(scrollYProgress, [0, 1], ["-2.5%", "2.5%"]);
   const systemRotate = useTransform(scrollYProgress, [0, 1], [0, 72]);
   const systemY = useTransform(scrollYProgress, [0, 1], ["0%", "24%"]);
   const systemScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);

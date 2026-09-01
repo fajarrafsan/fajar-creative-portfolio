@@ -142,8 +142,6 @@
 .hero-atmosphere-bloom,
 .hero-atmosphere-floor-wrap,
 .hero-atmosphere-horizon,
-.hero-atmosphere-plane,
-.hero-atmosphere-dust,
 .hero-atmosphere-vignette,
 .hero-atmosphere-beam {
   position: absolute;
@@ -152,367 +150,216 @@
 .hero-atmosphere-base {
   inset: 0;
   background:
-    radial-gradient(ellipse 72% 58% at 80% 47%, rgba(216, 255, 62, 0.09), transparent 62%),
-    radial-gradient(ellipse 54% 44% at 60% 18%, rgba(240, 239, 232, 0.045), transparent 70%),
-    linear-gradient(116deg, #050705 0%, #090c09 42%, #11150f 72%, #070907 100%);
+    radial-gradient(ellipse 58% 82% at 78% 46%, rgba(216, 255, 62, 0.11), rgba(216, 255, 62, 0.035) 38%, transparent 76%),
+    radial-gradient(ellipse 42% 58% at 70% 25%, rgba(240, 239, 232, 0.045), transparent 78%),
+    linear-gradient(104deg, #050705 0%, #070a07 48%, #0b0f0a 76%, #070907 100%);
 }
 
 .hero-atmosphere-backplane {
-  inset: -8% -4% 29%;
-  opacity: 0.38;
+  inset: -10% -6% 22%;
+  opacity: 0.16;
   background-image:
-    linear-gradient(rgba(240, 239, 232, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 239, 232, 0.055) 1px, transparent 1px),
-    radial-gradient(circle, rgba(216, 255, 62, 0.15) 0 1px, transparent 1.2px);
-  background-size: 72px 72px, 72px 72px, 144px 144px;
-  mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 64%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 64%, transparent 100%);
+    linear-gradient(rgba(240, 239, 232, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 239, 232, 0.045) 1px, transparent 1px),
+    radial-gradient(circle, rgba(216, 255, 62, 0.11) 0 1px, transparent 1.2px);
+  background-size: 88px 88px, 88px 88px, 176px 176px;
+  mask-image: radial-gradient(ellipse 58% 92% at 80% 48%, #000 0%, rgba(0, 0, 0, 0.74) 48%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 58% 92% at 80% 48%, #000 0%, rgba(0, 0, 0, 0.74) 48%, transparent 100%);
   will-change: transform;
 }
 
 .hero-atmosphere-beam {
   z-index: 1;
-  right: -16%;
-  top: -18%;
-  height: 92%;
-  transform-origin: 82% 0;
-  clip-path: polygon(48% 0, 80% 0, 58% 100%, 8% 100%);
-  background: linear-gradient(176deg, rgba(240, 239, 232, 0.13), rgba(216, 255, 62, 0.035) 48%, transparent 91%);
-  filter: blur(18px);
+  right: -2%;
+  top: -34%;
+  width: 42%;
+  height: 126%;
+  border-radius: 50%;
+  clip-path: none;
+  background: linear-gradient(180deg, rgba(240, 239, 232, 0.09), rgba(216, 255, 62, 0.025) 48%, transparent 90%);
+  filter: blur(80px);
   mix-blend-mode: screen;
-  animation: hero-beam-drift 14s ease-in-out infinite;
-}
-
-.hero-atmosphere-beam-wide {
-  width: 66%;
-  opacity: 0.62;
-}
-
-.hero-atmosphere-beam-narrow {
-  right: 3%;
-  width: 24%;
-  opacity: 0.28;
-  filter: blur(8px);
-  animation-delay: -6s;
-  animation-duration: 18s;
-}
-
-@keyframes hero-beam-drift {
-  0%,
-  100% {
-    transform: rotate(-3deg) translate3d(0, 0, 0);
-    opacity: 0.42;
-  }
-  50% {
-    transform: rotate(1.5deg) translate3d(-2%, 1%, 0);
-    opacity: 0.72;
-  }
+  opacity: 0.36;
+  transform: rotate(8deg);
+  animation: none;
 }
 
 .hero-atmosphere-bloom {
   z-index: 1;
-  top: 16%;
-  right: -7%;
-  width: min(66vw, 930px);
+  top: 4%;
+  right: -17%;
+  width: min(74vw, 1080px);
   aspect-ratio: 1;
   border-radius: 999px;
-  opacity: 0.78;
-  background:
-    radial-gradient(circle, rgba(240, 239, 232, 0.12) 0 2%, transparent 13%),
-    radial-gradient(circle, rgba(216, 255, 62, 0.16) 0, rgba(216, 255, 62, 0.055) 26%, transparent 66%);
-  filter: blur(12px);
+  opacity: 0.58;
+  background: radial-gradient(circle, rgba(216, 255, 62, 0.135), rgba(216, 255, 62, 0.045) 34%, transparent 72%);
+  filter: blur(26px);
   mix-blend-mode: screen;
   will-change: transform;
 }
 
 .hero-atmosphere-floor-wrap {
   z-index: 2;
-  inset: 56% -26% -46%;
+  inset: 58% -18% -30% 42%;
   overflow: hidden;
+  mask-image: radial-gradient(ellipse 94% 90% at 68% 12%, #000 0%, rgba(0, 0, 0, 0.72) 44%, transparent 92%);
+  -webkit-mask-image: radial-gradient(ellipse 94% 90% at 68% 12%, #000 0%, rgba(0, 0, 0, 0.72) 44%, transparent 92%);
   will-change: transform;
 }
 
 .hero-atmosphere-floor {
   position: absolute;
-  inset: -18% -8%;
-  transform: perspective(720px) rotateX(61deg) scale(1.38);
+  inset: -18% -24%;
+  transform: perspective(980px) rotateX(65deg) scale(1.28);
   transform-origin: 50% 0;
-  opacity: 0.56;
+  opacity: 0.28;
   background-image:
-    linear-gradient(rgba(240, 239, 232, 0.11) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 239, 232, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, transparent 49.8%, rgba(216, 255, 62, 0.22) 50%, transparent 50.2%);
-  background-size: 92px 62px, 92px 62px, 100% 100%;
-  mask-image: linear-gradient(to bottom, #000, rgba(0, 0, 0, 0.84) 34%, transparent 94%);
-  -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0, 0, 0, 0.84) 34%, transparent 94%);
+    linear-gradient(rgba(240, 239, 232, 0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 239, 232, 0.055) 1px, transparent 1px);
+  background-size: 118px 74px, 118px 74px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.54) 44%, transparent 96%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.54) 44%, transparent 96%);
 }
 
 .hero-atmosphere-floor::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.38;
-  background: linear-gradient(110deg, transparent 16%, rgba(240, 239, 232, 0.07) 44%, transparent 66%);
-}
-
-.hero-atmosphere-floor-glint {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 34% 56% at 76% 10%, rgba(216, 255, 62, 0.18), transparent 72%);
-  animation: hero-floor-glint 12s ease-in-out infinite;
-}
-
-@keyframes hero-floor-glint {
-  0%,
-  100% {
-    opacity: 0.38;
-    transform: translateX(-2%);
-  }
-  50% {
-    opacity: 0.82;
-    transform: translateX(3%);
-  }
+  display: none;
 }
 
 .hero-atmosphere-horizon {
   z-index: 3;
-  top: 57.4%;
-  left: 24%;
-  right: -5%;
+  top: 58.5%;
+  left: 52%;
+  right: 2%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(240, 239, 232, 0.18) 30%, rgba(216, 255, 62, 0.7) 72%, transparent);
-  box-shadow: 0 0 22px rgba(216, 255, 62, 0.22);
+  opacity: 0.5;
+  background: linear-gradient(90deg, transparent, rgba(240, 239, 232, 0.14) 36%, rgba(216, 255, 62, 0.42) 76%, transparent);
+  box-shadow: 0 0 18px rgba(216, 255, 62, 0.13);
 }
 
 .hero-atmosphere-horizon::before {
   content: "";
   position: absolute;
-  inset: -58px 6% -58px 28%;
-  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.09), transparent 70%);
-  filter: blur(12px);
-}
-
-.hero-atmosphere-horizon span {
-  position: absolute;
-  top: -3px;
-  right: 19%;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-paper);
-  box-shadow: 0 0 12px var(--color-acid), 0 0 34px rgba(216, 255, 62, 0.72);
-  animation: hero-horizon-pulse 4.8s ease-in-out infinite;
-}
-
-@keyframes hero-horizon-pulse {
-  50% {
-    opacity: 0.42;
-    transform: scale(0.72);
-  }
-}
-
-.hero-atmosphere-plane {
-  z-index: 2;
-  border: 1px solid rgba(240, 239, 232, 0.085);
-  background: linear-gradient(138deg, rgba(240, 239, 232, 0.045), rgba(240, 239, 232, 0.008) 58%, rgba(216, 255, 62, 0.025));
-  box-shadow: inset 0 1px 0 rgba(240, 239, 232, 0.055), 0 22px 70px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(2px);
-  will-change: transform;
-}
-
-.hero-atmosphere-plane-back {
-  top: 19%;
-  right: 5%;
-  width: min(40vw, 620px);
-  height: 47%;
-  transform: rotate(-4deg) skewY(-1deg);
-  clip-path: polygon(7% 0, 100% 8%, 91% 100%, 0 87%);
-  opacity: 0.66;
-}
-
-.hero-atmosphere-plane-front {
-  top: 30%;
-  right: 16%;
-  width: min(24vw, 360px);
-  height: 30%;
-  transform: rotate(8deg);
-  clip-path: polygon(12% 0, 100% 11%, 88% 100%, 0 82%);
-  border-color: rgba(216, 255, 62, 0.12);
-  opacity: 0.28;
-}
-
-.hero-atmosphere-dust {
-  z-index: 4;
-  inset: 0;
-  opacity: 0.72;
-  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 78%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 78%, transparent);
-}
-
-.hero-atmosphere-dust span {
-  position: absolute;
-  left: var(--dust-x);
-  top: var(--dust-y);
-  width: var(--dust-size);
-  height: var(--dust-size);
-  border-radius: 50%;
-  background: rgba(240, 239, 232, 0.72);
-  box-shadow: 0 0 7px rgba(216, 255, 62, 0.46);
-  animation: hero-dust-float var(--dust-duration) ease-in-out var(--dust-delay) infinite;
-}
-
-@keyframes hero-dust-float {
-  0%,
-  100% {
-    opacity: 0.12;
-    transform: translate3d(-5px, 9px, 0) scale(0.8);
-  }
-  48% {
-    opacity: 0.78;
-  }
-  50% {
-    transform: translate3d(7px, -14px, 0) scale(1.25);
-  }
+  inset: -32px 4% -32px 34%;
+  opacity: 0.55;
+  background: radial-gradient(ellipse at center, rgba(216, 255, 62, 0.08), transparent 72%);
+  filter: blur(22px);
 }
 
 .hero-atmosphere-vignette {
   z-index: 5;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(3, 5, 4, 0.52) 0%, rgba(3, 5, 4, 0.14) 43%, transparent 70%),
-    radial-gradient(ellipse 120% 90% at 52% 45%, transparent 42%, rgba(2, 3, 2, 0.52) 100%);
+    linear-gradient(90deg, rgba(3, 5, 4, 0.46) 0%, rgba(3, 5, 4, 0.22) 38%, rgba(3, 5, 4, 0.05) 60%, transparent 80%),
+    radial-gradient(ellipse 126% 96% at 54% 46%, transparent 48%, rgba(2, 3, 2, 0.44) 100%);
 }
 
 .hero-atmosphere--intro .hero-atmosphere-base {
   background:
-    radial-gradient(ellipse 62% 54% at 68% 54%, rgba(216, 255, 62, 0.075), transparent 65%),
-    linear-gradient(120deg, #050705, #0a0d0a 54%, #0d110c 76%, #060806);
+    radial-gradient(ellipse 58% 76% at 72% 50%, rgba(216, 255, 62, 0.08), rgba(216, 255, 62, 0.024) 42%, transparent 78%),
+    linear-gradient(108deg, #050705, #080b08 56%, #0b0e0a 80%, #060806);
 }
 
 .hero-atmosphere--intro .hero-atmosphere-backplane {
-  bottom: 26%;
-  opacity: 0.25;
+  opacity: 0.12;
 }
 
 .hero-atmosphere--intro .hero-atmosphere-floor-wrap {
-  top: 59%;
-  opacity: 0.7;
+  inset: 62% -18% -28% 28%;
+  opacity: 0.72;
 }
 
 .hero-atmosphere--intro .hero-atmosphere-horizon {
-  top: 60.4%;
-  left: 34%;
-  opacity: 0.8;
+  top: 62.5%;
+  left: 42%;
+  opacity: 0.42;
 }
 
 .hero-atmosphere--intro .hero-atmosphere-bloom {
-  top: 24%;
-  right: 1%;
-  opacity: 0.48;
-}
-
-.hero-atmosphere--intro .hero-atmosphere-plane {
-  opacity: 0.16;
+  top: 14%;
+  right: -12%;
+  opacity: 0.42;
 }
 
 .hero-atmosphere--intro .hero-atmosphere-beam {
-  opacity: 0.35;
+  opacity: 0.28;
 }
 
 @media (max-width: 1000px) {
   .hero-atmosphere-backplane {
-    background-size: 56px 56px, 56px 56px, 112px 112px;
+    opacity: 0.14;
+    background-size: 72px 72px, 72px 72px, 144px 144px;
   }
 
   .hero-atmosphere-floor-wrap {
-    inset: 61% -48% -34%;
+    inset: 64% -36% -25% 20%;
   }
 
   .hero-atmosphere-horizon {
-    top: 62%;
-    left: 6%;
+    top: 64.5%;
+    left: 28%;
   }
 
   .hero-atmosphere-bloom {
-    top: 55%;
-    right: 3%;
-    width: min(92vw, 720px);
+    top: 44%;
+    right: -25%;
+    width: min(118vw, 820px);
   }
 
-  .hero-atmosphere-plane-back {
-    top: 52%;
-    right: 7%;
-    width: 72vw;
-    height: 34%;
-  }
-
-  .hero-atmosphere-plane-front {
-    top: 61%;
-    right: 24%;
-    width: 44vw;
-    height: 22%;
-  }
 }
 
 @media (max-width: 680px) {
   .hero-atmosphere-base {
     background:
-      radial-gradient(ellipse 96% 46% at 58% 74%, rgba(216, 255, 62, 0.085), transparent 70%),
-      radial-gradient(ellipse 74% 32% at 50% 16%, rgba(240, 239, 232, 0.035), transparent 72%),
-      linear-gradient(154deg, #050705, #0b0e0b 64%, #070907);
+      radial-gradient(ellipse 116% 58% at 62% 76%, rgba(216, 255, 62, 0.075), rgba(216, 255, 62, 0.02) 45%, transparent 82%),
+      radial-gradient(ellipse 74% 36% at 50% 16%, rgba(240, 239, 232, 0.03), transparent 78%),
+      linear-gradient(154deg, #050705, #090c09 66%, #070907);
   }
 
   .hero-atmosphere-backplane {
-    inset: -4% -22% 37%;
-    opacity: 0.28;
+    inset: -4% -18% 40%;
+    opacity: 0.12;
+    background-size: 64px 64px, 64px 64px, 128px 128px;
+    mask-image: radial-gradient(ellipse 88% 100% at 64% 50%, #000 0%, rgba(0, 0, 0, 0.68) 46%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 88% 100% at 64% 50%, #000 0%, rgba(0, 0, 0, 0.68) 46%, transparent 100%);
   }
 
   .hero-atmosphere-beam {
-    top: 34%;
-    right: -50%;
-    height: 58%;
-    width: 110%;
+    top: 32%;
+    right: -42%;
+    width: 90%;
+    height: 80%;
+    opacity: 0.24;
+    filter: blur(70px);
   }
 
   .hero-atmosphere-floor-wrap {
-    inset: 69% -76% -16%;
+    inset: 72% -72% -12% -20%;
   }
 
   .hero-atmosphere-horizon {
-    top: 69.5%;
-    left: 0;
-  }
-
-  .hero-atmosphere-plane-back {
-    top: 62%;
-    right: -8%;
-    width: 92vw;
-    height: 26%;
-    opacity: 0.42;
-  }
-
-  .hero-atmosphere-plane-front {
-    display: none;
+    top: 72.5%;
+    left: 24%;
+    opacity: 0.36;
   }
 
   .hero-atmosphere-vignette {
     background:
-      linear-gradient(180deg, rgba(3, 5, 4, 0.2), transparent 30%, rgba(2, 3, 2, 0.16) 72%, rgba(2, 3, 2, 0.58)),
-      radial-gradient(ellipse 150% 94% at 50% 45%, transparent 46%, rgba(2, 3, 2, 0.4) 100%);
+      linear-gradient(180deg, rgba(3, 5, 4, 0.18), transparent 34%, rgba(2, 3, 2, 0.12) 74%, rgba(2, 3, 2, 0.52)),
+      radial-gradient(ellipse 150% 98% at 50% 46%, transparent 52%, rgba(2, 3, 2, 0.36) 100%);
   }
 
   .hero-atmosphere--intro .hero-atmosphere-floor-wrap {
-    inset: 61% -70% -26%;
+    inset: 64% -68% -22% -24%;
   }
 
   .hero-atmosphere--intro .hero-atmosphere-horizon {
-    top: 62%;
-    left: 12%;
+    top: 64.5%;
+    left: 18%;
   }
 
   .hero-atmosphere--intro .hero-atmosphere-bloom {
-    top: 35%;
-    right: -26%;
+    top: 32%;
+    right: -42%;
   }
 }
 
@@ -1228,10 +1075,7 @@
   .hero-atmosphere-backplane,
   .hero-atmosphere-bloom,
   .hero-atmosphere-floor-wrap,
-  .hero-atmosphere-floor-glint,
   .hero-atmosphere-beam,
-  .hero-atmosphere-horizon span,
-  .hero-atmosphere-dust span,
   .architecture-mote,
   .profile-mote,
   .ink-field-grid,
