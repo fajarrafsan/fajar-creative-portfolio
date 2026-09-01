@@ -4,8 +4,19 @@ import { useRef, type CSSProperties, type ReactNode } from "react";
 import { useInView, useReducedMotion } from "motion/react";
 import { InkParticles } from "./ink-particles";
 
-function wallDelay(period: number) {
-  return `${-((Date.now() / 1000) % period).toFixed(3)}s`;
+function seededDelay(seed: number, salt: number, period: number) {
+  // Integer-only mixing keeps the server render and the browser's first render
+  // byte-for-byte identical. Fields that share a seed also keep the same phase,
+  // so the architecture and frontend backgrounds still read as one surface.
+  let hash = (seed ^ Math.imul(salt, 0x9e3779b1)) >>> 0;
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x7feb352d);
+  hash ^= hash >>> 15;
+  hash = Math.imul(hash, 0x846ca68b);
+  hash ^= hash >>> 16;
+
+  const offset = ((hash >>> 0) / 0x1_0000_0000) * period;
+  return `${-offset.toFixed(3)}s`;
 }
 
 /**
@@ -28,10 +39,10 @@ export function InkField({
   const live = !reduced && inView;
 
   const phase: CSSProperties = {
-    ["--ink-dust-delay" as string]: wallDelay(22),
-    ["--ink-fiber-delay" as string]: wallDelay(28),
-    ["--ink-breathe-delay" as string]: wallDelay(16),
-    ["--ink-grid-delay" as string]: wallDelay(18),
+    ["--ink-dust-delay" as string]: seededDelay(seed, 1, 22),
+    ["--ink-fiber-delay" as string]: seededDelay(seed, 2, 28),
+    ["--ink-breathe-delay" as string]: seededDelay(seed, 3, 16),
+    ["--ink-grid-delay" as string]: seededDelay(seed, 4, 18),
   };
 
   return (
