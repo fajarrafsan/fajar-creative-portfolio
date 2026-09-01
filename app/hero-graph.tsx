@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { motion, useReducedMotion, useSpring, useTransform, type MotionValue } from "motion/react";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue } from "motion/react";
 import {
   graphCore,
   graphFormationShell,
@@ -75,7 +75,11 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
   const wideLayout = useMediaQuery("(min-width: 1001px)");
   const finePointer = useMediaQuery("(pointer: fine)");
   const tilt = wideLayout && finePointer && !reduced && introReady;
+  const mobileMotion = !wideLayout && !reduced && introReady;
   const rootRef = useRef<HTMLDivElement>(null);
+  const neutralRotate = useMotionValue(0);
+  const mobileRotateTarget = useTransform(rotate ?? neutralRotate, (value) => value * 0.12);
+  const mobileRotate = useSpring(mobileRotateTarget, { stiffness: 85, damping: 22, mass: 0.7 });
   const rotateX = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
   const rotateY = useSpring(0, { stiffness: 160, damping: 22, mass: 0.5 });
   const tiltX = useTransform(rotateX, (value) => clamp(Number.isFinite(value) ? value : 0, -MAX_TILT, MAX_TILT));
@@ -136,9 +140,16 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
     >
       <motion.div
         className="size-full origin-center will-change-transform"
-        style={wideLayout ? { rotate, y } : undefined}
+        style={wideLayout ? { rotate, y } : { rotate: mobileRotate }}
       >
-        <div className="relative size-full">
+        <motion.div
+          className="relative size-full will-change-transform"
+          initial={false}
+          animate={mobileMotion ? { y: [0, -6, 0], scale: [1, 1.012, 1] } : { y: 0, scale: 1 }}
+          transition={mobileMotion
+            ? { duration: 5.6, repeat: Infinity, ease: "easeInOut" }
+            : { duration: 0.24, ease: "easeOut" }}
+        >
           <motion.div
             variants={heroGraphParent}
             initial="hidden"
@@ -271,7 +282,7 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               </div>
             ))}
           </motion.div>
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );
