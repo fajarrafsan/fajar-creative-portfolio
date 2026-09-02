@@ -21,7 +21,7 @@ import {
   profileRole,
   profileSkills,
   profileStats,
-} from "./content";
+} from "@/app/content";
 import {
   Magnetic,
   ease,
@@ -34,9 +34,9 @@ import {
   profileWord,
   useLatchedInView,
   useMediaQuery,
-} from "./motion";
-import { TechIcon } from "./tech-icons";
-import { useT } from "./i18n";
+} from "@/app/lib/motion";
+import { TechIcon } from "@/app/components/tech-icons";
+import { useT } from "@/app/lib/i18n";
 
 /**
  * Portrait entrance.
@@ -428,7 +428,7 @@ function ProfileStat({
   label: string;
   reduced: boolean;
 }) {
-  const ref = useRef<HTMLArticleElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" });
   const reduced = useReducedMotion() || reducedMotion;
   const decimals = (value.split(".")[1] ?? "").length;

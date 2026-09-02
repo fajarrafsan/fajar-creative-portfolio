@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { dual, useT } from "@/app/i18n";
+import { dual, useT } from "@/app/lib/i18n";
 
 /**
  * Coverflow carousel.

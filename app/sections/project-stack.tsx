@@ -2,17 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, type Variants } from "motion/react";
-import { artThemes, copy, projects, utilityProjects, type Project, type UtilityProject } from "./content";
-import anistreamCover from "./covers/anistream.webp";
-import arunikaCover from "./covers/arunika.webp";
-import glowmarketCover from "./covers/glowmarket.webp";
-import goldPriceCover from "./covers/gold-price.webp";
-import roomlyCover from "./covers/roomly.webp";
-import siaCover from "./covers/sia.webp";
-import { LatchedReveal, ease, useMediaQuery } from "./motion";
-import { useT, dual } from "./i18n";
-import { PaperField } from "./paper-field";
-import { ArrowOut, Chevron, SocialIcon } from "./tech-icons";
+import { artThemes, copy, projects, utilityProjects, type Project, type UtilityProject } from "@/app/content";
+import anistreamCover from "@/app/covers/anistream.webp";
+import arunikaCover from "@/app/covers/arunika.webp";
+import glowmarketCover from "@/app/covers/glowmarket.webp";
+import goldPriceCover from "@/app/covers/gold-price.webp";
+import roomlyCover from "@/app/covers/roomly.webp";
+import siaCover from "@/app/covers/sia.webp";
+import { LatchedReveal, ease, useMediaQuery } from "@/app/lib/motion";
+import { useT, dual } from "@/app/lib/i18n";
+import { PaperField } from "@/app/components/paper-field";
+import { ArrowOut, Chevron, SocialIcon } from "@/app/components/tech-icons";
 
 function bundledSrc(image: string | { src: string }) {
   return typeof image === "string" ? image : image.src;

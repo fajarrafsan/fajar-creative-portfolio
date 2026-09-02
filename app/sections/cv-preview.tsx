@@ -11,9 +11,9 @@ import {
   email,
   githubUrl,
   linkedInUrl,
-} from "./content";
-import { ease } from "./motion";
-import { useT } from "./i18n";
+} from "@/app/content";
+import { ease } from "@/app/lib/motion";
+import { useT } from "@/app/lib/i18n";
 
 const OPEN_EVENT = "portfolio-cv-open";
 

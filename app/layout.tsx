@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { LocaleProvider } from "./i18n";
-import { SkipLink } from "./skip-link";
+import { LocaleProvider } from "@/app/lib/i18n";
+import { SkipLink } from "@/app/components/skip-link";
 import "./globals.css";
 
 // Geist, Geist Mono, and the Archivo display face are self-hosted from

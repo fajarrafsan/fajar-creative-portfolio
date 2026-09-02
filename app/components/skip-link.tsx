@@ -1,7 +1,7 @@
 "use client";
 
-import { copy } from "./content";
-import { useT } from "./i18n";
+import { copy } from "@/app/content";
+import { useT } from "@/app/lib/i18n";
 
 export function SkipLink() {
   const t = useT();

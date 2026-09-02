@@ -11,11 +11,11 @@ import {
   graphSurface,
   heroGraphParent,
   useMediaQuery,
-} from "./motion";
-import { TechIcon } from "./tech-icons";
+} from "@/app/lib/motion";
+import { TechIcon } from "@/app/components/tech-icons";
 import { useIntroReady } from "./intro";
-import { copy } from "./content";
-import { useT } from "./i18n";
+import { copy } from "@/app/content";
+import { useT } from "@/app/lib/i18n";
 
 const CORE = { x: 500, y: 500, r: 128 };
 const CARD = { w: 240, h: 90 };

@@ -14,7 +14,7 @@ import {
   marqueeBottom,
   marqueeTop,
   stackGroups,
-} from "./content";
+} from "@/app/content";
 import {
   CursorGlow,
   Magnetic,
@@ -44,22 +44,22 @@ import {
   staggerParent,
   useHeroParallax,
   useLatchedInView,
-} from "./motion";
-import { HorizontalScrollSection } from "./horizontal-scroll-section";
-import { HeroGraph } from "./hero-graph";
-import { HeroAtmosphere } from "./hero-atmosphere";
-import { ProfileBackdrop } from "./profile-backdrop";
-import { ProfileCopy, ProfilePortrait } from "./profile-portrait";
-import { ProjectStack, UtilityProjects } from "./project-stack";
-import { SiteHeader } from "./site-header";
-import { SystemGraph } from "./system-graph";
-import { SocialIcon, TechIcon } from "./tech-icons";
-import { CertificatesSection } from "./certificates-section";
-import { CvPreview, openCvPreview } from "./cv-preview";
-import { IntroGate, useIntroReady } from "./intro";
-import { useT } from "./i18n";
-import { PaperField } from "./paper-field";
-import { MotionInk } from "./ink-field";
+} from "@/app/lib/motion";
+import { HorizontalScrollSection } from "@/app/sections/horizontal-scroll-section";
+import { HeroGraph } from "@/app/sections/hero-graph";
+import { HeroAtmosphere } from "@/app/components/hero-atmosphere";
+import { ProfileBackdrop } from "@/app/components/profile-backdrop";
+import { ProfileCopy, ProfilePortrait } from "@/app/sections/profile-portrait";
+import { ProjectStack, UtilityProjects } from "@/app/sections/project-stack";
+import { SiteHeader } from "@/app/components/site-header";
+import { SystemGraph } from "@/app/sections/system-graph";
+import { SocialIcon, TechIcon } from "@/app/components/tech-icons";
+import { CertificatesSection } from "@/app/sections/certificates-section";
+import { CvPreview, openCvPreview } from "@/app/sections/cv-preview";
+import { IntroGate, useIntroReady } from "@/app/sections/intro";
+import { useT } from "@/app/lib/i18n";
+import { PaperField } from "@/app/components/paper-field";
+import { MotionInk } from "@/app/components/ink-field";
 
 function SectionLabel({ index, label, lively }: { index: string; label: string; lively?: boolean }) {
   const reduced = useReducedMotion();

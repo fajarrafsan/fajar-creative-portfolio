@@ -9,7 +9,7 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { useMediaQuery } from "./motion";
+import { useMediaQuery } from "@/app/lib/motion";
 
 type HeroAtmosphereProps = {
   variant?: "hero" | "intro";

@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { CoverflowCarousel } from "@/components/ui/coverflow-carousel";
-import { certificateIssuer, certificates } from "./content";
-import { certCounter, certFrame, certParent, certItem, useMediaQuery } from "./motion";
-import { dual, useT } from "./i18n";
+import { certificateIssuer, certificates } from "@/app/content";
+import { certCounter, certFrame, certParent, certItem, useMediaQuery } from "@/app/lib/motion";
+import { dual, useT } from "@/app/lib/i18n";
 
 /**
  * Certificate wall.

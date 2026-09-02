@@ -12,7 +12,7 @@ import {
   type Variants,
 } from "motion/react";
 import Lenis from "lenis";
-import { copy } from "./content";
+import { copy } from "@/app/content";
 import { useT } from "./i18n";
 
 /** Shared easing — a soft overshoot-free curve that matches the type's weight. */
@@ -45,7 +45,7 @@ export function useLatchedInView(
   options: { margin?: string; amount?: number } = {},
 ) {
   const reduced = useReducedMotion() === true;
-  const inView = useInView(ref, { once: true, ...options });
+  const inView = useInView(ref, { once: true, ...options } as Parameters<typeof useInView>[1]);
   return { reduced, shown: reduced || inView };
 }
 

@@ -9,7 +9,7 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
-import { useMediaQuery } from "./motion";
+import { useMediaQuery } from "@/app/lib/motion";
 
 type Kind = "plus" | "sq" | "dot";
 type Tone = "ink" | "acid" | "java";

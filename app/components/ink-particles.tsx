@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useReducedMotion } from "motion/react";
 
 type Kind = "plus" | "sq" | "dot";
@@ -98,14 +99,16 @@ export function InkParticles({
         <span
           key={mote.id}
           className={`architecture-mote absolute ${TONE[mote.tone]} ${drifting ? "is-live" : ""}`}
-          style={{
-            left: mote.x,
-            top: mote.y,
-            "--mote-dur": mote.duration,
-            "--mote-delay": mote.delay,
-            "--mote-x": mote.dx,
-            "--mote-y": mote.dy,
-          }}
+          style={
+            {
+              left: mote.x,
+              top: mote.y,
+              "--mote-dur": mote.duration,
+              "--mote-delay": mote.delay,
+              "--mote-x": mote.dx,
+              "--mote-y": mote.dy,
+            } as CSSProperties
+          }
         >
           <Mark kind={mote.kind} />
         </span>

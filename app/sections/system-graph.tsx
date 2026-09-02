@@ -16,10 +16,10 @@ import {
   graphRoute,
   graphSurface,
   useMediaQuery,
-} from "./motion";
-import { TechIcon } from "./tech-icons";
-import { copy } from "./content";
-import { dual, useT, type Dual } from "./i18n";
+} from "@/app/lib/motion";
+import { TechIcon } from "@/app/components/tech-icons";
+import { copy } from "@/app/content";
+import { dual, useT, type Dual } from "@/app/lib/i18n";
 
 /**
  * Architecture diagram.

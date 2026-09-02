@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useLocale, type Locale } from "./i18n";
-import { ease } from "./motion";
+import { useLocale, type Locale } from "@/app/lib/i18n";
+import { ease } from "@/app/lib/motion";
 
 const OPTIONS: { code: Locale; label: string; full: string }[] = [
   { code: "id", label: "ID", full: "Bahasa Indonesia" },

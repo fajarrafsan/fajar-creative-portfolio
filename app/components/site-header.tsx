@@ -2,13 +2,13 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "motion/react";
-import { copy, githubUrl, linkedInUrl } from "./content";
-import { Magnetic, ease } from "./motion";
+import { copy, githubUrl, linkedInUrl } from "@/app/content";
+import { Magnetic, ease } from "@/app/lib/motion";
 import { SocialIcon } from "./tech-icons";
-import { openCvPreview } from "./cv-preview";
-import { useIntroReady } from "./intro";
+import { openCvPreview } from "@/app/sections/cv-preview";
+import { useIntroReady } from "@/app/sections/intro";
 import { LocaleToggle } from "./locale-toggle";
-import { dual, useT } from "./i18n";
+import { dual, useT } from "@/app/lib/i18n";
 
 const links = [
   { href: "#profile", id: "profile", label: dual("Profil", "Profile"), index: "01" },

@@ -11,11 +11,11 @@ import {
   type MotionValue,
 } from "motion/react";
 import { FrontEndGraph } from "./system-graph";
-import { InkField } from "./ink-field";
-import { TechIcon } from "./tech-icons";
-import { copy, frontendArchitecture, type RichText } from "./content";
-import { useT, type Dual } from "./i18n";
-import { archItem, archParent, archWord, ease, useLatchedInView } from "./motion";
+import { InkField } from "@/app/components/ink-field";
+import { TechIcon } from "@/app/components/tech-icons";
+import { copy, frontendArchitecture, type RichText } from "@/app/content";
+import { useT, type Dual } from "@/app/lib/i18n";
+import { archItem, archParent, archWord, ease, useLatchedInView } from "@/app/lib/motion";
 
 export type HorizontalPanel = {
   number: string;

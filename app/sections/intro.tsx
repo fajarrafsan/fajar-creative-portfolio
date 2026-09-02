@@ -10,10 +10,10 @@ import {
   useReducedMotion,
   type MotionValue,
 } from "motion/react";
-import { ease } from "./motion";
-import { copy } from "./content";
-import { useT } from "./i18n";
-import { HeroAtmosphere } from "./hero-atmosphere";
+import { ease } from "@/app/lib/motion";
+import { copy } from "@/app/content";
+import { useT } from "@/app/lib/i18n";
+import { HeroAtmosphere } from "@/app/components/hero-atmosphere";
 
 const IntroReadyContext = createContext(true);
 

@@ -1,7 +1,7 @@
 // Site content. Kept apart from the view layer so the copy, links, and stack
 // lists can be edited without touching any animation code.
 
-import { dual } from "./i18n";
+import { dual } from "@/app/lib/i18n";
 
 export const linkedInUrl = "https://www.linkedin.com/in/fajar-rafsan-80822b394/";
 export const githubUrl = "https://github.com/fajarrafsan";
