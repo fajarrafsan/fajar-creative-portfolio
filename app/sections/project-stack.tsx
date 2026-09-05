@@ -9,6 +9,7 @@ import glowmarketCover from "@/app/covers/glowmarket.webp";
 import goldPriceCover from "@/app/covers/gold-price.webp";
 import roomlyCover from "@/app/covers/roomly.webp";
 import siaCover from "@/app/covers/sia.webp";
+import shopifyCCover from "@/app/covers/shopify-c.webp";
 import tiketKilatCover from "@/app/covers/tiket-kilat.webp";
 import { LatchedReveal, ease, useMediaQuery } from "@/app/lib/motion";
 import { useT, dual } from "@/app/lib/i18n";
@@ -26,12 +27,13 @@ const bundledCovers: Record<string, string> = {
   goldprice: bundledSrc(goldPriceCover),
   roomly: bundledSrc(roomlyCover),
   sia: bundledSrc(siaCover),
+  shopifyc: bundledSrc(shopifyCCover),
   tiketkilat: bundledSrc(tiketKilatCover),
 };
 
 // Dashboard screenshots carry useful information all the way to their edges.
 // Keep those frames intact and let an ambient duplicate fill any spare space.
-const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat"]);
+const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat", "shopifyc"]);
 
 const fullFrameTints: Record<string, string> = {
   anistream: "bg-[#07070b]/58",
@@ -346,6 +348,10 @@ function ProjectCard({
                 </span>
               </a>
             )}
+            {/* Not every project has somewhere to point at: the C storefront
+                lives only on disk. Rendering the container regardless left a
+                stray empty box in the aside. */}
+            {project.links.length > 0 ? (
             <div className="project-source">
               {project.links.map(([label, href], linkIndex) => {
                 const github = href.includes("github.com");
@@ -375,6 +381,7 @@ function ProjectCard({
                 );
               })}
             </div>
+            ) : null}
           </div>
         </motion.div>
       </div>

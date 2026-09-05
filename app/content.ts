@@ -401,6 +401,30 @@ export const projects = [
       ["Repository", "https://github.com/fajarrafsan/SIA-SISTEM_INFORMASI_AKUNTANSI"],
     ],
   },
+  {
+    number: "07",
+    title: "SHOPIFY",
+    type: dual("Toko berbasis konsol · C", "Console storefront · C"),
+    year: "2024",
+    note: dual(
+      "Aplikasi toko yang ditulis dari nol dengan C: registrasi dan login, peran admin dan pengguna, CRUD barang, isi saldo, dan pembelian. Antarmukanya digambar sendiri — bingkai CP437, warna ANSI, dan penempatan kursor Win32 — tanpa satu pun pustaka UI, dengan data bertahan di berkas teks.",
+      "A storefront written from scratch in C: registration and login, admin and user roles, product CRUD, balance top-ups, and purchasing. The interface is drawn by hand — CP437 frames, ANSI colour, and Win32 cursor placement — with no UI library at all, and data persisted to text files.",
+    ),
+    stack: ["C", "Win32 Console", "ANSI Escape", "File I/O"],
+    metrics: [
+      ["Lines", "4,600+"],
+      ["Roles", "Admin · User"],
+      ["Storage", ".txt"],
+    ],
+    variant: "shopifyc",
+    mark: "SPY",
+    cover: "/projects/shopify-c.webp",
+    coverPosition: "50% 50%",
+    demo: null,
+    links: [
+      ["Repository", "https://github.com/fajarrafsan/Shopify-Console-C"],
+    ],
+  },
 ];
 
 /**
@@ -409,7 +433,7 @@ export const projects = [
  */
 export const utilityProjects = [
   {
-    number: "07",
+    number: "08",
     title: "Gold-Price-Manager",
     type: dual("Utilitas harga emas · Express", "Gold-price utility · Express"),
     year: "2025",
@@ -477,8 +501,8 @@ export const capabilities = [
 
 // Repository count is the live figure from the public GitHub profile.
 export const profileStats = [
-  { value: "18", label: dual("Repositori publik", "Public repositories") },
-  { value: "06", label: dual("Sistem unggulan", "Flagship systems") },
+  { value: "19", label: dual("Repositori publik", "Public repositories") },
+  { value: "07", label: dual("Sistem unggulan", "Flagship systems") },
   { value: "10", label: dual("Sertifikat pelatihan", "Training certificates") },
   { value: "3.64", label: dual("IPK", "GPA") },
 ];
@@ -928,6 +952,7 @@ export const artThemes: Record<string, string> = {
   sia: "bg-[#12233a] text-[#7fb2ff]",
   goldprice: "bg-[#1c1810] text-[#e4c56a]",
   tiketkilat: "bg-[#e8f2fb] text-[#0b63d6]",
+  shopifyc: "bg-[#f8f3f8] text-[#aa0ea2]",
 };
 
 export type Project = (typeof projects)[number] | UtilityProject;
