@@ -9,6 +9,7 @@ import glowmarketCover from "@/app/covers/glowmarket.webp";
 import goldPriceCover from "@/app/covers/gold-price.webp";
 import roomlyCover from "@/app/covers/roomly.webp";
 import siaCover from "@/app/covers/sia.webp";
+import tiketKilatCover from "@/app/covers/tiket-kilat.webp";
 import { LatchedReveal, ease, useMediaQuery } from "@/app/lib/motion";
 import { useT, dual } from "@/app/lib/i18n";
 import { PaperField } from "@/app/components/paper-field";
@@ -25,11 +26,12 @@ const bundledCovers: Record<string, string> = {
   goldprice: bundledSrc(goldPriceCover),
   roomly: bundledSrc(roomlyCover),
   sia: bundledSrc(siaCover),
+  tiketkilat: bundledSrc(tiketKilatCover),
 };
 
 // Dashboard screenshots carry useful information all the way to their edges.
 // Keep those frames intact and let an ambient duplicate fill any spare space.
-const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia"]);
+const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat"]);
 
 const fullFrameTints: Record<string, string> = {
   anistream: "bg-[#07070b]/58",

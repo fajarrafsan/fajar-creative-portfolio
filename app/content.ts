@@ -253,6 +253,31 @@ export const copy = {
 export const projects = [
   {
     number: "01",
+    title: "TIKETKILAT",
+    type: dual("Reservasi penerbangan · end-to-end", "Flight reservation · end-to-end"),
+    year: "2026",
+    note: dual(
+      "Pemesanan tiket pesawat dari ujung ke ujung: cari penerbangan, unggah KTP, bayar lewat Midtrans Snap, pilih kursi, lalu unduh e-tiket PDF ber-QR. Backend Java 21 memverifikasi pembayaran lewat webhook bertanda tangan — status lunas tidak pernah dipercayakan pada browser.",
+      "Flight booking end to end: search flights, upload an ID, pay through Midtrans Snap, pick a seat, then download a QR-coded PDF e-ticket. The Java 21 backend verifies payment through signed webhooks — paid status is never taken on the browser's word.",
+    ),
+    stack: ["Java 21", "Spring Boot 3", "PostgreSQL", "Spring Security", "Midtrans", "React 19", "TypeScript", "Tailwind 4"],
+    metrics: [
+      ["Payments", "Midtrans Snap"],
+      ["E-ticket", "PDF + QR"],
+      ["Tests", "76 passing"],
+    ],
+    variant: "tiketkilat",
+    mark: "TKT",
+    cover: "/projects/tiket-kilat.webp",
+    coverPosition: "50% 50%",
+    demo: null,
+    links: [
+      ["Front-end", "https://github.com/fajarrafsan/TiketKilatFE"],
+      ["REST API", "https://github.com/fajarrafsan/TiketKilatBE"],
+    ],
+  },
+  {
+    number: "02",
     title: "ANISTREAM",
     type: dual("Platform streaming · Node & Redis", "Streaming platform · Node & Redis"),
     year: "2026",
@@ -277,7 +302,7 @@ export const projects = [
     ],
   },
   {
-    number: "02",
+    number: "03",
     title: "ARUNIKA",
     type: dual("Landing kopi specialty · HTML murni", "Specialty coffee landing · vanilla HTML"),
     year: "2026",
@@ -301,7 +326,7 @@ export const projects = [
     ],
   },
   {
-    number: "03",
+    number: "04",
     title: "ROOMLY",
     type: dual("Microservices event-driven", "Event-driven microservices"),
     year: "2026",
@@ -326,7 +351,7 @@ export const projects = [
     ],
   },
   {
-    number: "04",
+    number: "05",
     title: "GLOWMARKET",
     type: dual("Sistem commerce & keuangan", "Commerce & financial system"),
     year: "2026",
@@ -351,7 +376,7 @@ export const projects = [
     ],
   },
   {
-    number: "05",
+    number: "06",
     title: "SIA",
     type: dual("Sistem informasi akuntansi", "Accounting information system"),
     year: "2024",
@@ -384,7 +409,7 @@ export const projects = [
  */
 export const utilityProjects = [
   {
-    number: "06",
+    number: "07",
     title: "Gold-Price-Manager",
     type: dual("Utilitas harga emas · Express", "Gold-price utility · Express"),
     year: "2025",
@@ -452,8 +477,8 @@ export const capabilities = [
 
 // Repository count is the live figure from the public GitHub profile.
 export const profileStats = [
-  { value: "16", label: dual("Repositori publik", "Public repositories") },
-  { value: "05", label: dual("Sistem unggulan", "Flagship systems") },
+  { value: "18", label: dual("Repositori publik", "Public repositories") },
+  { value: "06", label: dual("Sistem unggulan", "Flagship systems") },
   { value: "10", label: dual("Sertifikat pelatihan", "Training certificates") },
   { value: "3.64", label: dual("IPK", "GPA") },
 ];
@@ -757,7 +782,9 @@ export const frontendArchitecture = {
       icons: ["react", "javascript"],
       body: dual<RichText>(
         [
-          { text: "Tiga SPA di GitHub: " },
+          { text: "Empat SPA di GitHub: " },
+          { text: "TiketKilatFE", tone: "strong" },
+          { text: " (pencarian penerbangan, peta kursi, e-tiket), " },
           { text: "ANISTREAM-FE", tone: "strong" },
           { text: " (katalog, multi-server player, Google OAuth), " },
           { text: "GLOWMARKET", tone: "strong" },
@@ -767,7 +794,9 @@ export const frontendArchitecture = {
           { text: "komponen yang jelas, state yang tidak bocor ke API.", tone: "acid" },
         ],
         [
-          { text: "Three SPAs on GitHub: " },
+          { text: "Four SPAs on GitHub: " },
+          { text: "TiketKilatFE", tone: "strong" },
+          { text: " (flight search, seat map, e-tickets), " },
           { text: "ANISTREAM-FE", tone: "strong" },
           { text: " (catalogue, multi-server player, Google OAuth), " },
           { text: "GLOWMARKET", tone: "strong" },
@@ -898,6 +927,7 @@ export const artThemes: Record<string, string> = {
   glowmarket: "bg-[#f4eee4] text-[#27180d]",
   sia: "bg-[#12233a] text-[#7fb2ff]",
   goldprice: "bg-[#1c1810] text-[#e4c56a]",
+  tiketkilat: "bg-[#e8f2fb] text-[#0b63d6]",
 };
 
 export type Project = (typeof projects)[number] | UtilityProject;
