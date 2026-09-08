@@ -15,10 +15,10 @@ import {
 import { TechIcon } from "@/app/components/tech-icons";
 import { useIntroReady } from "./intro";
 import { copy } from "@/app/content";
-import { useT } from "@/app/lib/i18n";
+import { dual, useT } from "@/app/lib/i18n";
 
 const CORE = { x: 500, y: 500, r: 128 };
-const CARD = { w: 240, h: 90 };
+const CARD = { w: 248, h: 76 };
 const MAX_TILT = 6;
 
 type Node = {
@@ -27,16 +27,17 @@ type Node = {
   mobileLabel: string;
   sub: string;
   icon: string;
+  protocol: string;
   x: number;
   y: number;
   flow: "in" | "out";
 };
 
 const nodes: Node[] = [
-  { id: "java", label: "Java", mobileLabel: "Java", sub: "SE / EE", icon: "java", x: 220, y: 500, flow: "in" },
-  { id: "spring", label: "Spring", mobileLabel: "Spring", sub: "Boot API", icon: "springboot", x: 500, y: 220, flow: "in" },
-  { id: "react", label: "React", mobileLabel: "React", sub: "19 SPA", icon: "react", x: 780, y: 500, flow: "out" },
-  { id: "ts", label: "TypeScript", mobileLabel: "TS", sub: "Contracts", icon: "typescript", x: 500, y: 780, flow: "out" },
+  { id: "java", label: "Java", mobileLabel: "Java", sub: "SE / EE", icon: "java", protocol: "JVM", x: 220, y: 500, flow: "in" },
+  { id: "spring", label: "Spring", mobileLabel: "Spring", sub: "Boot API", icon: "springboot", protocol: "API", x: 500, y: 220, flow: "in" },
+  { id: "react", label: "React", mobileLabel: "React", sub: "19 SPA", icon: "react", protocol: "UI", x: 780, y: 500, flow: "out" },
+  { id: "ts", label: "TypeScript", mobileLabel: "TypeScript", sub: "Contracts", icon: "typescript", protocol: "Types", x: 500, y: 780, flow: "out" },
 ];
 
 const mobileGraphCore: Variants = {
@@ -90,14 +91,103 @@ type HeroGraphProps = {
   y?: MotionValue<string>;
 };
 
+function MobileFork() {
+  return (
+    <div className="relative h-5 max-[360px]:h-3" aria-hidden="true">
+      <span className="absolute top-0 bottom-1/2 left-1/4 w-px bg-acid/40" />
+      <span className="absolute top-0 right-1/4 bottom-1/2 w-px bg-acid/40" />
+      <span className="absolute top-1/2 right-1/4 left-1/4 h-px bg-acid/40" />
+      <span className="absolute top-1/2 bottom-0 left-1/2 w-px bg-acid/65" />
+      <span className="absolute top-[calc(50%_-_2px)] left-[calc(50%_-_2px)] size-1 bg-acid" />
+    </div>
+  );
+}
+
+function MobileNodeCard({ node }: { node: Node }) {
+  return (
+    <motion.div
+      variants={mobileGraphNode}
+      className="relative flex min-h-[68px] min-w-0 items-center gap-2.5 overflow-hidden border border-paper/18 bg-ink/92 px-3 py-2.5 max-[360px]:min-h-14 max-[360px]:gap-2 max-[360px]:px-2 max-[360px]:py-2"
+    >
+      <span className="pointer-events-none absolute top-0 left-0 h-px w-8 bg-acid" aria-hidden="true" />
+      <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/8 text-acid max-[360px]:size-6">
+        <TechIcon name={node.icon} className="size-3.5 max-[360px]:size-3" />
+      </span>
+      <span className="min-w-0">
+        <strong className="block text-[13px] leading-tight font-semibold tracking-[-0.025em] text-paper max-[360px]:text-[12px]">{node.mobileLabel}</strong>
+        <small className="mt-1 block text-[11px] leading-tight tracking-[0.07em] text-paper/55 uppercase max-[360px]:text-[10px]">{node.sub}</small>
+      </span>
+    </motion.div>
+  );
+}
+
+function MobileHeroGraph({ introReady, reduced }: { introReady: boolean; reduced: boolean }) {
+  const t = useT();
+  const backend = nodes.slice(0, 2);
+  const frontend = nodes.slice(2);
+
+  return (
+    <motion.div
+      variants={heroGraphParent}
+      initial={reduced ? false : "hidden"}
+      animate={introReady ? "shown" : "hidden"}
+      className="relative hidden w-full overflow-hidden border border-paper/15 bg-ink-soft/78 max-[680px]:block"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.055)_1px,transparent_1px),radial-gradient(circle_at_50%_48%,rgba(216,255,62,0.13),transparent_58%)] bg-[size:48px_48px,48px_48px,100%_100%]"
+        aria-hidden="true"
+      />
+
+      <div className="relative flex items-center justify-between gap-4 border-b border-paper/12 px-3 py-2.5 font-mono text-[11px] tracking-[0.12em] uppercase max-[360px]:px-2.5 max-[360px]:py-2 max-[360px]:text-[10px]">
+        <span className="text-paper/55">{t(dual("Topologi stack", "Stack topology"))}</span>
+        <span className="text-acid">04 · {t(dual("Node", "Nodes"))}</span>
+      </div>
+
+      <div className="relative p-3 max-[360px]:p-2.5">
+        <div className="grid grid-cols-2 gap-2">
+          {backend.map((node) => <MobileNodeCard key={node.id} node={node} />)}
+        </div>
+
+        <MobileFork />
+
+        <motion.div
+          variants={mobileGraphCore}
+          className="relative flex min-h-[68px] items-center justify-between overflow-hidden bg-acid px-4 py-3 text-ink max-[360px]:min-h-14 max-[360px]:px-3 max-[360px]:py-2"
+        >
+          <span className="pointer-events-none absolute -right-6 size-24 rounded-full border border-ink/15" aria-hidden="true" />
+          <span className="relative">
+            <small className="block text-[11px] leading-none tracking-[0.14em] uppercase opacity-60">{t(copy.graphCore)}</small>
+            <strong className="font-display mt-1 block text-[27px] leading-none font-[780] tracking-[-0.06em] uppercase max-[360px]:text-[24px]">Full Stack</strong>
+          </span>
+          <span className="relative font-mono text-[10px] tracking-[0.12em] uppercase opacity-70">API ↔ UI</span>
+        </motion.div>
+
+        <div className="rotate-180"><MobileFork /></div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {frontend.map((node) => <MobileNodeCard key={node.id} node={node} />)}
+        </div>
+      </div>
+
+      <div className="relative flex items-center justify-between gap-3 border-t border-paper/12 px-3 py-2.5 font-mono text-[11px] tracking-[0.08em] uppercase max-[360px]:hidden">
+        <span className="text-paper/45">Backend · 02</span>
+        <span className="text-acid/80">{t(dual("Alur bertipe", "Typed flow"))}</span>
+        <span className="text-paper/45">{t(dual("Antarmuka", "Interface"))} · 02</span>
+      </div>
+    </motion.div>
+  );
+}
+
 export function HeroGraph({ rotate, y }: HeroGraphProps) {
   const t = useT();
   const reduced = Boolean(useReducedMotion());
   const introReady = useIntroReady();
+  const graphReady = reduced || introReady;
   const wideLayout = useMediaQuery("(min-width: 1001px)");
+  const compactLayout = useMediaQuery("(max-width: 680px)");
   const finePointer = useMediaQuery("(pointer: fine)");
-  const tilt = wideLayout && finePointer && !reduced && introReady;
-  const mobileMotion = !wideLayout && !reduced && introReady;
+  const tilt = wideLayout && finePointer && !reduced && graphReady;
+  const mobileMotion = !wideLayout && !compactLayout && !reduced && graphReady;
   const rootRef = useRef<HTMLDivElement>(null);
   const neutralRotate = useMotionValue(0);
   const mobileRotateTarget = useTransform(rotate ?? neutralRotate, (value) => value * 0.1);
@@ -157,11 +247,11 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
   return (
     <div
       ref={rootRef}
-      className="hero-system pointer-events-none relative z-0 aspect-square w-[min(100%,40vw,560px)] max-[1000px]:w-[min(72vw,380px)] max-[680px]:w-[clamp(244px,76vw,320px)]"
+      className="hero-system pointer-events-none relative z-0 aspect-square w-[min(100%,42vw,640px,68vh)] max-[1000px]:w-[min(76vw,420px)] max-[680px]:aspect-auto max-[680px]:w-full max-[680px]:max-w-[430px]"
       aria-hidden="true"
     >
       <motion.div
-        className="size-full origin-center will-change-transform"
+        className="size-full origin-center will-change-transform max-[680px]:hidden"
         style={wideLayout ? { rotate, y } : { rotate: mobileRotate }}
       >
         <motion.div
@@ -181,11 +271,23 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
         >
           <motion.div
             variants={heroGraphParent}
-            initial="hidden"
-            animate={introReady ? "shown" : "hidden"}
-            className="absolute inset-[2%] origin-center"
+            initial={reduced ? false : "hidden"}
+            animate={graphReady ? "shown" : "hidden"}
+            className="absolute inset-[1%] origin-center overflow-hidden border border-paper/15 bg-ink/18 shadow-[0_24px_90px_rgba(0,0,0,0.28)]"
             style={tilt ? { rotateX: tiltX, rotateY: tiltY } : undefined}
           >
+            <div className="absolute top-3 right-3 left-3 z-10 flex items-center justify-between gap-4 font-mono text-[11px] tracking-[0.12em] uppercase">
+              <span className="text-paper/45">{t(dual("Topologi stack", "Stack topology"))}</span>
+              <span className="text-acid/85">04 · {t(dual("Node", "Nodes"))}</span>
+            </div>
+            <div className="absolute right-3 bottom-3 left-3 z-10 flex items-center justify-between gap-4 font-mono text-[9px] tracking-[0.1em] uppercase">
+              <span className="text-paper/35">Backend · 02</span>
+              <span className="text-paper/35">{t(dual("Antarmuka", "Interface"))} · 02</span>
+            </div>
+            <span className="absolute top-0 left-0 z-10 size-3 border-t border-l border-acid" aria-hidden="true" />
+            <span className="absolute top-0 right-0 z-10 size-3 border-t border-r border-acid" aria-hidden="true" />
+            <span className="absolute bottom-0 left-0 z-10 size-3 border-b border-l border-acid" aria-hidden="true" />
+            <span className="absolute right-0 bottom-0 z-10 size-3 border-r border-b border-acid" aria-hidden="true" />
             {/* Backdrop + halo rings + orbit rings form first, as one self-contained
                 stagger scope — see `graphFormationShell` in motion.tsx. This is what
                 makes the diagram read as "built" rather than popping in whole. */}
@@ -273,14 +375,29 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               ))}
             </motion.svg>
 
+            {nodes.map((node) => (
+              <div
+                key={`${node.id}-protocol`}
+                className="absolute z-[3]"
+                style={{ left: pct((node.x + CORE.x) / 2), top: pct((node.y + CORE.y) / 2), transform: "translate(-50%, -50%)" }}
+              >
+                <motion.span
+                  variants={wideLayout ? graphNode : mobileGraphNode}
+                  className="block border border-acid/25 bg-ink/92 px-1.5 py-1 font-mono text-[10px] leading-none tracking-[0.1em] text-acid uppercase"
+                >
+                  {node.protocol}
+                </motion.span>
+              </div>
+            ))}
+
             <motion.div
               variants={wideLayout ? graphCore : mobileGraphCore}
               style={{ x: "-50%", y: "-50%" }}
-              className="absolute top-1/2 left-1/2 z-[4] flex aspect-square w-[28%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_18px_rgba(216,255,62,0.06),0_0_70px_rgba(216,255,62,0.28)] max-[420px]:w-[26%] max-[420px]:shadow-[0_0_0_10px_rgba(216,255,62,0.06),0_0_42px_rgba(216,255,62,0.24)]"
+              className="absolute top-1/2 left-1/2 z-[4] flex aspect-square w-[29%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_20px_rgba(216,255,62,0.065),0_0_82px_rgba(216,255,62,0.3)]"
             >
-              <small className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[6px]">{t(copy.graphCore)}</small>
+              <small className="text-[10px] tracking-[0.16em] uppercase">{t(copy.graphCore)}</small>
               <strong className="text-[clamp(16px,2.2vw,36px)] leading-[0.86] tracking-[-0.07em] max-[420px]:text-[13px]">FULL</strong>
-              <span className="text-[8px] tracking-[0.16em] uppercase max-[420px]:text-[6px]">Stack</span>
+              <span className="text-[10px] tracking-[0.16em] uppercase">Stack</span>
             </motion.div>
 
             {nodes.map((node) => (
@@ -293,22 +410,19 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               // actually applies, leaving every card offset from its point.
               <div
                 key={node.id}
-                className="absolute z-[5] h-[min(44px,9%)] w-[min(158px,26%)] max-[420px]:h-8 max-[420px]:w-[29%]"
+                className="absolute z-[5] h-[min(48px,9%)] w-[min(158px,26%)]"
                 style={{ left: pct(node.x), top: pct(node.y), transform: "translate(-50%, -50%)" }}
               >
                 <motion.div
                   variants={wideLayout ? graphNode : mobileGraphNode}
-                  className="flex size-full items-center gap-2 border border-paper/20 bg-ink/90 px-2 backdrop-blur-sm max-[420px]:gap-1 max-[420px]:px-1"
+                  className="flex size-full items-center gap-2.5 border border-paper/22 bg-ink/94 px-2.5 backdrop-blur-sm"
                 >
-                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[680px]:size-6 max-[420px]:size-5">
-                    <TechIcon name={node.icon} className="size-3.5 max-[680px]:size-3 max-[420px]:size-2.5" />
+                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[820px]:size-6">
+                    <TechIcon name={node.icon} className="size-3.5 max-[820px]:size-3" />
                   </span>
                   <span className="min-w-0">
-                    <strong className="block truncate text-[12px] leading-none tracking-[-0.03em] max-[420px]:text-[9px]">
-                      <span className="max-[420px]:hidden">{node.label}</span>
-                      <span className="hidden max-[420px]:inline">{node.mobileLabel}</span>
-                    </strong>
-                    <small className="mt-1 block truncate text-[8px] tracking-[0.1em] text-[#96988f] uppercase max-[420px]:hidden">{node.sub}</small>
+                    <strong className="block truncate text-[14px] leading-none tracking-[-0.03em] max-[820px]:text-[12px]">{node.label}</strong>
+                    <small className="mt-1 block truncate text-[10px] tracking-[0.09em] text-[#a7a99f] uppercase max-[820px]:text-[9px]">{node.sub}</small>
                   </span>
                 </motion.div>
               </div>
@@ -316,6 +430,7 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
           </motion.div>
         </motion.div>
       </motion.div>
+      <MobileHeroGraph introReady={graphReady} reduced={reduced} />
     </div>
   );
 }

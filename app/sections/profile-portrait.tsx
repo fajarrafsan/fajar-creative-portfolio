@@ -22,19 +22,7 @@ import {
   profileSkills,
   profileStats,
 } from "@/app/content";
-import {
-  Magnetic,
-  ease,
-  profileChip,
-  profileChipParent,
-  profileItem,
-  profileParent,
-  profileStat,
-  profileStatParent,
-  profileWord,
-  useLatchedInView,
-  useMediaQuery,
-} from "@/app/lib/motion";
+import { Magnetic, ease, inViewport, profileChip, profileChipParent, profileItem, profileParent, profileStat, profileStatParent, profileWord, useLatchedInView, useMediaQuery } from "@/app/lib/motion";
 import { TechIcon } from "@/app/components/tech-icons";
 import { useT } from "@/app/lib/i18n";
 
@@ -146,10 +134,7 @@ function ColumnKicker({
 export function ProfilePortrait() {
   const t = useT();
   const rootRef = useRef<HTMLElement>(null);
-  const { reduced, shown } = useLatchedInView(rootRef, {
-    margin: "0px 0px -20% 0px",
-    amount: 0.3,
-  });
+  const { reduced, shown } = useLatchedInView(rootRef, inViewport);
   const finePointer = useMediaQuery("(pointer: fine)");
   const tilt = finePointer && !reduced;
   const [hovered, setHovered] = useState(false);
@@ -177,7 +162,7 @@ export function ProfilePortrait() {
   return (
     <motion.figure
       ref={rootRef}
-      className="relative mx-auto flex h-full w-full max-w-[520px] min-w-0 flex-col min-[1001px]:mx-0 min-[1001px]:max-w-none"
+      className="relative mx-auto flex h-full w-full max-w-[520px] min-w-0 flex-col min-[1001px]:mx-0 min-[1001px]:max-w-none max-[360px]:max-w-[248px]"
       initial={shown ? false : reduced ? "shown" : "hidden"}
       animate={shown ? "shown" : "hidden"}
     >
@@ -245,7 +230,7 @@ export function ProfilePortrait() {
 
           <motion.div variants={portraitBadge} className="absolute inset-x-0 bottom-0 z-3 flex items-end justify-between gap-3 p-3.5 text-paper">
             <motion.span
-              className="inline-flex min-h-11 items-center gap-2 border border-paper/25 bg-ink/55 px-3 text-[10px] tracking-[0.12em] uppercase backdrop-blur-md"
+              className="inline-flex min-h-11 items-center gap-2 border border-paper/25 bg-ink/55 px-3 text-[11px] tracking-[0.12em] uppercase backdrop-blur-md"
               animate={
                 reduced
                   ? undefined
@@ -268,14 +253,14 @@ export function ProfilePortrait() {
 
       <motion.figcaption
         variants={portraitFigcaption}
-        className="relative z-[1] mt-5 flex min-h-[88px] shrink-0 items-end justify-between gap-4 border-t-2 border-ink pt-5 min-[1001px]:mt-auto min-[1001px]:min-h-[152px]"
+        className="relative z-[1] mt-5 flex min-h-[88px] shrink-0 items-end justify-between gap-4 border-t-2 border-ink pt-5 min-[1001px]:mt-auto min-[1001px]:min-h-[152px] max-[360px]:mt-4 max-[360px]:min-h-[72px] max-[360px]:gap-3 max-[360px]:pt-4"
         data-profile="foot"
       >
         <div>
           <strong className="font-display block text-[clamp(24px,2.2vw,32px)] leading-none font-[640] tracking-[-0.05em]">
             {profileName}
           </strong>
-          <span className="mt-2 block text-[12px] tracking-[0.14em] uppercase text-ink/70">
+          <span className="mt-2 block text-[13px] tracking-[0.14em] uppercase text-ink/70">
             {profileRole}
           </span>
         </div>
@@ -290,10 +275,7 @@ export function ProfilePortrait() {
 export function ProfileCopy() {
   const t = useT();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { reduced, shown } = useLatchedInView(rootRef, {
-    margin: "0px 0px -20% 0px",
-    amount: 0.12,
-  });
+  const { reduced, shown } = useLatchedInView(rootRef, inViewport);
 
   return (
     <motion.div
@@ -307,7 +289,7 @@ export function ProfileCopy() {
 
       <h2
         id="manifesto-title"
-        className="font-display mb-8 text-[clamp(42px,5.6vw,88px)] leading-[0.9] font-[560] tracking-[-0.068em] max-[680px]:mb-6 max-[680px]:text-[clamp(36px,11vw,58px)] max-[420px]:text-[clamp(32px,9.6vw,44px)]"
+        className="font-display mb-8 text-[clamp(44px,6.9vw,106px)] leading-[0.9] font-[560] tracking-[-0.075em] max-[680px]:mb-6 max-[680px]:text-[clamp(38px,11.5vw,62px)] max-[420px]:text-[clamp(32px,9.6vw,44px)]"
       >
         {profileHeadline.map((line, lineIndex) => {
           const text = t(line.text);
@@ -349,7 +331,7 @@ export function ProfileCopy() {
       </h2>
 
       <motion.ul
-        className="mb-8 flex list-none flex-wrap gap-2.5 p-0 max-[680px]:mb-7"
+        className="mb-8 flex list-none flex-wrap gap-2.5 p-0 max-[680px]:mb-7 max-[360px]:mb-6 max-[360px]:gap-2"
         variants={profileChipParent}
         aria-label={t(copy.skillsAria)}
       >
@@ -357,7 +339,7 @@ export function ProfileCopy() {
           <motion.li key={skill.id} variants={profileChip}>
             <Magnetic strength={0.28}>
               <motion.span
-                className="inline-flex min-h-11 items-center gap-2.5 border border-ink/25 bg-paper px-3.5 text-[12px] tracking-[0.1em] uppercase will-change-transform"
+                className="inline-flex min-h-11 items-center gap-2.5 border border-ink/25 bg-paper px-3.5 text-[13px] tracking-[0.1em] uppercase will-change-transform max-[360px]:gap-2 max-[360px]:px-3 max-[360px]:text-[12px]"
                 whileHover={
                   reduced
                     ? undefined
@@ -365,7 +347,7 @@ export function ProfileCopy() {
                 }
                 transition={{ duration: 0.22, ease }}
               >
-                <span className="font-mono text-[10px] tracking-[0.06em] opacity-45">{String(index + 1).padStart(2, "0")}</span>
+                <span className="font-mono text-[11px] tracking-[0.06em] opacity-45">{String(index + 1).padStart(2, "0")}</span>
                 <TechIcon name={skill.icon} className="size-4" />
                 {skill.label}
               </motion.span>
@@ -374,7 +356,7 @@ export function ProfileCopy() {
         ))}
       </motion.ul>
 
-      <motion.div className="flex max-w-[58ch] flex-col gap-5 text-[18px] leading-[1.65] text-[#3f4038] max-[680px]:text-[16.5px] max-[680px]:leading-[1.62]">
+      <motion.div className="flex max-w-[58ch] flex-col gap-5 text-[18px] leading-[1.65] text-[#3f4038] max-[680px]:leading-[1.62] max-[360px]:gap-4 max-[360px]:text-[16px] max-[360px]:leading-[1.55]">
         {t(profileAbout).map((paragraph, paragraphIndex) => (
           <motion.p className="m-0" key={paragraphIndex} variants={profileItem}>
             {paragraph.map((segment, index) => {
@@ -407,7 +389,7 @@ export function ProfileCopy() {
       </motion.div>
 
       <motion.div
-        className="profile-stats mt-10 grid min-h-[120px] grid-cols-4 border-t-2 border-ink pt-5 min-[1001px]:mt-auto min-[1001px]:min-h-[152px] max-[680px]:mt-10 max-[680px]:grid-cols-2 max-[680px]:min-h-0"
+        className="profile-stats mt-10 grid min-h-[120px] grid-cols-4 border-t-2 border-ink pt-5 min-[1001px]:mt-auto min-[1001px]:min-h-[152px] max-[680px]:mt-10 max-[680px]:grid-cols-2 max-[680px]:min-h-0 max-[360px]:mt-8 max-[360px]:pt-4"
         data-profile="foot"
         variants={profileStatParent}
       >
@@ -455,7 +437,7 @@ function ProfileStat({
     <motion.article
       ref={ref}
       variants={profileStat}
-      className="relative flex min-h-0 flex-col justify-between border-l border-ink/25 px-[18px] pt-2.5 max-[680px]:min-h-[108px] max-[680px]:px-3 max-[680px]:py-3.5 max-[680px]:first:pl-3 max-[420px]:min-h-[96px] max-[680px]:odd:border-l-0 max-[680px]:even:border-l max-[680px]:[&:nth-child(n+3)]:border-t max-[680px]:[&:nth-child(n+3)]:border-ink/25 max-[680px]:[&:nth-child(n+3)]:pt-4 first:border-l-0 first:pl-0"
+      className="relative flex min-h-0 flex-col justify-between border-l border-ink/25 px-[18px] pt-2.5 max-[680px]:min-h-[108px] max-[680px]:px-3 max-[680px]:py-3.5 max-[680px]:first:pl-3 max-[420px]:min-h-[96px] max-[680px]:odd:border-l-0 max-[680px]:even:border-l max-[680px]:[&:nth-child(n+3)]:border-t max-[680px]:[&:nth-child(n+3)]:border-ink/25 max-[680px]:[&:nth-child(n+3)]:pt-4 first:border-l-0 first:pl-0 max-[360px]:min-h-[84px] max-[360px]:px-2.5 max-[360px]:py-3 max-[360px]:[&:nth-child(n+3)]:pt-3"
       whileHover={reduced ? undefined : { y: -6 }}
       transition={{ duration: 0.22, ease }}
     >
@@ -466,10 +448,10 @@ function ProfileStat({
         animate={{ opacity: inView ? 1 : 0, scale: inView ? 1 : 0.4 }}
         transition={{ duration: reduced ? 0 : 0.35, ease, delay: reduced ? 0 : 0.2 }}
       />
-      <strong className="font-display text-[clamp(42px,4.8vw,76px)] leading-[0.8] tracking-[-0.08em] tabular-nums max-[680px]:text-[48px] max-[420px]:text-[40px]">
+      <strong className="font-display text-[clamp(42px,4.8vw,76px)] leading-[0.8] tracking-[-0.08em] tabular-nums max-[680px]:text-[48px] max-[420px]:text-[40px] max-[360px]:text-[36px]">
         <motion.span>{display}</motion.span>
       </strong>
-      <span className="text-[10px] leading-[1.35] tracking-[0.12em] uppercase text-ink/70">{label}</span>
+      <span className="text-[11px] leading-[1.35] tracking-[0.12em] uppercase text-ink/70">{label}</span>
       <motion.span
         className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] origin-left bg-acid"
         aria-hidden="true"

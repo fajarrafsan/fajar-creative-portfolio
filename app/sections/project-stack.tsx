@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useReducedMotion, type Variants } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react";
 import { artThemes, copy, projects, utilityProjects, type Project, type UtilityProject } from "@/app/content";
 import anistreamCover from "@/app/covers/anistream.webp";
 import arunikaCover from "@/app/covers/arunika.webp";
@@ -11,7 +11,15 @@ import roomlyCover from "@/app/covers/roomly.webp";
 import siaCover from "@/app/covers/sia.webp";
 import shopifyCCover from "@/app/covers/shopify-c.webp";
 import tiketKilatCover from "@/app/covers/tiket-kilat.webp";
-import { LatchedReveal, ease, useMediaQuery } from "@/app/lib/motion";
+import anistreamSm from "@/app/covers/anistream-sm.webp";
+import arunikaSm from "@/app/covers/arunika-sm.webp";
+import glowmarketSm from "@/app/covers/glowmarket-sm.webp";
+import goldPriceSm from "@/app/covers/gold-price-sm.webp";
+import roomlySm from "@/app/covers/roomly-sm.webp";
+import shopifyCSm from "@/app/covers/shopify-c-sm.webp";
+import siaSm from "@/app/covers/sia-sm.webp";
+import tiketKilatSm from "@/app/covers/tiket-kilat-sm.webp";
+import { inViewport, LatchedReveal, ease, useMediaQuery } from "@/app/lib/motion";
 import { useT, dual } from "@/app/lib/i18n";
 import { PaperField } from "@/app/components/paper-field";
 import { ArrowOut, Chevron, SocialIcon } from "@/app/components/tech-icons";
@@ -31,9 +39,33 @@ const bundledCovers: Record<string, string> = {
   tiketkilat: bundledSrc(tiketKilatCover),
 };
 
+/**
+ * 700px-wide copies of the same covers, for the phone index.
+ *
+ * Those rows show a 62px thumbnail and, once opened, a 334px panel — but they
+ * were pulling the full 1600px cards. On a phone, where the projects past the
+ * featured three exist ONLY as index rows, that meant 417KB downloaded to
+ * paint thumbnails. These come to 99KB for the same four.
+ */
+const smallCovers: Record<string, string> = {
+  anistream: bundledSrc(anistreamSm),
+  arunika: bundledSrc(arunikaSm),
+  glowmarket: bundledSrc(glowmarketSm),
+  goldprice: bundledSrc(goldPriceSm),
+  roomly: bundledSrc(roomlySm),
+  shopifyc: bundledSrc(shopifyCSm),
+  sia: bundledSrc(siaSm),
+  tiketkilat: bundledSrc(tiketKilatSm),
+};
+
 // Dashboard screenshots carry useful information all the way to their edges.
 // Keep those frames intact and let an ambient duplicate fill any spare space.
-const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat", "shopifyc"]);
+//
+// The console poster is deliberately absent: it is drawn at the art slot's own
+// ~3.1 ratio, so it fills without help. Left in the set it was letterboxed and
+// the ambient copies tiled either side of it — three visible console frames,
+// the outer two sliced through the middle of the table.
+const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat"]);
 
 const fullFrameTints: Record<string, string> = {
   anistream: "bg-[#07070b]/58",
@@ -46,11 +78,11 @@ const fullFrameTints: Record<string, string> = {
 /**
  * Where the first card pins, clear of the fixed site header.
  */
-const STACK_TOP = 104;
+const STACK_TOP = 136;
 /** How much lower each following card pins. This gap is the whole effect: it
  *  leaves the previous card's top edge showing, so the deck reads as a stack
  *  rather than as one card being replaced by another. */
-const STACK_STEP = 16;
+const STACK_STEP = 20;
 /** Depth lift per card against the deck's perspective, in px. */
 const STACK_LIFT = 12;
 /**
@@ -68,7 +100,7 @@ const STACK_PEEK_MAX = 3;
  * guarantees its footer — metrics, stack chips, the live links — is on screen
  * rather than hanging below the fold.
  */
-const DECK_INSET = STACK_TOP + STACK_PEEK_MAX * STACK_STEP + 26;
+const DECK_INSET = STACK_TOP + STACK_PEEK_MAX * STACK_STEP + 24;
 
 /**
  * Entrance cascade for a card's regions.
@@ -80,39 +112,48 @@ const DECK_INSET = STACK_TOP + STACK_PEEK_MAX * STACK_STEP + 26;
  */
 const deckStagger: Variants = {
   hidden: {},
-  shown: { transition: { staggerChildren: 0.085, delayChildren: 0.12 } },
+  shown: { transition: { staggerChildren: 0.055, delayChildren: 0.08 } },
 };
 const deckPiece: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  shown: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
+  hidden: { opacity: 0, y: 16 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 const deckArt: Variants = {
-  hidden: { opacity: 0, scale: 1.06 },
-  shown: { opacity: 1, scale: 1, transition: { duration: 0.9, ease } },
+  hidden: { opacity: 0, scale: 1.025 },
+  shown: { opacity: 1, scale: 1, transition: { duration: 0.68, ease } },
 };
 const deckEdge: Variants = {
   hidden: { scaleX: 0 },
-  shown: { scaleX: 1, transition: { duration: 0.75, ease } },
+  shown: { scaleX: 1, transition: { duration: 0.62, ease } },
 };
+
+type ProjectCardState = "past" | "active" | "future" | "static";
 
 function ProjectCard({
   project,
   index,
   stacked,
+  state,
 }: {
   project: Project;
   index: number;
   stacked: boolean;
+  state: ProjectCardState;
 }) {
   const translate = useT();
   const reduced = Boolean(useReducedMotion());
   const cover = bundledCovers[project.variant] ?? project.cover;
   const showFullFrame = fullFrameCovers.has(project.variant);
+  const projectHref = project.demo ?? project.links.at(0)?.[1];
+  const destinationLabel = project.demo ? translate(copy.projectLiveStatus) : translate(copy.projectSourceStatus);
 
   return (
     <motion.article
       data-card-index={index}
-      className="project-card group/art relative min-w-0 overflow-hidden border-2 border-ink bg-paper md:sticky md:grid md:grid-rows-[minmax(0,1fr)_auto] md:overflow-hidden"
+      data-project-state={state}
+      className={`project-card group/art relative min-w-0 overflow-hidden border-2 border-ink bg-paper ${
+        stacked ? "sticky grid grid-rows-[minmax(0,1fr)_auto]" : ""
+      }`}
       style={
         stacked
           ? {
@@ -123,7 +164,7 @@ function ProjectCard({
               // footer never falls below the fold. The image row flexes and
               // the meta row is `auto`, so the copy keeps its height and the
               // cover gives way instead.
-              height: `calc(100svh - ${DECK_INSET}px)`,
+              height: `min(780px, calc(100svh - ${DECK_INSET}px))`,
               zIndex: index + 1,
               z: Math.min(index, STACK_PEEK_MAX) * STACK_LIFT,
               backfaceVisibility: "hidden",
@@ -132,32 +173,45 @@ function ProjectCard({
       }
       initial={reduced ? false : "hidden"}
       whileInView="shown"
-      viewport={{ once: true, amount: 0.25 }}
+      viewport={inViewport}
       variants={deckStagger}
     >
       {/* Acid top hairline on the active card — the focal edge of the deck. */}
       <motion.span
-        className="pointer-events-none absolute inset-x-0 top-0 z-40 h-[3px] origin-left bg-acid"
+        className="project-active-edge pointer-events-none absolute inset-x-0 top-0 z-40 h-[3px] origin-left bg-acid"
         variants={deckEdge}
         aria-hidden="true"
       />
-      <div
-        className={`project-art relative h-[min(56vw,770px)] min-h-[520px] overflow-hidden md:h-full md:min-h-0 max-[680px]:h-[108vw] max-[680px]:min-h-0 max-[420px]:h-[100vw] ${artThemes[project.variant]}`}
-        data-cursor
-        aria-hidden="true"
+      {/* The artwork used to be taller than wide on a phone (108vw). With the
+          description no longer clamped there, that pushed each card past 1.2
+          screens — one card could never be seen whole. A landscape crop reads
+          the cover just as well and hands the height back to the words. */}
+      <a
+        className={`project-art relative block h-[min(56vw,770px)] min-h-[520px] touch-manipulation overflow-hidden md:h-full md:min-h-0 max-[767px]:h-[clamp(220px,72vw,310px)] max-[767px]:min-h-0 max-[360px]:h-[clamp(188px,64vw,216px)] focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-acid ${artThemes[project.variant]}`}
+        href={projectHref}
+        target={projectHref ? "_blank" : undefined}
+        rel={projectHref ? "noreferrer" : undefined}
+        aria-label={translate(
+          dual(
+            `Buka ${project.title} — ${project.demo ? "demo live" : "repositori"} di tab baru`,
+            `Open ${project.title} — ${project.demo ? "live demo" : "repository"} in a new tab`,
+          ),
+        )}
+        data-cursor={projectHref ? "" : undefined}
       >
         <motion.div
-          className={`project-art-motion absolute grid place-items-center transition-[filter] duration-300 will-change-transform group-hover/art:saturate-[1.1] ${
+          className={`project-art-motion absolute grid place-items-center ${
             cover ? "inset-0" : "-inset-[8%]"
           }`}
           variants={deckArt}
         >
-          {cover ? (
-            <>
+          <div className="project-art-media absolute inset-0 grid place-items-center">
+            {cover ? (
+              <>
               {showFullFrame ? (
                 <>
                   <img
-                    src={cover}
+                    src={cover} loading="lazy"
                     alt=""
                     draggable={false}
                     className="pointer-events-none absolute inset-0 size-full scale-110 object-cover opacity-45 blur-2xl"
@@ -167,21 +221,21 @@ function ProjectCard({
                   <div className="absolute inset-[5%_2.5%] grid grid-cols-[minmax(0,0.65fr)_minmax(0,1.5fr)_minmax(0,0.65fr)] gap-[clamp(6px,1vw,14px)] max-md:grid-cols-1">
                     <span className="relative overflow-hidden border border-current/20 bg-ink/20 max-md:hidden">
                       <img
-                        src={cover}
+                        src={cover} loading="lazy"
                         alt=""
                         draggable={false}
                         className="pointer-events-none absolute inset-0 size-full object-cover object-left opacity-85"
                       />
                     </span>
                     <img
-                      src={cover}
+                      src={cover} loading="lazy"
                       alt=""
                       draggable={false}
                       className="pointer-events-none relative size-full object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.38)]"
                     />
                     <span className="relative overflow-hidden border border-current/20 bg-ink/20 max-md:hidden">
                       <img
-                        src={cover}
+                        src={cover} loading="lazy"
                         alt=""
                         draggable={false}
                         className="pointer-events-none absolute inset-0 size-full object-cover object-right opacity-85"
@@ -191,7 +245,7 @@ function ProjectCard({
                 </>
               ) : (
                 <img
-                  src={cover}
+                  src={cover} loading="lazy"
                   alt=""
                   draggable={false}
                   className="pointer-events-none absolute inset-0 size-full object-cover"
@@ -214,7 +268,7 @@ function ProjectCard({
               {project.variant === "anistream" && (
                 <>
                   <motion.span
-                    className="absolute top-1/2 left-[3.5%] z-[4] grid size-12 place-items-center rounded-full border border-paper/35 bg-ink/70 text-paper max-[680px]:size-10"
+                    className="project-art-affordance absolute top-1/2 left-[3.5%] z-[4] grid size-12 place-items-center rounded-full border border-paper/35 bg-ink/70 text-paper max-[680px]:size-10"
                     style={{ y: "-50%" }}
                     animate={reduced ? undefined : { x: [0, -8, 0] }}
                     transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
@@ -222,7 +276,7 @@ function ProjectCard({
                     <Chevron dir="left" className="size-5 max-[680px]:size-4" />
                   </motion.span>
                   <motion.span
-                    className="absolute top-1/2 right-[3.5%] z-[4] grid size-12 place-items-center rounded-full bg-[#e11d2e] text-paper max-[680px]:size-10"
+                    className="project-art-affordance absolute top-1/2 right-[3.5%] z-[4] grid size-12 place-items-center rounded-full bg-[#e11d2e] text-paper max-[680px]:size-10"
                     style={{ y: "-50%" }}
                     animate={reduced ? undefined : { x: [0, 8, 0] }}
                     transition={{ duration: 1.45, repeat: Infinity, ease: "easeInOut" }}
@@ -261,14 +315,29 @@ function ProjectCard({
                 {project.mark}
               </strong>
             </>
-          )}
+            )}
+          </div>
         </motion.div>
+        <span className="project-viewport-rail pointer-events-none absolute inset-x-[2%] top-[2.5%] z-[9] flex min-h-8 items-center border border-paper/20 bg-ink/88 px-3 font-mono text-[10px] tracking-[0.11em] text-paper uppercase backdrop-blur-md max-[480px]:inset-x-[3%] max-[480px]:min-h-7 max-[480px]:px-2 max-[480px]:text-[9px]">
+          <span className="flex shrink-0 items-center gap-2 text-acid">
+            <i className="size-1.5 bg-current not-italic" aria-hidden="true" />
+            {translate(copy.projectCase)} {project.number}
+          </span>
+          <span className="mx-3 h-px min-w-4 flex-1 bg-paper/20 max-[480px]:mx-2" aria-hidden="true" />
+          <span className="max-w-[34ch] truncate text-paper/60 max-[680px]:hidden">{translate(project.type)}</span>
+          <span className="mx-3 h-3 w-px shrink-0 bg-paper/20 max-[680px]:hidden" aria-hidden="true" />
+          <span className="shrink-0 text-paper">
+            {destinationLabel} · {String(index + 1).padStart(2, "0")}/{String(projects.length).padStart(2, "0")}
+          </span>
+        </span>
         <span className="pointer-events-none absolute inset-[2.5%_2%] z-[5] border border-current/20" />
         <i className="absolute top-[3.5%] left-[2%] z-[6] text-[clamp(15px,1.6vw,22px)] leading-none font-light not-italic">
           +
         </i>
-        <span className="absolute right-[2%] bottom-[3.5%] z-[6] size-2 bg-current" />
-      </div>
+        <span className="project-view-mark pointer-events-none absolute right-[2%] bottom-[3.5%] z-[9] grid size-10 place-items-center border border-paper/25 bg-ink/88 text-acid backdrop-blur-md max-[480px]:right-[3%] max-[480px]:size-9" aria-hidden="true">
+          <ArrowOut className="size-4" />
+        </span>
+      </a>
 
       <div className="project-meta">
         <motion.div className="project-main">
@@ -297,17 +366,17 @@ function ProjectCard({
           >
             <p className="project-note">{translate(project.note)}</p>
             <ul className="project-metrics">
-              {project.metrics.map(([label, value]) => (
-                <li className="flex min-w-0 items-baseline gap-2" key={typeof label === "string" ? label : label.en}>
-                  <span className="text-[#6f7068]">{translate(label)}</span>
-                  <span className="font-semibold text-ink">{translate(value)}</span>
+              {project.metrics.map(([label, value], metricIndex) => (
+                <li className="project-metric" key={typeof label === "string" ? label : label.en} data-metric-index={metricIndex}>
+                  <span className="project-metric-label">{translate(label)}</span>
+                  <strong className="project-metric-value">{translate(value)}</strong>
                 </li>
               ))}
             </ul>
             <ul className="project-stack-list" aria-label={translate(dual(`Teknologi ${project.title}`, `${project.title} technologies`))}>
-              {project.stack.map((item) => (
+              {project.stack.map((item, stackIndex) => (
                 <li
-                  className="border border-ink/25 px-2.5 py-1.5 text-[10px] font-medium tracking-[0.12em] whitespace-nowrap uppercase transition-colors duration-200 group-hover/art:border-ink/55"
+                  className={`project-tech ${stackIndex < 2 ? "project-tech--primary" : ""}`}
                   key={item}
                 >
                   {item}
@@ -324,7 +393,7 @@ function ProjectCard({
           <div className="project-actions">
             {project.demo && (
               <a
-                className="group/live relative mb-2 flex min-h-11 items-center justify-between gap-3 overflow-hidden border-2 border-ink bg-ink px-3.5 font-semibold tracking-[0.12em] text-acid uppercase transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink"
+                className="group/live relative mb-2 flex min-h-11 items-center justify-between gap-3 overflow-hidden border-2 border-ink bg-ink px-3.5 text-[13px] font-semibold tracking-[0.12em] text-acid uppercase transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink"
                 href={project.demo}
                 target="_blank"
                 rel="noreferrer"
@@ -339,6 +408,7 @@ function ProjectCard({
                     aria-hidden="true"
                   />
                   {translate(copy.liveDemo)}
+                  <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
                 </span>
                 <span
                   className="relative grid size-4 shrink-0 place-items-center transition-transform duration-250 group-hover/live:translate-x-0.5 group-hover/live:-translate-y-0.5"
@@ -357,7 +427,7 @@ function ProjectCard({
                 const github = href.includes("github.com");
                 return (
                   <a
-                    className="group/link flex min-h-11 items-center justify-between gap-3 border-t border-ink/30 px-2.5 text-[10px] font-medium tracking-[0.12em] uppercase transition-colors duration-250 first:border-t-0 hover:bg-ink hover:text-acid focus-visible:bg-ink focus-visible:text-acid"
+                    className="group/link flex min-h-11 items-center justify-between gap-3 border-t border-ink/30 px-2.5 text-[11px] font-medium tracking-[0.12em] uppercase transition-colors duration-250 first:border-t-0 hover:bg-ink hover:text-acid focus-visible:bg-ink focus-visible:text-acid"
                     key={href}
                     href={href}
                     target="_blank"
@@ -370,6 +440,7 @@ function ProjectCard({
                         <i className="not-italic opacity-45">{String(linkIndex + 1).padStart(2, "0")}</i>
                       )}
                       <span className="min-w-0">{label}</span>
+                      <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
                     </span>
                     <span
                       className="grid size-4 shrink-0 place-items-center transition-transform duration-250 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
@@ -389,12 +460,159 @@ function ProjectCard({
   );
 }
 
+/**
+ * How many projects lead the phone layout as full cards.
+ *
+ * The rest become an index. A full card costs 1.19 screens of scroll on a
+ * phone, so a growing list turned the section into a marathon — seven projects
+ * already ran to 9.3 screens and twenty would reach nearly 25. The first few
+ * cards are what establish the work; past that a reader wants to scan, not
+ * keep swiping through the same layout.
+ */
+const PHONE_FEATURED = 3;
+
+/** One project as a scannable row that opens in place. Phones only. */
+function ProjectIndexRow({ project }: { project: Project }) {
+  const translate = useT();
+  const reduced = Boolean(useReducedMotion());
+  const [open, setOpen] = useState(false);
+  const panelId = `project-index-${project.number}`;
+  const triggerId = `${panelId}-trigger`;
+  const cover = smallCovers[project.variant] ?? bundledCovers[project.variant] ?? project.cover;
+
+  return (
+    <li className="project-index-row border-b border-ink/20" data-open={open ? "true" : "false"}>
+      <button
+        id={triggerId}
+        type="button"
+        className="group/index flex min-h-16 w-full touch-manipulation cursor-pointer items-center gap-4 px-2 py-4 text-left transition-colors duration-200 hover:bg-acid/18 focus-visible:bg-acid/18 active:bg-acid/28 max-[360px]:gap-2.5 max-[360px]:px-0 max-[360px]:py-2.5"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="font-mono text-[11px] tabular-nums text-[#686960]">{project.number}</span>
+        {/* The cover still earns its place at thumbnail size: it is what makes
+            a row recognisable at a glance rather than a line of text. */}
+        <span
+          className={`relative block h-11 w-16 shrink-0 overflow-hidden border border-ink/20 max-[360px]:w-14 ${artThemes[project.variant] ?? ""}`}
+          aria-hidden="true"
+        >
+          {cover ? (
+            <img src={cover} alt="" loading="lazy" draggable={false} className="absolute inset-0 size-full object-cover" />
+          ) : (
+            <span className="font-display absolute inset-0 grid place-items-center text-[11px] font-[760] tracking-[-0.04em]">
+              {project.mark}
+            </span>
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <strong className="font-display block truncate text-[20px] leading-none font-[680] tracking-[-0.04em] max-[360px]:text-[18px]">
+            {project.title}
+          </strong>
+          {/* Year first, type second. The thumbnail took width off this line
+              and it now truncates — with the type leading, the year was the
+              part that disappeared, which is the half a reader actually scans
+              for. Reversed, the truncation only ever eats the tail. */}
+          <span className="mt-1.5 block truncate text-[11px] tracking-[0.08em] text-[#686960] uppercase">
+            {project.year} · {translate(project.type)}
+          </span>
+        </span>
+        <span
+          className={`grid size-8 shrink-0 place-items-center border border-ink/30 transition-transform duration-300 ${open ? "rotate-45" : ""}`}
+          aria-hidden="true"
+        >
+          <span className="relative block size-3">
+            <span className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-ink" />
+            <span className="absolute top-0 left-1/2 h-full w-px -translate-x-1/2 bg-ink" />
+          </span>
+        </span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open ? (
+          <motion.div
+            id={panelId}
+            role="region"
+            aria-labelledby={triggerId}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduced ? 0 : 0.3, ease }}
+            className="overflow-hidden"
+          >
+            <div className="px-2 pb-5">
+              {cover ? (
+                <span
+                  className={`relative mb-4 block aspect-[16/10] overflow-hidden border border-ink/20 ${artThemes[project.variant] ?? ""}`}
+                >
+                  <img
+                    src={cover}
+                    alt=""
+                    loading="lazy"
+                    draggable={false}
+                    className={`absolute inset-0 size-full ${fullFrameCovers.has(project.variant) ? "object-contain" : "object-cover"}`}
+                  />
+                </span>
+              ) : null}
+              <p className="m-0 text-[15px] leading-[1.55] text-[#3a3b36]">{translate(project.note)}</p>
+              <ul className="project-metrics mt-4">
+                {project.metrics.map(([label, value]) => (
+                  <li className="project-metric" key={typeof label === "string" ? label : label.en}>
+                    <span className="project-metric-label">{translate(label)}</span>
+                    <strong className="project-metric-value">{translate(value)}</strong>
+                  </li>
+                ))}
+              </ul>
+              <ul className="mt-3.5 mb-0 flex list-none flex-wrap gap-1.5 p-0">
+                {project.stack.map((item, stackIndex) => (
+                  <li className={`project-tech ${stackIndex < 2 ? "project-tech--primary" : ""}`} key={item}>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              {project.demo || project.links.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {project.demo ? (
+                    <a
+                      className="inline-flex min-h-11 items-center gap-2 border border-ink bg-ink px-3.5 text-[11px] tracking-[0.1em] text-acid uppercase"
+                      href={project.demo}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Demo <ArrowOut className="size-3" />
+                      <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
+                    </a>
+                  ) : null}
+                  {project.links.map(([label, href]) => (
+                    <a
+                      className="inline-flex min-h-11 items-center gap-2 border border-ink/30 px-3.5 text-[11px] tracking-[0.1em] uppercase"
+                      key={href}
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <SocialIcon name="github" className="size-3.5 opacity-70" />
+                      {label}
+                      <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </li>
+  );
+}
+
 export function ProjectStack() {
+  const t = useT();
   const total = projects.length;
   const [active, setActive] = useState(0);
   // Cards only take turns on the pinned desktop deck; on mobile every card is
   // on screen in flow and must stay reachable by keyboard.
-  const stacked = useMediaQuery("(min-width: 768px)");
+  const stacked = useMediaQuery("(min-width: 1024px) and (min-height: 680px) and (hover: hover) and (pointer: fine)");
   const deckRef = useRef<HTMLDivElement>(null);
 
   /**
@@ -406,6 +624,7 @@ export function ProjectStack() {
    * put JS back on every frame, which is the thing this rewrite removed.
    */
   useEffect(() => {
+    if (!stacked) return;
     const deck = deckRef.current;
     if (!deck) return;
     const cards = deck.querySelectorAll<HTMLElement>("[data-card-index]");
@@ -430,49 +649,51 @@ export function ProjectStack() {
   const travelled = (active + 1) / total;
 
   return (
-    <div className="project-pin-shell mt-8">
+    <div className="project-pin-shell mt-5 md:mt-8">
       <div className="hidden md:contents">
         <PaperField variant="work" />
       </div>
 
-      <div
-        className="project-deck-progress pointer-events-none sticky top-0 z-30 hidden grid-cols-[auto_minmax(120px,1fr)_auto_auto] items-center gap-4 bg-paper/85 py-5 text-[10px] tracking-[0.14em] text-ink uppercase backdrop-blur-sm md:grid"
-        aria-hidden="true"
-      >
-        <span className="font-display text-[13px] font-semibold tracking-[0.08em] tabular-nums">
-          {String(active + 1).padStart(2, "0")}
-          <span className="mx-1.5 font-sans text-[10px] font-medium tracking-[0.14em] text-[#6f7068]">/</span>
-          {String(total).padStart(2, "0")}
-        </span>
-        <span className="project-progress-rail">
-          <motion.i
-            className="project-progress-fill"
-            style={{ originX: 0 }}
-            animate={{ scaleX: travelled }}
-            transition={{ duration: 0.5, ease }}
-          />
-          <motion.i
-            className="project-progress-head"
-            animate={{ left: `${(travelled * 100).toFixed(2)}%` }}
-            transition={{ duration: 0.5, ease }}
-          />
-        </span>
-        <span className="max-w-[18ch] truncate text-[#4c4d46]">{projects[active]?.title}</span>
-        <ol className="m-0 flex list-none items-center gap-1.5 p-0">
-          {projects.map((project, index) => (
-            <li
-              className={
-                index === active
-                  ? "size-2 border border-ink bg-acid"
-                  : index < active
-                    ? "size-1.5 bg-ink"
-                    : "size-1.5 border border-ink/40"
-              }
-              key={project.number}
+      {stacked ? (
+        <div
+          className="project-deck-progress pointer-events-none sticky top-[76px] z-30 grid min-h-11 grid-cols-[auto_minmax(120px,1fr)_auto_auto] items-center gap-4 border-y border-ink/12 bg-paper/95 py-3 text-[11px] tracking-[0.14em] text-ink uppercase shadow-[0_12px_22px_-20px_rgba(11,13,12,0.42)]"
+          aria-hidden="true"
+        >
+          <span className="font-display text-[13px] font-semibold tracking-[0.08em] tabular-nums">
+            {String(active + 1).padStart(2, "0")}
+            <span className="mx-1.5 font-sans text-[11px] font-medium tracking-[0.14em] text-[#686960]">/</span>
+            {String(total).padStart(2, "0")}
+          </span>
+          <span className="project-progress-rail">
+            <motion.i
+              className="project-progress-fill"
+              style={{ originX: 0 }}
+              animate={{ scaleX: travelled }}
+              transition={{ duration: 0.42, ease }}
             />
-          ))}
-        </ol>
-      </div>
+            <motion.i
+              className="project-progress-head"
+              animate={{ left: `${(travelled * 100).toFixed(2)}%` }}
+              transition={{ duration: 0.42, ease }}
+            />
+          </span>
+          <span className="max-w-[18ch] truncate text-[#4c4d46]">{projects[active]?.title}</span>
+          <ol className="m-0 flex list-none items-center gap-1.5 p-0">
+            {projects.map((project, index) => (
+              <li
+                className={
+                  index === active
+                    ? "size-2 border border-ink bg-acid"
+                    : index < active
+                      ? "size-1.5 bg-ink"
+                      : "size-1.5 border border-ink/40"
+                }
+                key={project.number}
+              />
+            ))}
+          </ol>
+        </div>
+      ) : null}
 
       {/* A block container with margins between cards, deliberately not a grid.
           A grid item's containing block is its own grid area, so each card
@@ -483,19 +704,43 @@ export function ProjectStack() {
           beat instead of flicking past. */}
       <div
         ref={deckRef}
-        className="project-deck relative z-[1] space-y-[clamp(100px,12vw,190px)] pt-8 md:space-y-[clamp(48px,7vh,96px)] md:pt-2 max-[680px]:space-y-[98px]"
+        className="project-deck relative z-[1] space-y-[clamp(52px,14vw,68px)] pt-0 lg:space-y-[clamp(48px,7vh,96px)] lg:pt-2 max-[360px]:space-y-9"
         style={{ perspective: "1200px" }}
       >
-        {projects.map((project, index) => (
-          <ProjectCard key={project.number} project={project} index={index} stacked={stacked} />
+        {(stacked ? projects : projects.slice(0, PHONE_FEATURED)).map((project, index) => (
+          <ProjectCard
+            key={project.number}
+            project={project}
+            index={index}
+            stacked={stacked}
+            state={stacked ? (index < active ? "past" : index === active ? "active" : "future") : "static"}
+          />
         ))}
+
+        {!stacked && projects.length > PHONE_FEATURED ? (
+          <section aria-label={t(copy.workIndexLabel)}>
+            <div className="flex items-baseline justify-between gap-4 border-b-2 border-ink pb-3">
+              <h3 className="m-0 text-[11px] font-semibold tracking-[0.12em] uppercase">
+                {t(copy.workIndexLabel)}
+              </h3>
+              <span className="text-[11px] tracking-[0.1em] text-[#686960] uppercase">
+                {t(copy.workIndexHint)}
+              </span>
+            </div>
+            <ul className="m-0 list-none p-0">
+              {projects.slice(PHONE_FEATURED).map((project) => (
+                <ProjectIndexRow key={project.number} project={project} />
+              ))}
+            </ul>
+          </section>
+        ) : null}
         {/* The deck's tail, as a real box in flow rather than padding on the
             deck. A sticky element is constrained by its containing block, and
             for a block-level child that is the parent's CONTENT box — padding
             sits outside it. As padding this gave the last card no room to pin
             at all: it slid straight past while leaving 600px of empty deck
             behind it. In flow, it is what the last card pins against. */}
-        <div aria-hidden="true" className="hidden md:block md:h-[58vh]" />
+        {stacked ? <div aria-hidden="true" className="h-[58vh]" /> : null}
       </div>
     </div>
   );
@@ -508,20 +753,20 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
   return (
     <article className="utility-card group/art relative z-[1] grid min-w-0 overflow-hidden border-2 border-ink bg-paper md:grid-cols-[minmax(220px,0.38fr)_minmax(0,1fr)]">
       <div
-        className={`relative h-[min(42vw,280px)] min-h-[200px] overflow-hidden md:h-full md:min-h-[240px] max-[420px]:h-[56vw] max-[420px]:min-h-[180px] ${artThemes[project.variant]}`}
+        className={`relative h-[clamp(190px,56vw,250px)] min-h-0 overflow-hidden md:h-full md:min-h-[240px] max-[360px]:h-[clamp(164px,52vw,184px)] ${artThemes[project.variant]}`}
         aria-hidden="true"
       >
         {cover ? (
           <>
             <img
-              src={cover}
+              src={cover} loading="lazy"
               alt=""
               draggable={false}
               className="pointer-events-none absolute inset-0 size-full scale-110 object-cover object-center opacity-45 blur-xl"
             />
             <span className="absolute inset-0 bg-[#f4f1e8]/62" />
             <img
-              src={cover}
+              src={cover} loading="lazy"
               alt=""
               draggable={false}
               className="pointer-events-none absolute inset-0 size-full object-contain object-center p-[2.5%] drop-shadow-[0_8px_22px_rgba(28,24,16,0.2)]"
@@ -553,21 +798,21 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
           </div>
         </div>
 
-        <p className="m-0 text-[15px] leading-[1.55] text-[#3a3b36] max-[420px]:text-sm">{translate(project.note)}</p>
+        <p className="m-0 text-[15px] leading-[1.55] text-[#3a3b36] max-[420px]:text-[15px]">{translate(project.note)}</p>
 
-        <ul className="project-metrics !border-0 !pt-0">
+        <ul className="project-metrics">
           {project.metrics.map(([label, value]) => (
-            <li className="flex min-w-0 items-baseline gap-2" key={typeof label === "string" ? label : label.en}>
-              <span className="text-[#6f7068]">{translate(label)}</span>
-              <span className="font-semibold text-ink">{translate(value)}</span>
+            <li className="project-metric" key={typeof label === "string" ? label : label.en}>
+              <span className="project-metric-label">{translate(label)}</span>
+              <strong className="project-metric-value">{translate(value)}</strong>
             </li>
           ))}
         </ul>
 
         <ul className="project-stack-list" aria-label={translate(dual(`Teknologi ${project.title}`, `${project.title} technologies`))}>
-          {project.stack.map((item) => (
+          {project.stack.map((item, stackIndex) => (
             <li
-              className="border border-ink/25 px-2.5 py-1.5 text-[10px] font-medium tracking-[0.12em] whitespace-nowrap uppercase"
+              className={`project-tech ${stackIndex < 2 ? "project-tech--primary" : ""}`}
               key={item}
             >
               {item}
@@ -578,7 +823,7 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
         <div className="mt-auto flex flex-col gap-2 min-[520px]:flex-row">
           {project.demo ? (
             <a
-              className="group/live relative inline-flex min-h-11 flex-1 items-center justify-between gap-3 overflow-hidden border-2 border-ink bg-ink px-3.5 font-semibold tracking-[0.12em] text-acid uppercase transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink"
+              className="group/live relative inline-flex min-h-11 flex-1 items-center justify-between gap-3 overflow-hidden border-2 border-ink bg-ink px-3.5 text-[13px] font-semibold tracking-[0.12em] text-acid uppercase transition-colors duration-250 hover:bg-acid hover:text-ink focus-visible:bg-acid focus-visible:text-ink"
               href={project.demo}
               target="_blank"
               rel="noreferrer"
@@ -586,6 +831,7 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
               <span className="relative flex items-center gap-2">
                 <i className="size-[7px] shrink-0 animate-pulse-dot rounded-full bg-current not-italic" aria-hidden="true" />
                 {translate(copy.liveDemo)}
+                <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
               </span>
               <ArrowOut className="size-3.5 shrink-0" />
             </a>
@@ -595,7 +841,7 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
               const github = href.includes("github.com");
               return (
                 <a
-                  className="group/link flex min-h-11 items-center justify-between gap-3 px-2.5 text-[10px] font-medium tracking-[0.12em] uppercase transition-colors duration-250 hover:bg-ink hover:text-acid focus-visible:bg-ink focus-visible:text-acid"
+                  className="group/link flex min-h-11 items-center justify-between gap-3 px-2.5 text-[11px] font-medium tracking-[0.12em] uppercase transition-colors duration-250 hover:bg-ink hover:text-acid focus-visible:bg-ink focus-visible:text-acid"
                   key={href}
                   href={href}
                   target="_blank"
@@ -608,6 +854,7 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
                       <i className="not-italic opacity-45">{String(linkIndex + 1).padStart(2, "0")}</i>
                     )}
                     <span className="min-w-0">{label}</span>
+                    <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
                   </span>
                   <ArrowOut className="size-3.5 shrink-0" />
                 </a>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import {
   motion,
+  useInView,
   useMotionValue,
   useReducedMotion,
   useScroll,
@@ -90,12 +91,17 @@ function Mark({ kind }: { kind: Kind }) {
  *
  * Every layer is pointer-events-none and aria-hidden. Reduced-motion removes
  * the parallax, the ambient float and the pointer glow, leaving a calm static
- * wash; touch devices never wire the pointer glow.
+ * wash; touch devices never wire the pointer glow. Ambient layers also pause
+ * as soon as the section leaves the viewport.
  */
 export function ProfileBackdrop() {
   const reduced = Boolean(useReducedMotion());
-  const finePointer = useMediaQuery("(pointer: fine)");
   const rootRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(rootRef, { amount: 0.05 });
+  const fullMotion = useMediaQuery(
+    "(min-width: 1024px) and (min-height: 680px) and (hover: hover) and (pointer: fine)",
+  );
+  const live = fullMotion && !reduced && inView;
   const motes = buildMotes(20260823, 26);
 
   const { scrollYProgress } = useScroll({
@@ -111,21 +117,21 @@ export function ProfileBackdrop() {
     {
       className:
         "left-[-18%] top-[-22%] size-[min(760px,64vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.5),transparent_62%)]",
-      style: { y: reduced ? undefined : blob0y },
+      style: { y: live ? blob0y : undefined },
       float: { x: [0, 34, 0], y: [0, 26, 0] },
       floatDur: 17,
     },
     {
       className:
         "right-[-16%] top-[6%] size-[min(620px,54vw)] rounded-full bg-[radial-gradient(circle,rgba(255,97,60,0.34),transparent_64%)]",
-      style: { y: reduced ? undefined : blob1y },
+      style: { y: live ? blob1y : undefined },
       float: { x: [0, -30, 0], y: [0, -22, 0] },
       floatDur: 21,
     },
     {
       className:
         "left-[22%] bottom-[-26%] size-[min(660px,58vw)] rounded-full bg-[radial-gradient(circle,rgba(141,115,255,0.26),transparent_64%)]",
-      style: { y: reduced ? undefined : blob2y },
+      style: { y: live ? blob2y : undefined },
       float: { x: [0, 40, 0], y: [0, 30, 0] },
       floatDur: 24,
     },
@@ -140,7 +146,7 @@ export function ProfileBackdrop() {
   const gx = useSpring(px, { stiffness: 60, damping: 20, mass: 1.2 });
   const gy = useSpring(py, { stiffness: 60, damping: 20, mass: 1.2 });
 
-  const active = finePointer && !reduced;
+  const active = live;
   useEffect(() => {
     if (!active) return;
     const onMove = (event: PointerEvent) => {
@@ -164,6 +170,7 @@ export function ProfileBackdrop() {
     window.addEventListener("pointerleave", onLeave);
     window.addEventListener("blur", onLeave);
     return () => {
+      onLeave();
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerleave", onLeave);
       window.removeEventListener("blur", onLeave);
@@ -190,11 +197,11 @@ export function ProfileBackdrop() {
         >
           <motion.div
             className={`absolute ${blob.className}`}
-            animate={reduced ? undefined : { x: blob.float.x, y: blob.float.y }}
+            animate={live ? { x: blob.float.x, y: blob.float.y } : { x: 0, y: 0 }}
             transition={
-              reduced
-                ? undefined
-                : { duration: blob.floatDur, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" }
+              live
+                ? { duration: blob.floatDur, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" }
+                : { duration: 0.2 }
             }
           />
         </motion.div>
@@ -204,7 +211,7 @@ export function ProfileBackdrop() {
       {motes.map((mote) => (
         <span
           key={mote.id}
-          className={`profile-mote absolute ${MOTE_TONE[mote.tone]} ${reduced ? "" : "is-live"}`}
+          className={`profile-mote absolute ${MOTE_TONE[mote.tone]} ${live ? "is-live" : ""}`}
           style={{
             left: mote.x,
             top: mote.y,

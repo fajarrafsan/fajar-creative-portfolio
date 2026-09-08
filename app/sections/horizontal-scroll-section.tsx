@@ -15,7 +15,7 @@ import { InkField } from "@/app/components/ink-field";
 import { TechIcon } from "@/app/components/tech-icons";
 import { copy, frontendArchitecture, type RichText } from "@/app/content";
 import { useT, type Dual } from "@/app/lib/i18n";
-import { archItem, archParent, archWord, ease, useLatchedInView } from "@/app/lib/motion";
+import { inViewport, archItem, archParent, archWord, ease, useLatchedInView } from "@/app/lib/motion";
 
 export type HorizontalPanel = {
   number: string;
@@ -120,7 +120,7 @@ function LineLockup({
 }
 
 const pad = (value: number) => String(value).padStart(2, "0");
-const PIN_QUERY = "(min-width: 768px) and (hover: hover) and (pointer: fine)";
+const PIN_QUERY = "(min-width: 1024px) and (min-height: 700px) and (hover: hover) and (pointer: fine)";
 
 /**
  * One continuous ink wash that reaches up over the architecture section above
@@ -271,13 +271,20 @@ function Panel({
       className={
         pin
           ? "flex w-full shrink-0 flex-col justify-center gap-5 px-[3vw] py-2"
-          : "flex w-full flex-col gap-5 border border-paper/15 bg-ink-soft/80 px-5 py-6 max-[420px]:px-[18px] max-[420px]:py-5"
+          : "relative flex w-full flex-col gap-4 overflow-hidden border border-paper/15 bg-ink-soft/80 px-5 py-6 max-[420px]:px-4 max-[420px]:py-5 max-[360px]:gap-3 max-[360px]:p-4"
       }
     >
-      <span className="font-mono text-[12px] tracking-[0.16em] text-acid">{panel.number}</span>
+      {!pin ? <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-acid via-acid/35 to-transparent" aria-hidden="true" /> : null}
+      <div className="flex items-center justify-between gap-4">
+        <span className="font-mono text-[13px] tracking-[0.16em] text-acid">{panel.number}</span>
+        {!pin ? <span className="font-mono text-[11px] tracking-[0.12em] text-paper/45">{pad(index + 1)} / {pad(total)}</span> : null}
+      </div>
       <h3
         id={headingId}
-        className="font-display m-0 max-w-[16ch] text-[clamp(32px,4vw,56px)] leading-[0.88] font-[560] tracking-[-0.07em]"
+        className={pin
+          ? "font-display m-0 max-w-[16ch] text-[clamp(32px,4vw,56px)] leading-[0.88] font-[560] tracking-[-0.07em]"
+          : "font-display m-0 max-w-[16ch] text-[clamp(28px,7.4vw,42px)] leading-[0.92] font-[560] tracking-[-0.06em] max-[360px]:text-[26px]"
+        }
       >
         {title}
       </h3>
@@ -285,9 +292,9 @@ function Panel({
         <ul className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label={t(copy.panelTechAria)}>
           {panel.icons.map((icon) => (
             <li key={icon}>
-              <span className="inline-flex min-h-11 items-center gap-2.5 border border-paper/20 px-3 py-2 text-acid">
+              <span className="inline-flex min-h-11 items-center gap-2.5 border border-paper/20 px-3 py-2 text-acid max-[360px]:min-h-10 max-[360px]:gap-2 max-[360px]:px-2.5">
                 <TechIcon name={icon} className="size-[18px] shrink-0" />
-                <span className="text-[11px] tracking-[0.1em] text-paper uppercase">
+                <span className="text-[12px] tracking-[0.09em] text-paper uppercase">
                   {ICON_LABELS[icon] ?? icon}
                 </span>
               </span>
@@ -295,7 +302,7 @@ function Panel({
           ))}
         </ul>
       ) : null}
-      <p className="m-0 max-w-[54ch] text-[18px] leading-[1.65] text-[#c4c6bc] max-[680px]:text-[16.5px] max-[680px]:leading-[1.62]">
+      <p className={`m-0 max-w-[54ch] leading-[1.65] text-[#c4c6bc] max-[360px]:leading-[1.55] ${pin ? "text-[18px]" : "text-[16px] max-[360px]:text-[15px]"}`}>
         <RichBody segments={body} />
       </p>
     </motion.article>
@@ -320,6 +327,7 @@ function SectionChrome({
   current,
   total,
   compact,
+  range = false,
 }: {
   kicker: string;
   heading?: RichText[];
@@ -327,12 +335,10 @@ function SectionChrome({
   current: string;
   total: string;
   compact?: boolean;
+  range?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { reduced, shown } = useLatchedInView(rootRef, {
-    margin: "0px 0px -10% 0px",
-    amount: 0.2,
-  });
+  const { reduced, shown } = useLatchedInView(rootRef, inViewport);
   const enter = shown ? "shown" : "hidden";
   const initial = shown ? false : reduced ? "shown" : "hidden";
 
@@ -347,13 +353,13 @@ function SectionChrome({
       <div className={`flex items-end justify-between gap-6 ${compact ? "mb-3" : "mb-5"} max-[680px]:mb-4 max-[680px]:flex-col max-[680px]:items-start max-[680px]:gap-3`}>
         <motion.p
           variants={archItem}
-          className="m-0 flex min-w-0 items-center gap-2.5 text-[12px] tracking-[0.16em] text-acid uppercase"
+          className="m-0 flex min-w-0 items-center gap-2.5 text-[13px] tracking-[0.16em] text-acid uppercase"
         >
           <i className="size-1.5 shrink-0 bg-acid" aria-hidden="true" />
           <span className="truncate">{kicker}</span>
         </motion.p>
-        <motion.p variants={archItem} className="m-0 shrink-0 font-mono text-[12px] tracking-[0.14em] text-acid tabular-nums">
-          {current} / {total}
+        <motion.p variants={archItem} className="m-0 shrink-0 font-mono text-[13px] tracking-[0.14em] text-acid tabular-nums">
+          {current} {range ? "—" : "/"} {total}
         </motion.p>
       </div>
       {heading ? <LineLockup lines={heading} id={headingId} shown={shown} reduced={reduced} compact={compact} /> : null}
@@ -378,30 +384,31 @@ function StackLayout({
   const kickerLabel = t(kicker);
   const headingLines = heading ? t(heading) : undefined;
   return (
-    <div className="frontend-stack relative px-[3vw] pt-[max(5.5rem,calc(env(safe-area-inset-top)+4.75rem))] pb-[clamp(120px,22vw,180px)] max-[680px]:px-[18px] max-[420px]:px-3.5" data-frontend="stack">
+    <div className="frontend-stack relative border-t border-paper/15 px-[3vw] pt-[clamp(52px,7vw,72px)] pb-[clamp(96px,16vw,144px)] max-[680px]:px-5 max-[680px]:pt-10 max-[680px]:pb-20 max-[360px]:px-4 max-[360px]:pt-8 max-[360px]:pb-14" data-frontend="stack">
       <InkFieldHost />
-      <div className="relative z-[2] mb-[clamp(28px,4vw,48px)]">
+      <div className="relative z-[2] mb-[clamp(28px,4vw,48px)] max-[360px]:mb-6">
         <SectionChrome
           kicker={kickerLabel}
           heading={headingLines}
           headingId={headingId}
           current={pad(1)}
           total={pad(panels.length)}
+          range
         />
       </div>
       <div className="relative z-[1]">
-        <div className="mb-8 grid place-items-center">
+        <div className="mb-8 grid place-items-center max-[360px]:mb-6">
           {/* `StackLayout` only ever mounts on mobile/touch (the desktop pin
               stage below uses a separate render path), so this can grow
               freely without any breakpoint gymnastics or desktop risk — the
               compact card (see system-graph.tsx) needs the extra width to
               not feel cramped. Still capped well under the panel column's
               width: it's a preview above the detail list, not the headline. */}
-          <FrontEndGraph className="mx-auto w-[min(100%,340px)] max-[420px]:w-[min(90vw,300px)]" />
+          <FrontEndGraph className="mx-auto w-full max-w-[720px]" />
         </div>
-        <div className="flex flex-col gap-5">
-          {panels.map((panel) => (
-            <Panel key={`${id}-${panel.number}`} panel={panel} headingPrefix={id} />
+        <div className="grid grid-cols-1 gap-4 min-[720px]:grid-cols-2 min-[720px]:[&>article:last-child]:col-span-2 max-[360px]:gap-3">
+          {panels.map((panel, index) => (
+            <Panel key={`${id}-${panel.number}`} panel={panel} headingPrefix={id} index={index} total={panels.length} />
           ))}
         </div>
       </div>
@@ -534,7 +541,7 @@ export function HorizontalScrollSection({
       ref={trackRef}
       id={id}
       aria-labelledby={heading ? headingId : undefined}
-      className="relative text-paper"
+      className="relative scroll-mt-20 text-paper"
       style={{
         ...(pin && trackHeight ? { height: trackHeight } : {}),
         ["--ink-span" as string]: `${archPad}px`,
@@ -553,8 +560,8 @@ export function HorizontalScrollSection({
               compact
             />
           </header>
-          <div className="relative z-[1] grid min-h-0 flex-1 grid-cols-[minmax(240px,0.92fr)_minmax(280px,1.08fr)] items-stretch gap-x-8">
-            <div ref={stageRef} className="min-h-0 overflow-hidden">
+          <div className="relative z-[1] grid min-h-0 flex-1 grid-cols-[minmax(240px,0.92fr)_minmax(280px,1.08fr)] items-stretch border-y border-paper/15 bg-ink-soft/25">
+            <div ref={stageRef} className="min-h-0 overflow-hidden border-r border-paper/15">
               <motion.div ref={stripRef} className="horizontal-pin-strip flex h-full will-change-transform" style={{ x }}>
                 {panels.map((panel, index) => (
                   <Panel
@@ -571,7 +578,7 @@ export function HorizontalScrollSection({
                 ))}
               </motion.div>
             </div>
-            <div className="relative flex h-full min-h-0 min-w-0 items-center justify-center overflow-hidden py-4 pr-[3vw] pl-2 [container-type:size]">
+            <div className="relative flex h-full min-h-0 min-w-0 items-center justify-center overflow-hidden py-4 pr-[3vw] pl-8 [container-type:size]">
               <FrontEndGraph
                 activeId={panels[active]?.nodeId}
                 className="h-auto max-h-full w-[min(100%,100cqh)] max-w-full"

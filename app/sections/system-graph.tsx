@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import {
+import { inViewport,
   graphBoxFrame,
   graphContentPhase,
   graphCore,
@@ -91,26 +91,75 @@ const frontendNodes: GraphNode[] = [
   { id: "auth", index: "08", title: "Auth", sub: "OAuth / JWT", proto: "Bearer", icon: "jwt", x: 140, y: 500, flow: "both" },
 ];
 
+/**
+ * Distance a diagonal leg's final run is offset from the core's centre line.
+ *
+ * Without it, every diagonal routed orthogonally would meet the core at the
+ * same four points the axis nodes already use — three lines converging on one
+ * spot. Giving each diagonal its own lane keeps all eight arrivals distinct.
+ */
+const LANE_OFFSET = 72;
+
+/**
+ * Orthogonal routing, the way an architecture diagram draws it.
+ *
+ * The four nodes sitting on the core's axes are already square to it, so they
+ * run straight. The four diagonals leave their card vertically, turn once, and
+ * arrive at the core horizontally — one right angle each, no diagonal strokes
+ * anywhere. Legs still stop on the card's edge rather than its centre so they
+ * never cut across the card body.
+ */
 function connector(node: GraphNode, card: { w: number; h: number }) {
   const dx = CORE.x - node.x;
   const dy = CORE.y - node.y;
-  const length = Math.hypot(dx, dy);
-  const ux = dx / length;
-  const uy = dy / length;
+  const reach = CORE.r + 5;
 
-  // Connector line originates at the card's edge, not its center, so it
-  // doesn't cut across the card body.
-  const toVertical = ux === 0 ? Infinity : card.w / 2 / Math.abs(ux);
-  const toHorizontal = uy === 0 ? Infinity : card.h / 2 / Math.abs(uy);
-  const inset = Math.min(toVertical, toHorizontal);
+  // Directly above or below the core: a single vertical run.
+  if (Math.abs(dx) < 1) {
+    const dir = Math.sign(dy);
+    const from = { x: node.x, y: node.y + (dir * card.h) / 2 };
+    const to = { x: CORE.x, y: CORE.y - dir * reach };
+    return {
+      from,
+      to,
+      mid: { x: from.x, y: (from.y + to.y) / 2 },
+      d: `M ${from.x.toFixed(1)} ${from.y.toFixed(1)} L ${to.x.toFixed(1)} ${to.y.toFixed(1)}`,
+    };
+  }
 
-  const from = { x: node.x + ux * inset, y: node.y + uy * inset };
-  const to = { x: CORE.x - ux * (CORE.r + 5), y: CORE.y - uy * (CORE.r + 5) };
+  // Directly left or right: a single horizontal run.
+  if (Math.abs(dy) < 1) {
+    const dir = Math.sign(dx);
+    const from = { x: node.x + (dir * card.w) / 2, y: node.y };
+    const to = { x: CORE.x - dir * reach, y: CORE.y };
+    return {
+      from,
+      to,
+      mid: { x: (from.x + to.x) / 2, y: from.y },
+      d: `M ${from.x.toFixed(1)} ${from.y.toFixed(1)} L ${to.x.toFixed(1)} ${to.y.toFixed(1)}`,
+    };
+  }
+
+  // Diagonal: down (or up) out of the card, one corner, then in to the core.
+  const vy = Math.sign(dy);
+  const hx = Math.sign(dx);
+  const laneY = CORE.y - vy * LANE_OFFSET;
+  // Where that lane crosses the core's circle, so the leg lands on the disc
+  // rather than stopping short of it or overrunning into it.
+  const entryX = CORE.x - hx * Math.sqrt(reach * reach - LANE_OFFSET * LANE_OFFSET);
+
+  const from = { x: node.x, y: node.y + (vy * card.h) / 2 };
+  const corner = { x: node.x, y: laneY };
+  const to = { x: entryX, y: laneY };
   return {
     from,
     to,
-    mid: { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 },
-    d: `M ${from.x.toFixed(1)} ${from.y.toFixed(1)} L ${to.x.toFixed(1)} ${to.y.toFixed(1)}`,
+    // Sit the protocol pill on the vertical run, where there is open space.
+    mid: { x: node.x, y: (from.y + corner.y) / 2 },
+    d:
+      `M ${from.x.toFixed(1)} ${from.y.toFixed(1)}` +
+      ` L ${corner.x.toFixed(1)} ${corner.y.toFixed(1)}` +
+      ` L ${to.x.toFixed(1)} ${to.y.toFixed(1)}`,
   };
 }
 
@@ -126,6 +175,75 @@ const corners = [
   "M1000 976 V1000 H976",
   "M24 1000 H0 V976",
 ];
+
+/**
+ * The orbit graph is intentionally information-dense on desktop. Shrinking
+ * that same 1000×1000 composition onto a phone made its labels decorative,
+ * not readable, so mobile gets the same data as a compact component map.
+ */
+function MobileArchitectureMap({
+  coreTitle,
+  coreSub,
+  nodes,
+}: {
+  coreTitle: string;
+  coreSub: string;
+  nodes: GraphNode[];
+}) {
+  const t = useT();
+
+  return (
+    <div className="relative z-10 hidden p-4 max-[680px]:block max-[360px]:p-3">
+      <div className="flex items-center justify-between gap-4 border-b border-paper/15 pb-3 text-[12px] tracking-[0.14em] uppercase">
+        <span className="text-paper/65">{t(dual("Peta sistem", "System map"))}</span>
+        <span className="font-mono tabular-nums text-acid">08 {t(dual("node", "nodes"))}</span>
+      </div>
+
+      <div className="relative mt-3 flex min-h-[88px] items-center justify-between gap-4 overflow-hidden bg-acid px-4 py-3.5 text-ink max-[360px]:mt-2.5 max-[360px]:min-h-[72px] max-[360px]:gap-2 max-[360px]:px-3 max-[360px]:py-2.5">
+        <div className="pointer-events-none absolute -right-7 size-24 rounded-full border border-ink/15" aria-hidden="true" />
+        <div className="relative">
+          <span className="block text-[12px] font-semibold tracking-[0.13em] uppercase opacity-65">
+            {t(dual("Inti runtime", "Runtime core"))}
+          </span>
+          <strong className="font-display mt-1 block text-[clamp(24px,8vw,34px)] leading-none font-[760] tracking-[-0.055em] uppercase max-[360px]:text-[22px]">
+            {coreTitle} {coreSub}
+          </strong>
+        </div>
+        <span className="relative grid size-10 shrink-0 place-items-center border border-ink/30 font-mono text-[12px] font-semibold max-[360px]:size-9">
+          00
+        </span>
+      </div>
+
+      <motion.ol variants={graphFormationShell} className="mt-2 grid list-none grid-cols-2 gap-2 p-0">
+        {nodes.map((node) => {
+          const direction = node.flow === "both" ? "I/O" : node.flow === "in" ? "IN" : "OUT";
+          return (
+            <motion.li
+              key={node.id}
+              variants={graphNode}
+              className="relative flex min-h-[92px] flex-col justify-between overflow-hidden border border-paper/18 bg-ink/92 p-3 max-[360px]:min-h-[80px] max-[360px]:p-2.5"
+            >
+              <span className="pointer-events-none absolute top-0 left-0 h-px w-8 bg-acid" aria-hidden="true" />
+              <div className="flex min-w-0 items-center justify-between gap-2 font-mono text-[11px] tracking-[0.1em] uppercase max-[360px]:text-[10px]">
+                <span className="shrink-0 text-acid">{node.index}</span>
+                <span className="min-w-0 truncate text-paper/55">{node.proto} · {direction}</span>
+              </div>
+              <div className="mt-4 flex min-w-0 items-end justify-between gap-2 max-[360px]:mt-2">
+                <div className="min-w-0">
+                  <strong className="block text-[15px] leading-tight font-semibold tracking-[-0.02em] text-paper max-[360px]:text-[14px]">
+                    {node.title}
+                  </strong>
+                  <span className="mt-1 block text-[12px] leading-tight text-paper/65 max-[360px]:text-[11px]">{t(node.sub)}</span>
+                </div>
+                {node.icon ? <TechIcon name={node.icon} className="size-4 shrink-0 text-acid" /> : null}
+              </div>
+            </motion.li>
+          );
+        })}
+      </motion.ol>
+    </div>
+  );
+}
 
 function ArchitectureGraph({
   idPrefix,
@@ -159,8 +277,8 @@ function ArchitectureGraph({
       variants={graphParent}
       initial="hidden"
       whileInView="shown"
-      viewport={{ once: true, amount: 0.3, margin: "0px 0px -12% 0px" }}
-      className={`graph-frame relative isolate aspect-square overflow-hidden border border-paper/15 bg-ink-soft/85 ${className ?? ""}`}
+      viewport={inViewport}
+      className={`graph-frame relative isolate aspect-square overflow-hidden border border-paper/15 bg-ink-soft/85 max-[680px]:aspect-auto ${className ?? ""}`}
       aria-label={ariaLabel}
     >
       <motion.div variants={graphFormationShell} className="absolute inset-0 -z-[2]">
@@ -176,7 +294,12 @@ function ArchitectureGraph({
         />
       </motion.div>
 
-      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" className="absolute inset-0 z-[2] size-full" aria-hidden="true">
+      <div className="absolute top-3 right-3 left-3 z-10 flex items-center justify-between gap-4 font-mono text-[11px] tracking-[0.13em] uppercase max-[680px]:hidden" aria-hidden="true">
+        <span className="text-paper/45">{t(dual("Peta sistem", "System map"))}</span>
+        <span className="text-acid/80">08 · {t(dual("node", "nodes"))}</span>
+      </div>
+
+      <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" className="absolute inset-0 z-[2] size-full max-[680px]:hidden" aria-hidden="true">
         <defs>
           <linearGradient id={strokeId} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#d8ff3e" stopOpacity="0.15" />
@@ -287,18 +410,18 @@ function ArchitectureGraph({
           `graphContentPhase` here is a second instance of the same variant
           used for the SVG half above — both start from the same delay, so
           the core and the wiring animate on the same clock. */}
-      <motion.div variants={graphContentPhase} className="contents">
+      <motion.div variants={graphContentPhase} className="contents max-[680px]:hidden">
         {/* Central core disc — flat acid fill + soft glow, matching HeroGraph's core exactly. */}
         <motion.div
           variants={graphCore}
           style={{ x: "-50%", y: "-50%" }}
           className="graph-core absolute top-1/2 left-1/2 z-[5] flex aspect-square w-[26%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_20px_rgba(216,255,62,0.06),0_0_80px_rgba(216,255,62,0.26)]"
         >
-          <small className="font-mono text-[9px] tracking-[0.16em] uppercase opacity-70 max-[420px]:text-[7px]">{t(copy.graphCore)}</small>
-          <strong className="font-display my-[2px] -mb-0.5 text-[clamp(17px,2.4vw,38px)] font-[780] leading-[0.88] tracking-[-0.065em] uppercase max-[420px]:text-[12px]">
+          <small className="font-mono text-[10px] tracking-[0.16em] uppercase opacity-70">{t(copy.graphCore)}</small>
+          <strong className="font-display my-[2px] -mb-0.5 text-[clamp(17px,2.4vw,38px)] font-[780] leading-[0.88] tracking-[-0.065em] uppercase max-[420px]:text-[13px]">
             {coreTitle}
           </strong>
-          <span className="font-mono text-[9px] tracking-[0.16em] uppercase opacity-85 max-[420px]:text-[7px]">{coreSub}</span>
+          <span className="font-mono text-[10px] tracking-[0.16em] uppercase opacity-85">{coreSub}</span>
         </motion.div>
 
         {/* Protocol pills, floating at each connector's midpoint — kept out of
@@ -309,7 +432,7 @@ function ArchitectureGraph({
             <motion.span
               key={`${node.id}-proto`}
               variants={graphProto}
-              className="pointer-events-none absolute z-[4] -translate-x-1/2 -translate-y-1/2 border border-acid/25 bg-ink/90 px-1.5 py-0.5 font-mono text-[8px] tracking-[0.12em] text-acid/80 uppercase max-[1000px]:hidden"
+              className="pointer-events-none absolute z-[4] -translate-x-1/2 -translate-y-1/2 border border-acid/25 bg-ink/90 px-1.5 py-0.5 font-mono text-[9px] tracking-[0.12em] text-acid/80 uppercase max-[1000px]:hidden"
               style={{ left: pct(mid.x), top: pct(mid.y) }}
             >
               {node.proto}
@@ -366,13 +489,13 @@ function ArchitectureGraph({
                       room to spare — below ~420px it's the difference between
                       "Auth" fitting and "Auth" clipping to "Au…", so it drops
                       first rather than stealing width from the title. */}
-                  <span className="hidden shrink-0 font-mono text-[9px] tracking-[0.06em] text-acid/70 min-[421px]:inline">{node.index}</span>
-                  <strong className="min-w-0 flex-1 truncate text-[clamp(12px,1vw,15px)] font-semibold tracking-[-0.02em] text-paper max-[420px]:text-[9px]">
+                  <span className="hidden shrink-0 font-mono text-[10px] tracking-[0.06em] text-acid/70 min-[421px]:inline">{node.index}</span>
+                  <strong className="min-w-0 flex-1 truncate text-[clamp(12px,1vw,15px)] font-semibold tracking-[-0.02em] text-paper">
                     {node.title}
                   </strong>
                 </div>
                 <div className="flex min-w-0 items-center justify-between gap-1.5 max-[420px]:gap-1">
-                  <small className={`min-w-0 flex-1 truncate text-[9px] tracking-[0.05em] uppercase ${active || hoveredId === node.id ? "text-acid/75" : "text-[#9a9c92]"} max-[420px]:text-[7px]`}>
+                  <small className={`min-w-0 flex-1 truncate text-[11px] tracking-[0.05em] uppercase ${active || hoveredId === node.id ? "text-acid/75" : "text-[#a7a99f]"}`}>
                     {t(node.sub)}
                   </small>
                   {node.icon ? <TechIcon name={node.icon} className="size-3 shrink-0 text-[#b7b9ae] max-[420px]:size-2.5" /> : null}
@@ -382,6 +505,8 @@ function ArchitectureGraph({
           );
         })}
       </motion.div>
+
+      <MobileArchitectureMap coreTitle={coreTitle} coreSub={coreSub} nodes={nodes} />
     </motion.div>
   );
 }
@@ -394,13 +519,10 @@ export function SystemGraph() {
       coreTitle="SPRING"
       coreSub="BOOT"
       nodes={backendNodes}
-      // Below 1000px the section stacks to a single column and this diagram
-      // becomes its own full-width row, so it breaks out of the section's
-      // side padding entirely (the `calc(50% - 50vw)` trick) instead of
-      // sitting inside it shrunk down — every card gets real screen pixels
-      // instead of a scaled-down copy of the desktop layout. Desktop's
-      // `w-[min(100%,720px)]` sizing is untouched above 1000px.
-      className="relative z-[3] w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:mt-[50px] max-[1000px]:w-screen max-[1000px]:mx-[calc(50%-50vw)]"
+      // On a stacked layout the grid gap already separates copy from diagram;
+      // a second margin created a large dead zone. Keep the frame centred and
+      // let it use the full available measure without pushing past the gutter.
+      className="relative z-[3] w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:w-full max-[1000px]:justify-self-center"
       ariaLabel={t(copy.backendGraphAria)}
     />
   );

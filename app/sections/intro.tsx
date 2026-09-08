@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   AnimatePresence,
   animate,
@@ -13,12 +13,16 @@ import {
 import { ease } from "@/app/lib/motion";
 import { copy } from "@/app/content";
 import { useT } from "@/app/lib/i18n";
-import { HeroAtmosphere } from "@/app/components/hero-atmosphere";
 
 const IntroReadyContext = createContext(true);
+const IntroInteractiveReadyContext = createContext(true);
 
 export function useIntroReady() {
   return useContext(IntroReadyContext);
+}
+
+export function useIntroInteractiveReady() {
+  return useContext(IntroInteractiveReadyContext);
 }
 
 function lockPageScroll(locked: boolean) {
@@ -29,12 +33,12 @@ function lockPageScroll(locked: boolean) {
 const curtainEase = [0.76, 0, 0.24, 1] as const;
 
 /** How long the intro reads before the curtain starts lifting. */
-const HOLD_MS = 2350;
+const HOLD_MS = 1500;
 /** How long the curtain takes to clear. Shared with the overlay's exit transition
  *  so the hero's cue and the panels can never drift apart. */
-const CURTAIN_MS = 1180;
-const REDUCED_HOLD_MS = 420;
-const REDUCED_CURTAIN_MS = 300;
+const CURTAIN_MS = 920;
+const REDUCED_HOLD_MS = 160;
+const REDUCED_CURTAIN_MS = 180;
 
 const letter = {
   hidden: { y: "112%", rotateX: -52, opacity: 0 },
@@ -42,14 +46,18 @@ const letter = {
     y: "0%",
     rotateX: 0,
     opacity: 1,
-    transition: { duration: 0.72, ease, delay: 0.22 + index * 0.05 },
+    transition: { duration: 0.56, ease, delay: 0.12 + index * 0.035 },
   }),
 };
 
 function Percent({ source }: { source: MotionValue<number> }) {
   const [label, setLabel] = useState("00");
+  const lastStep = useRef(-1);
   useMotionValueEvent(source, "change", (value) => {
-    setLabel(String(Math.round(value)).padStart(2, "0"));
+    const step = value >= 99 ? 100 : Math.floor(value / 5) * 5;
+    if (step === lastStep.current) return;
+    lastStep.current = step;
+    setLabel(String(step).padStart(2, "0"));
   });
   return <>{label}</>;
 }
@@ -92,7 +100,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
 
   useEffect(() => {
     const controls = animate(progress, 100, {
-      duration: reduced ? 0.32 : 2.15,
+      duration: (reduced ? REDUCED_HOLD_MS : HOLD_MS) / 1000,
       ease,
     });
     return () => controls.stop();
@@ -112,36 +120,41 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
         {panels.map((index) => (
           <motion.div
             key={index}
-            className="h-full flex-1 bg-ink"
+            className="intro-shutter relative h-full flex-1 overflow-hidden"
             exit={reduced ? { opacity: 0 } : { y: "-101%" }}
             transition={
               reduced
-                ? { duration: 0.28, ease }
-                : { duration: 0.84, delay: 0.08 + index * 0.055, ease: curtainEase }
+                ? { duration: REDUCED_CURTAIN_MS / 1000, ease }
+                : { duration: 0.72, delay: index * 0.05, ease: curtainEase }
             }
-          />
+          >
+            <span className="absolute top-[18%] right-2 font-mono text-[9px] tracking-[0.16em] text-paper/18 max-[420px]:hidden">
+              0{index + 1}
+            </span>
+            <span className="absolute right-2 bottom-[18%] size-1 bg-acid/35 max-[420px]:right-1" />
+          </motion.div>
         ))}
       </div>
 
-      <HeroAtmosphere variant="intro" />
-
-      <motion.span
-        className="pointer-events-none absolute inset-x-0 z-[2] h-px bg-acid/80"
-        aria-hidden="true"
-        initial={reduced ? false : { top: "-2%", opacity: 0 }}
-        animate={{ top: "102%", opacity: [0, 1, 1, 0] }}
-        transition={{ duration: 2.05, ease: [0.4, 0, 0.2, 1] }}
-      />
+      {reduced ? null : (
+        <motion.span
+          className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-px bg-acid/80 will-change-transform"
+          aria-hidden="true"
+          initial={{ y: "-2vh", opacity: 0 }}
+          animate={{ y: "102vh", opacity: [0, 1, 1, 0] }}
+          transition={{ duration: 1.42, ease: [0.4, 0, 0.2, 1] }}
+        />
+      )}
 
       <motion.div
-        className="relative z-[3] flex h-full flex-col justify-between px-[3vw] pt-[max(28px,env(safe-area-inset-top))] pb-[max(28px,env(safe-area-inset-bottom))] max-[680px]:px-[18px] max-[420px]:px-3.5"
+        className="relative z-[3] flex h-full flex-col justify-between px-[3vw] pt-[max(28px,env(safe-area-inset-top))] pb-[max(28px,env(safe-area-inset-bottom))] max-[680px]:px-[18px] max-[360px]:px-4"
         exit={{ opacity: 0 }}
-        transition={{ duration: reduced ? 0.2 : 0.32, ease }}
+        transition={{ duration: reduced ? 0.14 : 0.24, ease }}
       >
         <div className="flex items-center justify-between gap-4 pt-2 text-[11px] tracking-[0.16em] uppercase">
           <span className="flex min-h-11 items-center gap-3">
             <span className="grid size-10 place-items-center border border-paper/25">
-              <span className="font-display text-[14px] leading-none font-[800] tracking-[-0.04em]">
+              <span className="font-display text-[15px] leading-none font-[800] tracking-[-0.04em]">
                 F<span className="text-acid">/</span>R
               </span>
             </span>
@@ -150,9 +163,14 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
               <span className="mt-1.5">{t(copy.introLoading)}</span>
             </span>
           </span>
-          <span className="font-mono tabular-nums text-[clamp(28px,4vw,42px)] leading-none tracking-[-0.06em] text-acid">
-            <Percent source={progress} />
-            <span className="ml-1 text-[11px] tracking-[0.16em] text-paper/35">/ 100</span>
+          <span className="flex items-end gap-3" aria-hidden="true">
+            <span className="mb-0.5 hidden font-mono text-[9px] leading-none tracking-[0.16em] text-paper/35 uppercase min-[540px]:block">
+              System / portfolio
+            </span>
+            <span className="font-mono tabular-nums text-[clamp(28px,4vw,42px)] leading-none tracking-[-0.06em] text-acid">
+              <Percent source={progress} />
+              <span className="ml-1 text-[11px] tracking-[0.16em] text-paper/35">/ 100</span>
+            </span>
           </span>
         </div>
 
@@ -166,7 +184,7 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
             {t(copy.introKicker)}
           </motion.p>
 
-          <h1 className="font-display relative m-0 text-[clamp(72px,18vw,188px)] leading-[0.74] font-[800] tracking-[-0.085em] max-[420px]:text-[clamp(58px,17.5vw,72px)]">
+          <h1 className="font-display relative m-0 text-[clamp(72px,18vw,188px)] leading-[0.74] font-[800] tracking-[-0.085em] max-[420px]:text-[clamp(52px,17vw,68px)] max-[360px]:text-[52px]">
             <span className="sr-only">{t(copy.introSr)}</span>
             <span aria-hidden="true">
               <SplitWord word={seeWord} offset={0} reduced={reduced} />
@@ -176,14 +194,14 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
                   className="absolute inset-y-0 -inset-x-[0.06em] z-0 origin-left bg-acid"
                   initial={reduced ? false : { scaleX: 0 }}
                   animate={{ scaleX: 1 }}
-                  transition={{ duration: reduced ? 0.2 : 0.58, delay: reduced ? 0 : 1.28, ease }}
+                  transition={{ duration: reduced ? 0.12 : 0.46, delay: reduced ? 0 : 0.82, ease }}
                   aria-hidden="true"
                 />
                 <motion.span
                   className="pointer-events-none absolute inset-0 z-[2] overflow-hidden text-ink"
                   initial={reduced ? false : { clipPath: "inset(0 100% 0 0)" }}
                   animate={{ clipPath: "inset(0 0% 0 0)" }}
-                  transition={{ duration: reduced ? 0.2 : 0.58, delay: reduced ? 0 : 1.28, ease }}
+                  transition={{ duration: reduced ? 0.12 : 0.46, delay: reduced ? 0 : 0.82, ease }}
                   aria-hidden="true"
                 >
                   <span className="block overflow-hidden py-[0.03em]">
@@ -199,17 +217,17 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
           </h1>
 
           <motion.p
-            className="mt-[clamp(18px,2.4vw,28px)] max-w-[28ch] text-[13px] leading-snug text-paper/55 max-[420px]:text-[12px]"
+            className="mt-[clamp(18px,2.4vw,28px)] max-w-[28ch] text-[13px] leading-snug text-paper/55 max-[420px]:text-[13px]"
             initial={reduced ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.15, ease }}
+            transition={{ duration: reduced ? 0.12 : 0.48, delay: reduced ? 0 : 0.72, ease }}
           >
             {t(copy.introByline)}
           </motion.p>
         </div>
 
         <div className="mb-2">
-          <p className="mb-3 flex items-center justify-between gap-4 text-[10px] tracking-[0.16em] text-[#8d8f85] uppercase">
+          <p className="mb-3 flex items-center justify-between gap-4 text-[11px] tracking-[0.16em] text-[#8d8f85] uppercase">
             <span>Fajar Rafsan</span>
             <span>{t(copy.brandRole)}</span>
           </p>
@@ -218,22 +236,14 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
               className="block h-full origin-left bg-acid"
               initial={{ scaleX: reduced ? 1 : 0 }}
               animate={{ scaleX: 1 }}
-              transition={{ duration: reduced ? 0.2 : 2.15, ease }}
+              transition={{ duration: reduced ? 0.12 : HOLD_MS / 1000, ease }}
             />
-            {reduced ? null : (
-              <motion.span
-                className="absolute top-1/2 size-2 -translate-y-1/2 bg-paper"
-                initial={{ left: "0%" }}
-                animate={{ left: "100%" }}
-                transition={{ duration: 2.15, ease }}
-              />
-            )}
           </div>
         </div>
       </motion.div>
 
       <motion.span
-        className="pointer-events-none absolute -right-[18%] -bottom-[28%] z-[1] font-display text-[clamp(160px,28vw,420px)] leading-none font-[800] tracking-[-0.1em] text-paper/[0.04] select-none"
+        className="pointer-events-none absolute -right-[18%] -bottom-[28%] z-[1] font-display text-[clamp(160px,28vw,420px)] leading-none font-[800] tracking-[-0.1em] text-paper/[0.04] select-none max-[420px]:hidden"
         aria-hidden="true"
         initial={reduced ? false : { opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
@@ -249,20 +259,36 @@ function IntroOverlay({ reduced }: { reduced: boolean }) {
 export function IntroGate({ children }: { children: ReactNode }) {
   const reduced = Boolean(useReducedMotion());
   const [open, setOpen] = useState(true);
-  const [ready, setReady] = useState(false);
+  const [visualReady, setVisualReady] = useState(false);
+  const [interactiveReady, setInteractiveReady] = useState(false);
+  const completedRef = useRef(false);
+  const mainRef = useRef<HTMLElement | null>(null);
+  const mainWasInertRef = useRef(false);
 
-  // `ready` is deliberately NOT set alongside `setOpen(false)`. The curtain
-  // takes CURTAIN_MS to lift and the hero entrance runs about as long, so
-  // firing them together plays the whole sequence behind the panels — the
-  // visitor gets a hero that has already settled. Cueing the hero only once the
-  // panels have cleared is the entire point of having an intro.
-  //
-  // The cue is a plain timer rather than `onExitComplete` alone: a dropped
-  // animation frame (backgrounded tab, interrupted navigation) must never
-  // strand the hero at opacity 0. `onExitComplete` still runs, and is a no-op
-  // when the timer got there first.
+  const releasePage = useCallback(() => {
+    const main = mainRef.current;
+    if (main && !mainWasInertRef.current) main.inert = false;
+    lockPageScroll(false);
+  }, []);
+
+  const completeIntro = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+    document.documentElement.dataset.intro = "revealed";
+    releasePage();
+    setInteractiveReady(true);
+  }, [releasePage]);
+
+  // The portfolio now starts forming as soon as the shutters lift. Interaction
+  // stays inert until the last shutter has cleared, so the handoff is visually
+  // continuous without exposing controls underneath the overlay too early.
   useEffect(() => {
     lockPageScroll(true);
+    const main = document.querySelector<HTMLElement>("main");
+    mainRef.current = main;
+    mainWasInertRef.current = main?.hasAttribute("inert") ?? false;
+    if (main && !mainWasInertRef.current) main.inert = true;
+
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const hold = prefersReduced ? REDUCED_HOLD_MS : HOLD_MS;
     const curtain = prefersReduced ? REDUCED_CURTAIN_MS : CURTAIN_MS;
@@ -270,32 +296,26 @@ export function IntroGate({ children }: { children: ReactNode }) {
     document.documentElement.dataset.intro = "holding";
     const lift = window.setTimeout(() => {
       document.documentElement.dataset.intro = "lifting";
+      setVisualReady(true);
       setOpen(false);
     }, hold);
-    const cue = window.setTimeout(() => {
-      document.documentElement.dataset.intro = "revealed";
-      setReady(true);
-      lockPageScroll(false);
-    }, hold + curtain);
+    const fallback = window.setTimeout(completeIntro, hold + curtain + 80);
 
     return () => {
       window.clearTimeout(lift);
-      window.clearTimeout(cue);
+      window.clearTimeout(fallback);
+      releasePage();
     };
-  }, []);
+  }, [completeIntro, releasePage]);
 
   return (
-    <IntroReadyContext.Provider value={ready}>
-      {children}
-      <AnimatePresence
-        onExitComplete={() => {
-          document.documentElement.dataset.intro = "revealed";
-          lockPageScroll(false);
-          setReady(true);
-        }}
-      >
-        {open ? <IntroOverlay reduced={reduced} /> : null}
-      </AnimatePresence>
+    <IntroReadyContext.Provider value={visualReady}>
+      <IntroInteractiveReadyContext.Provider value={interactiveReady}>
+        {children}
+        <AnimatePresence onExitComplete={completeIntro}>
+          {open ? <IntroOverlay reduced={reduced} /> : null}
+        </AnimatePresence>
+      </IntroInteractiveReadyContext.Provider>
     </IntroReadyContext.Provider>
   );
 }

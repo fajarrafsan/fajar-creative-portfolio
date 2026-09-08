@@ -23,11 +23,26 @@ export const ease = [0.16, 1, 0.3, 1] as const;
  * Motion renders the `initial` state during SSR, so there is no flash of
  * un-animated content on first paint.
  */
+/**
+ * When a scroll entrance fires.
+ *
+ * This used to shrink the viewport's bottom edge by 120px AND demand a quarter
+ * of the element be visible. Those stack: a 220px block had to travel 175px
+ * past the fold before the animation even started, and then spend 0.72s
+ * playing — measured at 270px of scroll, a third of a screen, between arriving
+ * and being readable. It read as content lagging behind the scroll.
+ *
+ * Now the bottom edge is EXPANDED instead, so a block begins resolving just
+ * before it reaches the fold and has settled by the time it is properly in
+ * view. Shared so every section triggers on the same terms.
+ */
+export const inViewport = { once: true, margin: "0px 0px 8% 0px", amount: 0.08 } as const;
+
 export const reveal = {
-  initial: { opacity: 0, y: 44, filter: "blur(6px)" },
-  whileInView: { opacity: 1, y: 0, filter: "blur(0px)" },
-  viewport: { once: true, margin: "0px 0px -120px 0px", amount: 0.25 },
-  transition: { duration: 0.72, ease },
+  initial: { opacity: 0, y: 18 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: inViewport,
+  transition: { duration: 0.5, ease },
 } as const;
 
 /**
@@ -58,15 +73,15 @@ export function LatchedReveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { reduced, shown } = useLatchedInView(ref, { margin: "0px 0px -120px 0px", amount: 0.25 });
+  const { reduced, shown } = useLatchedInView(ref, { margin: inViewport.margin, amount: inViewport.amount });
 
   return (
     <motion.div
       ref={ref}
       className={className}
-      initial={shown ? false : reduced ? false : { opacity: 0, y: 44, filter: "blur(6px)" }}
-      animate={shown ? { opacity: 1, y: 0, filter: "blur(0px)" } : { opacity: 0, y: 44, filter: "blur(6px)" }}
-      transition={{ duration: 0.72, ease }}
+      initial={shown ? false : reduced ? false : { opacity: 0, y: 18 }}
+      animate={shown ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+      transition={{ duration: 0.5, ease }}
     >
       {children}
     </motion.div>
@@ -76,12 +91,12 @@ export function LatchedReveal({
 /** Parent/child pair for lists that should cascade rather than pop in together. */
 export const staggerParent: Variants = {
   hidden: {},
-  shown: { transition: { staggerChildren: 0.08, delayChildren: 0.18 } },
+  shown: { transition: { staggerChildren: 0.055, delayChildren: 0.1 } },
 };
 
 export const staggerChild: Variants = {
-  hidden: { opacity: 0, x: -24 },
-  shown: { opacity: 1, x: 0, transition: { duration: 0.72, ease } },
+  hidden: { opacity: 0, y: 16 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 
 /** Profile: headline, chips, copy, then a nested stats stagger. */
@@ -90,13 +105,11 @@ export const profileParent: Variants = {
   shown: { transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
 };
 
-// A soft blur-to-focus riding along with the fade is what makes this read as
-// "materializing" rather than a plain fade — a small touch, but it's the
-// difference between a mechanical opacity tween and something that feels shot
-// on camera with a rack focus.
+// Copy enters with compositor-friendly transform + opacity only. This keeps
+// long sections crisp while scrolling, especially on integrated mobile GPUs.
 export const profileItem: Variants = {
-  hidden: { opacity: 0, y: 22, filter: "blur(6px)" },
-  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.62, ease } },
+  hidden: { opacity: 0, y: 16 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 
 export const profileChipParent: Variants = {
@@ -133,12 +146,11 @@ export const profileStatParent: Variants = {
 };
 
 export const profileStat: Variants = {
-  hidden: { opacity: 0, y: 32, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 18 },
   shown: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.55, ease },
+    transition: { duration: 0.5, ease },
   },
 };
 
@@ -153,8 +165,8 @@ export const archParent: Variants = {
 };
 
 export const archItem: Variants = {
-  hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
-  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.62, ease } },
+  hidden: { opacity: 0, y: 16 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 
 export const archWord: Variants = {
@@ -174,8 +186,8 @@ export const archMetaParent: Variants = {
 };
 
 export const archMeta: Variants = {
-  hidden: { opacity: 0, y: 14 },
-  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
+  hidden: { opacity: 0, y: 10 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.44, ease } },
 };
 
 /**
@@ -343,10 +355,9 @@ export const graphOrbitSpinUp: Variants = {
 /**
  * Hero entrance staging.
  *
- * These delays are measured from the moment the intro curtain has fully
- * cleared, not from the moment it starts lifting — see `IntroGate`. Each beat
- * lands after the one before it so the first paint reads as a sequence:
- * headline, then diagram, then the stack chips.
+ * These delays are measured from the moment the intro shutters start lifting
+ * — see `IntroGate`. The portfolio forms behind the moving panels, so the
+ * final shutter reveals a live composition instead of an empty waiting frame.
  */
 export const heroLine: Variants = {
   hidden: { y: "116%", rotate: 2.5, opacity: 0 },
@@ -354,20 +365,20 @@ export const heroLine: Variants = {
     y: "0%",
     rotate: 0,
     opacity: 1,
-    transition: { duration: 1.15, ease, delay: 0.12 + index * 0.13 },
+    transition: { duration: 0.92, ease, delay: 0.05 + index * 0.09 },
   }),
 };
 
 /** Beat 2: the orbital diagram, held back until the headline is on its last word. */
 export const heroGraphParent: Variants = {
   hidden: {},
-  shown: { transition: { staggerChildren: 0.075, delayChildren: 0.46 } },
+  shown: { transition: { staggerChildren: 0.065, delayChildren: 0.2 } },
 };
 
 /** Beat 3: the stack chips deal in one after another, like cards off a deck. */
 export const heroChipParent: Variants = {
   hidden: {},
-  shown: { transition: { staggerChildren: 0.075, delayChildren: 0.82 } },
+  shown: { transition: { staggerChildren: 0.06, delayChildren: 0.42 } },
 };
 
 export const heroChip: Variants = {
@@ -377,7 +388,7 @@ export const heroChip: Variants = {
     y: 0,
     scale: 1,
     rotate: 0,
-    transition: { duration: 0.55, ease },
+    transition: { duration: 0.46, ease },
   },
 };
 
@@ -396,8 +407,8 @@ export const contactParent: Variants = {
 };
 
 export const contactItem: Variants = {
-  hidden: { opacity: 0, y: 22, filter: "blur(6px)" },
-  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.65, ease } },
+  hidden: { opacity: 0, y: 16 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.52, ease } },
 };
 
 /** Beat 2: the oversized closing headline, one masked line at a time. */
@@ -448,8 +459,8 @@ export const contactRule: Variants = {
 };
 
 export const contactRow: Variants = {
-  hidden: { opacity: 0, x: -20, filter: "blur(4px)" },
-  shown: { opacity: 1, x: 0, filter: "blur(0px)", transition: { duration: 0.6, ease } },
+  hidden: { opacity: 0, y: 14 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.48, ease } },
 };
 
 /** Beat 5: the legal line, last and quietest. */
@@ -473,8 +484,8 @@ export const certParent: Variants = {
 };
 
 export const certItem: Variants = {
-  hidden: { opacity: 0, y: 20, filter: "blur(6px)" },
-  shown: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.65, ease } },
+  hidden: { opacity: 0, y: 16 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 
 export const certFrame: Variants = {
@@ -509,12 +520,17 @@ export function useMediaQuery(query: string) {
 }
 
 /**
- * Lenis inertial scrolling plus smooth handling for in-page anchors.
+ * Lenis inertial scrolling plus smooth handling for in-page anchors on roomy,
+ * fine-pointer desktops. Phones, tablets and short laptop windows keep native
+ * scrolling so touch input stays direct and the main thread has less work.
  * Motion's `useScroll` reads `window.scrollY`, which Lenis drives natively,
  * so the two need no wiring between them.
  */
 export function SmoothScroll() {
   const reduced = useReducedMotion();
+  const enhancedScroll = useMediaQuery(
+    "(min-width: 1024px) and (min-height: 680px) and (hover: hover) and (pointer: fine)",
+  );
 
   // Motion server-renders every `initial` state as an inline style, so a bundle
   // that fails to load would leave the page's text stuck at opacity 0. The
@@ -525,12 +541,12 @@ export function SmoothScroll() {
   }, []);
 
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || !enhancedScroll) return;
 
     const lenis = new Lenis({
-      duration: 1.05,
+      duration: 0.88,
       smoothWheel: true,
-      wheelMultiplier: 0.92,
+      wheelMultiplier: 1,
       allowNestedScroll: true,
     });
     let frame = requestAnimationFrame(function raf(time: number) {
@@ -541,30 +557,42 @@ export function SmoothScroll() {
     const onAnchorClick = (event: MouseEvent) => {
       const link = (event.target as HTMLElement | null)?.closest?.('a[href^="#"]');
       if (!link) return;
+      // Keep the skip link's native browser behavior so keyboard users retain
+      // its built-in focus semantics.
+      if (link.classList.contains("skip-link")) return;
       const hash = link.getAttribute("href");
       if (!hash || hash === "#") return;
       const destination = hash === "#top" ? 0 : document.querySelector(hash);
       if (destination === null) return;
       event.preventDefault();
+      if (window.location.hash !== hash) window.history.pushState(null, "", hash);
       lenis.scrollTo(destination as HTMLElement, { duration: 1.15 });
     };
 
     document.addEventListener("click", onAnchorClick);
 
+    let scrollLocked = false;
     const onScrollLock = (event: Event) => {
-      const locked = Boolean((event as CustomEvent<boolean>).detail);
-      if (locked) lenis.stop();
+      scrollLocked = Boolean((event as CustomEvent<boolean>).detail);
+      if (scrollLocked) lenis.stop();
       else lenis.start();
     };
     window.addEventListener("portfolio-scroll-lock", onScrollLock);
 
+    const onVisibilityChange = () => {
+      if (document.hidden || scrollLocked) lenis.stop();
+      else lenis.start();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
       document.removeEventListener("click", onAnchorClick);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("portfolio-scroll-lock", onScrollLock);
       cancelAnimationFrame(frame);
       lenis.destroy();
     };
-  }, [reduced]);
+  }, [enhancedScroll, reduced]);
 
   return null;
 }
@@ -601,7 +629,7 @@ export function ScrollProgress() {
  */
 export function CursorGlow() {
   const t = useT();
-  const finePointer = useMediaQuery("(pointer: fine)");
+  const finePointer = useMediaQuery("(hover: hover) and (pointer: fine)");
   const reduced = useReducedMotion();
   const [state, setState] = useState<"idle" | "link" | "view">("idle");
   const [pressed, setPressed] = useState(false);
@@ -733,7 +761,7 @@ export function CursorGlow() {
         animate={{ opacity: visible && state === "view" ? 1 : 0 }}
         transition={{ duration: 0.18, ease }}
       >
-        <span className="text-[8px] font-extrabold tracking-[0.12em] text-ink uppercase">{t(copy.cursorView)}</span>
+        <span className="text-[9px] font-extrabold tracking-[0.12em] text-ink uppercase">{t(copy.cursorView)}</span>
       </motion.div>
     </div>
   );
@@ -754,7 +782,7 @@ export function Magnetic({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduced = useReducedMotion();
-  const finePointer = useMediaQuery("(pointer: fine)");
+  const finePointer = useMediaQuery("(hover: hover) and (pointer: fine)");
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const springX = useSpring(x, { stiffness: 260, damping: 14, mass: 0.4 });
@@ -782,6 +810,7 @@ export function Magnetic({
       style={active ? { x: springX, y: springY } : undefined}
       onPointerMove={track}
       onPointerLeave={release}
+      onPointerCancel={release}
     >
       {children}
     </motion.span>

@@ -91,8 +91,15 @@
 }
 
 @utility stroke-text {
+  /* The stroke cannot use `currentColor`. This rule sets `color: transparent`
+     to hollow the glyphs out, and `currentColor` resolves to that same
+     transparent value — so the outline was transparent too and the text
+     painted nothing at all. Every heading using this ("Mengajar kembali.",
+     "fondasi rekayasa.", the contact line) was simply missing, on desktop as
+     well as mobile. The outline needs a colour of its own; `--stroke-ink` lets
+     a dark section pass in the paper tone instead. */
   color: transparent;
-  -webkit-text-stroke: 1.5px currentColor;
+  -webkit-text-stroke: 1.5px var(--stroke-ink, var(--color-ink));
   font-style: normal;
 }
 
@@ -117,6 +124,177 @@
 @utility font-display {
   font-family: var(--font-display);
   font-feature-settings: "ss01", "cv01";
+}
+
+/* The technology feed is treated as a compact system rack rather than an ad
+   banner: fixed channel metadata gives the moving type a stable frame, while
+   the fade windows make each entry arrive and leave without clipped glyphs. */
+.tech-ticker-grid {
+  opacity: 0.72;
+  background-image:
+    linear-gradient(rgba(240, 239, 232, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 239, 232, 0.035) 1px, transparent 1px),
+    radial-gradient(circle at 14% 38%, rgba(216, 255, 62, 0.08), transparent 28%);
+  background-size: 100% 28px, 64px 100%, 100% 100%;
+}
+
+.marquee-window::before,
+.marquee-window::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  width: clamp(24px, 3.2vw, 58px);
+  pointer-events: none;
+}
+
+.marquee-window::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--color-ink) 8%, transparent);
+}
+
+.marquee-window::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--color-ink) 8%, transparent);
+}
+
+/* The CV desk owns nested scroll areas on desktop. A narrow, visible thumb
+   keeps long previews discoverable without bringing the browser's bright
+   default scrollbar into the dark editorial frame. */
+.cv-overlay [data-cv-scroll] {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(216 255 62 / 0.52) rgb(240 239 232 / 0.07);
+}
+
+.cv-overlay [data-cv-scroll]::-webkit-scrollbar {
+  width: 7px;
+}
+
+.cv-overlay [data-cv-scroll]::-webkit-scrollbar-track {
+  background: rgb(240 239 232 / 0.07);
+}
+
+.cv-overlay [data-cv-scroll]::-webkit-scrollbar-thumb {
+  background: rgb(216 255 62 / 0.52);
+}
+
+/* Header command rail: a quiet technical grid at rest, then an acid scan line
+   when the pointer or keyboard enters the navigation. Only opacity/transform
+   animate, so the header never shifts under the user's pointer. */
+.site-header-grid {
+  opacity: 0.42;
+  background-image:
+    linear-gradient(90deg, rgba(216, 255, 62, 0.08), transparent 16%, transparent 84%, rgba(216, 255, 62, 0.05)),
+    repeating-linear-gradient(90deg, transparent 0, transparent 63px, rgba(240, 239, 232, 0.035) 64px);
+  transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-header-scan {
+  box-shadow: 0 0 18px rgba(216, 255, 62, 0.34);
+  opacity: 0.78;
+  transform: scaleX(0.08);
+  transform-origin: left center;
+  transition:
+    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 200ms ease;
+}
+
+.site-header-frame:focus-within .site-header-grid {
+  opacity: 0.78;
+}
+
+.site-header-frame:focus-within .site-header-scan {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.mobile-nav-overlay {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(216 255 62 / 0.48) rgb(240 239 232 / 0.06);
+}
+
+.mobile-nav-overlay::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mobile-nav-overlay::-webkit-scrollbar-track {
+  background: rgb(240 239 232 / 0.06);
+}
+
+.mobile-nav-overlay::-webkit-scrollbar-thumb {
+  background: rgb(216 255 62 / 0.48);
+}
+
+:where(#profile, #architecture, #frontend, #work, #stack, #tech, #experience, #education, #certificates, #contact) {
+  scroll-margin-top: calc(5.75rem + env(safe-area-inset-top));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .site-header-frame:hover .site-header-grid {
+    opacity: 0.78;
+  }
+
+  .site-header-frame:hover .site-header-scan {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  .tech-ticker:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@media (max-width: 680px) {
+  .marquee-window::before,
+  .marquee-window::after {
+    width: 22px;
+  }
+
+  .tech-ticker-grid {
+    background-size: 100% 24px, 48px 100%, 100% 100%;
+  }
+
+  .site-header-grid {
+    background-size: 100% 100%, 48px 100%;
+  }
+
+  :where(#profile, #architecture, #frontend, #work, #stack, #tech, #experience, #education, #certificates, #contact) {
+    scroll-margin-top: calc(4.75rem + env(safe-area-inset-top));
+  }
+}
+
+/* Intro shutters share the live hero as their backdrop. Their fine grid keeps
+   the boot sequence technical while the opaque panels are closed; when they
+   lift, there is no second background layer to swap or flash. */
+.intro-shutter {
+  border-right: 1px solid rgba(240, 239, 232, 0.09);
+  background-color: var(--color-ink);
+  background-image:
+    linear-gradient(rgba(240, 239, 232, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 239, 232, 0.025) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(216, 255, 62, 0.025), transparent 30%, rgba(0, 0, 0, 0.18));
+  background-size: 100% 64px, 64px 100%, 100% 100%;
+  box-shadow: 12px 0 34px rgba(0, 0, 0, 0.18);
+}
+
+.intro-shutter:last-child {
+  border-right: 0;
+}
+
+.intro-shutter::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(216, 255, 62, 0.48), transparent);
+  opacity: 0.55;
+}
+
+@media (max-width: 420px) {
+  .intro-shutter {
+    background-size: 100% 48px, 48px 100%, 100% 100%;
+  }
 }
 
 /* Hero atmosphere. Inspired by the depth-first horizon and textured shader
@@ -150,48 +328,49 @@
 .hero-atmosphere-base {
   inset: 0;
   background:
-    radial-gradient(ellipse 58% 82% at 78% 46%, rgba(216, 255, 62, 0.11), rgba(216, 255, 62, 0.035) 38%, transparent 76%),
-    radial-gradient(ellipse 42% 58% at 70% 25%, rgba(240, 239, 232, 0.045), transparent 78%),
-    linear-gradient(104deg, #050705 0%, #070a07 48%, #0b0f0a 76%, #070907 100%);
+    radial-gradient(ellipse 72% 88% at 70% 45%, rgba(216, 255, 62, 0.13), rgba(216, 255, 62, 0.04) 42%, transparent 78%),
+    radial-gradient(ellipse 46% 54% at 14% 74%, rgba(141, 115, 255, 0.045), transparent 76%),
+    radial-gradient(ellipse 36% 42% at 46% 106%, rgba(255, 97, 60, 0.035), transparent 74%),
+    linear-gradient(108deg, #050705 0%, #070a07 42%, #0d120b 76%, #060806 100%);
 }
 
 .hero-atmosphere-backplane {
-  inset: -10% -6% 22%;
-  opacity: 0.16;
+  inset: 3% -6% 8%;
+  opacity: 0.22;
   background-image:
     linear-gradient(rgba(240, 239, 232, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(240, 239, 232, 0.045) 1px, transparent 1px),
     radial-gradient(circle, rgba(216, 255, 62, 0.11) 0 1px, transparent 1.2px);
-  background-size: 88px 88px, 88px 88px, 176px 176px;
-  mask-image: radial-gradient(ellipse 58% 92% at 80% 48%, #000 0%, rgba(0, 0, 0, 0.74) 48%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 58% 92% at 80% 48%, #000 0%, rgba(0, 0, 0, 0.74) 48%, transparent 100%);
+  background-size: 80px 80px, 80px 80px, 160px 160px;
+  mask-image: radial-gradient(ellipse 94% 100% at 66% 48%, rgba(0, 0, 0, 0.36) 0%, #000 46%, rgba(0, 0, 0, 0.7) 76%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 94% 100% at 66% 48%, rgba(0, 0, 0, 0.36) 0%, #000 46%, rgba(0, 0, 0, 0.7) 76%, transparent 100%);
   will-change: transform;
 }
 
 .hero-atmosphere-beam {
   z-index: 1;
-  right: -2%;
-  top: -34%;
-  width: 42%;
+  right: 3%;
+  top: -28%;
+  width: 32%;
   height: 126%;
   border-radius: 50%;
   clip-path: none;
   background: linear-gradient(180deg, rgba(240, 239, 232, 0.09), rgba(216, 255, 62, 0.025) 48%, transparent 90%);
   filter: blur(80px);
   mix-blend-mode: screen;
-  opacity: 0.36;
+  opacity: 0.32;
   transform: rotate(8deg);
   animation: none;
 }
 
 .hero-atmosphere-bloom {
   z-index: 1;
-  top: 4%;
-  right: -17%;
-  width: min(74vw, 1080px);
+  top: 2%;
+  right: -11%;
+  width: min(70vw, 1040px);
   aspect-ratio: 1;
   border-radius: 999px;
-  opacity: 0.58;
+  opacity: 0.62;
   background: radial-gradient(circle, rgba(216, 255, 62, 0.135), rgba(216, 255, 62, 0.045) 34%, transparent 72%);
   filter: blur(26px);
   mix-blend-mode: screen;
@@ -249,8 +428,19 @@
   z-index: 5;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(3, 5, 4, 0.46) 0%, rgba(3, 5, 4, 0.22) 38%, rgba(3, 5, 4, 0.05) 60%, transparent 80%),
+    linear-gradient(90deg, rgba(3, 5, 4, 0.3) 0%, rgba(3, 5, 4, 0.12) 38%, rgba(3, 5, 4, 0.035) 62%, transparent 82%),
     radial-gradient(ellipse 126% 96% at 54% 46%, transparent 48%, rgba(2, 3, 2, 0.44) 100%);
+}
+
+.hero-system::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -8%;
+  pointer-events: none;
+  opacity: 0.72;
+  filter: blur(24px);
+  background: radial-gradient(circle, rgba(216, 255, 62, 0.14), rgba(216, 255, 62, 0.035) 46%, transparent 72%);
 }
 
 .hero-atmosphere--intro .hero-atmosphere-base {
@@ -310,42 +500,46 @@
 @media (max-width: 680px) {
   .hero-atmosphere-base {
     background:
-      radial-gradient(ellipse 116% 58% at 62% 76%, rgba(216, 255, 62, 0.075), rgba(216, 255, 62, 0.02) 45%, transparent 82%),
-      radial-gradient(ellipse 74% 36% at 50% 16%, rgba(240, 239, 232, 0.03), transparent 78%),
-      linear-gradient(154deg, #050705, #090c09 66%, #070907);
+      radial-gradient(ellipse 120% 54% at 58% 34%, rgba(216, 255, 62, 0.075), rgba(216, 255, 62, 0.018) 48%, transparent 84%),
+      radial-gradient(ellipse 90% 34% at 0% 68%, rgba(141, 115, 255, 0.035), transparent 78%),
+      linear-gradient(154deg, #050705, #090c09 58%, #070907);
   }
 
   .hero-atmosphere-backplane {
-    inset: -4% -18% 40%;
-    opacity: 0.12;
-    background-size: 64px 64px, 64px 64px, 128px 128px;
-    mask-image: radial-gradient(ellipse 88% 100% at 64% 50%, #000 0%, rgba(0, 0, 0, 0.68) 46%, transparent 100%);
-    -webkit-mask-image: radial-gradient(ellipse 88% 100% at 64% 50%, #000 0%, rgba(0, 0, 0, 0.68) 46%, transparent 100%);
+    inset: 0 -18% auto;
+    height: min(76svh, 720px);
+    opacity: 0.15;
+    background-size: 56px 56px, 56px 56px, 112px 112px;
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.58) 66%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.58) 66%, transparent);
   }
 
   .hero-atmosphere-beam {
-    top: 32%;
-    right: -42%;
-    width: 90%;
-    height: 80%;
-    opacity: 0.24;
-    filter: blur(70px);
+    display: none;
   }
 
   .hero-atmosphere-floor-wrap {
-    inset: 72% -72% -12% -20%;
+    display: none;
   }
 
   .hero-atmosphere-horizon {
-    top: 72.5%;
-    left: 24%;
-    opacity: 0.36;
+    display: none;
+  }
+
+  .hero-atmosphere-bloom {
+    display: none;
   }
 
   .hero-atmosphere-vignette {
     background:
       linear-gradient(180deg, rgba(3, 5, 4, 0.18), transparent 34%, rgba(2, 3, 2, 0.12) 74%, rgba(2, 3, 2, 0.52)),
       radial-gradient(ellipse 150% 98% at 50% 46%, transparent 52%, rgba(2, 3, 2, 0.36) 100%);
+  }
+
+  .hero-system::before {
+    inset: -4%;
+    opacity: 0.58;
+    filter: blur(14px);
   }
 
   .hero-atmosphere--intro .hero-atmosphere-floor-wrap {
@@ -597,6 +791,79 @@
     0 1px 0 rgba(11, 13, 12, 0.07),
     0 32px 58px -28px rgba(11, 13, 12, 0.5);
   overflow-x: clip;
+  transition:
+    border-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-art::after {
+  content: "";
+  position: absolute;
+  z-index: 8;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(11, 13, 12, 0.2), transparent 24%, transparent 70%, rgba(11, 13, 12, 0.22)),
+    rgba(11, 13, 12, 0.02);
+  opacity: 1;
+  transition: background-color 340ms cubic-bezier(0.16, 1, 0.3, 1), opacity 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-art-media {
+  transform: scale(1);
+  transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.project-viewport-rail,
+.project-view-mark,
+.project-active-edge {
+  transition:
+    opacity 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  .project-card[data-project-state="past"] .project-art::after {
+    background-color: rgba(11, 13, 12, 0.34);
+  }
+
+  .project-card[data-project-state="past"] .project-viewport-rail {
+    opacity: 0.58;
+  }
+
+  .project-card[data-project-state="past"] .project-active-edge {
+    opacity: 0.55;
+  }
+
+  .project-card[data-project-state="future"] .project-active-edge {
+    opacity: 0.38;
+  }
+
+  .project-card[data-project-state="active"] .project-viewport-rail,
+  .project-card:is(:hover, :focus-within) .project-viewport-rail {
+    border-color: color-mix(in srgb, var(--color-acid) 48%, transparent);
+  }
+
+  .project-card:is(:hover, :focus-within) .project-art-media {
+    transform: scale(1.012);
+  }
+
+  .project-card:is(:hover, :focus-within) .project-view-mark {
+    color: var(--color-ink);
+    background: var(--color-acid);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .project-art:active::after {
+    background-color: rgba(11, 13, 12, 0.14);
+  }
+
+  .project-art:active .project-view-mark {
+    color: var(--color-ink);
+    background: var(--color-acid);
+  }
 }
 
 .project-progress-rail {
@@ -645,7 +912,13 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   min-width: 0;
-  padding: 1.15rem clamp(0.9rem, 1.6vw, 1.35rem) 0.95rem;
+  /* The generous bottom padding is load-bearing, not decoration. `.project-main`
+     and `.project-aside` are row subgrids, and a subgridded flex column reports
+     a smaller height than it renders — the card sized this row at 273px while it
+     drew 281px. That 8px put the stack chips and the last repository link past
+     the card's `overflow: hidden`, shaving their bottom border off. The slack
+     absorbs the discrepancy instead of relying on the measurement being right. */
+  padding: 1.15rem clamp(0.9rem, 1.6vw, 1.35rem) 1.75rem;
   border-top: 2px solid var(--color-ink);
 }
 
@@ -661,7 +934,7 @@
   gap: 0.5rem 0.625rem;
   margin: 0 0 0.5rem;
   min-width: 0;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -669,7 +942,7 @@
 
 .project-number {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
   flex-shrink: 0;
@@ -696,17 +969,45 @@
 }
 
 .project-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
   margin: 0;
-  padding: 0.7rem 0 0;
+  padding: 1px;
   list-style: none;
-  border-top: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
-  font-size: 10px;
-  letter-spacing: 0.12em;
+  background: color-mix(in srgb, var(--color-ink) 82%, transparent);
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.project-metric {
+  display: flex;
+  min-width: 0;
+  min-height: 54px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 0.6rem 0.72rem;
+  background: var(--color-ink-soft);
+}
+
+.project-metric-label {
+  color: rgb(240 239 232 / 0.62);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.project-metric-value {
+  max-width: 100%;
+  color: var(--color-acid);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 620;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
 }
 
 .project-stack-list {
@@ -718,13 +1019,39 @@
   list-style: none;
 }
 
+.project-tech {
+  border: 1px solid color-mix(in srgb, var(--color-ink) 28%, transparent);
+  padding: 0.38rem 0.62rem;
+  font-size: 12px;
+  font-weight: 540;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.project-tech--primary {
+  border-color: color-mix(in srgb, var(--color-ink) 68%, transparent);
+  background: color-mix(in srgb, var(--color-acid) 72%, var(--color-paper));
+  color: var(--color-ink);
+  font-weight: 660;
+}
+
+.project-index-row[data-open="true"] > button {
+  background: color-mix(in srgb, var(--color-acid) 18%, transparent);
+}
+
 .project-year {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
   min-width: 0;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -734,7 +1061,7 @@
 .project-year-value {
   flex-shrink: 0;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
@@ -758,7 +1085,14 @@
 @media (min-width: 768px) {
   .project-meta {
     grid-template-columns: minmax(0, 1fr) 13.75rem;
-    grid-template-rows: auto minmax(0, 1fr);
+    /* The lower row must not shrink below its own content. With `minmax(0,
+       1fr)` it could, and did: the row was handed 140.5px while the stack
+       chips and repository links needed 145px, so they spilled 3px past the
+       card — which the card's `overflow: hidden` then sliced through, cutting
+       the bottom off the chips and the last link. `min-content` as the floor
+       lets the meta claim the height it actually needs; the artwork row above
+       is `1fr` and gives the space up. */
+    grid-template-rows: auto minmax(min-content, 1fr);
     align-items: stretch;
     column-gap: clamp(1.25rem, 2.4vw, 2rem);
     row-gap: 0;
@@ -814,6 +1148,14 @@
 
   .project-note {
     margin-bottom: 0;
+    /* No clamp on phones. On desktop the card has a fixed height, so the note
+       has to be trimmed to fit — but here the card sits in normal flow and can
+       grow, and clamping only cost the reader the end of the sentence. The
+       description was cutting off mid-word ("lalu unduh e…"), which is the one
+       place a visitor actually learns what the project does. */
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: unset;
   }
 }
 
@@ -922,6 +1264,7 @@
   html {
     background: var(--color-ink);
     overflow-x: clip;
+    scroll-behavior: smooth;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -983,7 +1326,7 @@
     padding: 12px 18px;
     background: var(--color-acid);
     color: var(--color-ink);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -1039,15 +1382,35 @@
   }
 
   .project-card {
-    box-shadow: none;
+    box-shadow: 4px 4px 0 color-mix(in srgb, var(--color-ink) 16%, transparent);
   }
 
-  .project-card > .bg-acid {
-    display: none;
+  .project-active-edge {
+    height: 2px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .project-art-affordance {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .project-metric:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
@@ -1069,7 +1432,6 @@
   }
 
   .hero-grid,
-  .hero-system,
   .hero-paths,
   .hero-path-flow,
   .hero-atmosphere-backplane,
@@ -1084,8 +1446,21 @@
   .ink-field-dust,
   .ink-field-leak,
   .marquee-track {
-    animation: none !important;
-    transform: none !important;
+    display: none !important;
+  }
+
+  .marquee-static {
+    display: flex !important;
+  }
+
+  .marquee-window {
+    overflow: visible !important;
+  }
+
+  .marquee-window::before,
+  .marquee-window::after,
+  .tech-ticker-motion-toggle {
+    display: none !important;
   }
 
   .project-deck {
@@ -1117,6 +1492,10 @@
     rotate: none !important;
   }
 
+  .project-art-media {
+    transform: none !important;
+  }
+
   .project-main,
   .project-aside {
     opacity: 1 !important;
@@ -1130,7 +1509,152 @@
 
 @media (prefers-reduced-motion: reduce) and (max-width: 680px) {
   .project-art {
-    height: 100vw !important;
+    height: clamp(220px, 72vw, 310px) !important;
     min-height: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Phone rhythm.
+
+   The section paddings are written as `clamp()` with a desktop-sized floor, so
+   a phone inherited the desktop rhythm rather than one chosen for it: 96–110px
+   of padding above AND below each section, which on an 812px screen is roughly
+   a quarter of the viewport spent on emptiness before anything is read, and a
+   page that ran to 28 screens of scrolling. The horizontal gutter had the
+   opposite problem at 14px, running text almost to the bezel.
+
+   Set once here rather than in each section's class list: the sections share a
+   rhythm, and it should be changeable in one place.
+--------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+  #top,
+  #profile,
+  #architecture,
+  #work,
+  #stack,
+  #tech,
+  #experience,
+  #education,
+  #certificates,
+  #contact {
+    padding-inline: 20px;
+  }
+
+  #profile,
+  #architecture,
+  #work,
+  #stack,
+  #tech,
+  #experience,
+  #education,
+  #certificates {
+    padding-block: 68px;
+  }
+
+  /* The front-end chapter follows immediately after the backend system map.
+     A shorter exit here keeps the hand-off feeling deliberate on phones. */
+  #architecture {
+    padding-bottom: 40px;
+  }
+
+  /* The hero keeps its header clearance; only the tail is trimmed. */
+  #top {
+    padding-bottom: 40px;
+  }
+}
+
+/* Extra-small phones need their own density tier. At 320px the previous
+   phone rhythm still produced a 21k+ pixel page: the content fitted the
+   viewport, but repeated 68px section padding and tall card internals made
+   every chapter feel oversized. Keep readable 15–16px copy and 44px controls;
+   reclaim space from layout chrome, gaps and decorative surfaces instead. */
+@media (max-width: 360px) {
+  #top,
+  #profile,
+  #architecture,
+  #work,
+  #stack,
+  #tech,
+  #experience,
+  #education,
+  #certificates,
+  #contact {
+    padding-inline: 16px;
+  }
+
+  #profile,
+  #architecture,
+  #work,
+  #stack,
+  #tech,
+  #experience,
+  #education,
+  #certificates {
+    padding-block: 52px;
+  }
+
+  #architecture {
+    padding-bottom: 32px;
+  }
+
+  #top {
+    padding-bottom: 24px;
+  }
+
+  .project-meta {
+    gap: 0.75rem;
+    padding: 0.875rem 0.75rem 1rem;
+  }
+
+  .project-copy-body {
+    gap: 0.6rem;
+  }
+
+  .project-aside {
+    gap: 0.6rem;
+    padding-top: 0.65rem;
+  }
+
+  .project-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .project-metric,
+  .project-metric:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .project-metric {
+    min-height: 48px;
+    gap: 0.25rem;
+    padding: 0.45rem 0.45rem;
+  }
+
+  .project-metric-label {
+    font-size: 10px;
+  }
+
+  .project-metric-value {
+    font-size: 12px;
+  }
+
+  .project-stack-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.375rem;
+  }
+
+  .project-tech {
+    overflow-wrap: anywhere;
+    padding: 0.34rem 0.42rem;
+    font-size: 10px;
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 360px) {
+  .project-art {
+    height: clamp(188px, 64vw, 216px) !important;
   }
 }

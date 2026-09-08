@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { CoverflowCarousel } from "@/components/ui/coverflow-carousel";
 import { certificateIssuer, certificates } from "@/app/content";
-import { certCounter, certFrame, certParent, certItem, useMediaQuery } from "@/app/lib/motion";
+import { inViewport, certCounter, certFrame, certParent, certItem } from "@/app/lib/motion";
 import { dual, useT } from "@/app/lib/i18n";
 
 /**
@@ -17,7 +17,6 @@ import { dual, useT } from "@/app/lib/i18n";
  */
 export function CertificatesSection() {
   const [active, setActive] = useState(0);
-  const compact = useMediaQuery("(max-width: 680px)");
   const t = useT();
 
   const slides = useMemo(
@@ -28,9 +27,12 @@ export function CertificatesSection() {
         title: t(cert.title),
         subtitle: t(cert.topic),
         meta: [
-          ...(cert.score ? [{ label: t(dual("Nilai", "Score")), value: cert.score }] : []),
+          { label: t(dual("Nilai", "Score")), value: cert.score ?? "—" },
           { label: t(dual("Tanggal", "Date")), value: t(cert.date) },
-          { label: t(dual("Durasi", "Duration")), value: t(cert.sessions) },
+          {
+            label: cert.id === "instructor-java" ? t(dual("Peran", "Role")) : t(dual("Durasi", "Duration")),
+            value: t(cert.sessions),
+          },
         ],
       })),
     [t],
@@ -43,7 +45,7 @@ export function CertificatesSection() {
       variants={certParent}
       initial="hidden"
       whileInView="shown"
-      viewport={{ once: true, amount: 0.2, margin: "0px 0px -15% 0px" }}
+      viewport={inViewport}
       className="certificates relative overflow-hidden border-t border-paper/12 bg-surface px-[3vw] py-[clamp(96px,11vw,170px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5"
       id="certificates"
       aria-labelledby="certificates-title"
@@ -52,25 +54,29 @@ export function CertificatesSection() {
         className="pointer-events-none absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.05)_1px,transparent_1px)] bg-[size:64px_64px]"
         aria-hidden="true"
       />
+      <div
+        className="pointer-events-none absolute top-[38%] left-1/2 h-[min(680px,62vw)] w-[min(1100px,82vw)] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse,rgba(216,255,62,0.105),rgba(216,255,62,0.025)_38%,transparent_72%)] blur-2xl"
+        aria-hidden="true"
+      />
 
       <div className="relative">
         <div className="mb-[clamp(40px,5vw,64px)] grid grid-cols-[1fr_3.15fr] gap-[5vw] max-[1000px]:grid-cols-1">
           <motion.div variants={certItem}>
             <div className="flex items-center gap-5 text-[11px] tracking-[0.1em] uppercase">
-              <span className="grid size-[38px] shrink-0 place-items-center rounded-full border border-current">07</span>
+              <span className="grid size-[38px] shrink-0 place-items-center rounded-full border border-current">08</span>
               <p className="m-0">{t(dual("Sertifikat", "Certificates"))}</p>
             </div>
           </motion.div>
 
-          <div className="max-[1000px]:mt-[52px]">
+          <div className="max-[1000px]:mt-[52px] max-[360px]:mt-7">
             <motion.h2
               variants={certItem}
               id="certificates-title"
-              className="font-display mb-5 max-w-[900px] text-[clamp(40px,5vw,82px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.5vw,52px)]"
+              className="font-display mb-5 max-w-[900px] text-[clamp(38px,5.2vw,76px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.6vw,54px)] max-[360px]:mb-4 max-[360px]:text-[clamp(28px,9vw,32px)]"
             >
               {t(dual("Sepuluh sertifikat, satu jalur belajar.", "Ten certificates, one learning path."))}
             </motion.h2>
-            <motion.p variants={certItem} className="m-0 max-w-[560px] text-[15px] leading-[1.55] text-[#a7a99f]">
+            <motion.p variants={certItem} className="m-0 max-w-[590px] text-[16px] leading-[1.62] text-[#a7a99f] max-[360px]:text-[15px] max-[360px]:leading-[1.55]">
               {t(
                 dual(
                   "Dari algoritma dan struktur data sampai back-end Java dan front-end React — semuanya dari ",
@@ -93,11 +99,9 @@ export function CertificatesSection() {
 
         {/* Live counter — reads as an index, and gives the carousel a heading
             that changes with it for anyone not watching the cards. */}
-        <motion.div
-          variants={certItem}
-          className="mb-2 flex items-end justify-between gap-4 border-b border-paper/12 pb-4"
-        >
-          <p className="m-0 text-[11px] tracking-[0.12em] text-[#8d8f85] uppercase">
+        <motion.div variants={certItem} className="mb-3 flex items-end justify-between gap-4">
+          <p className="m-0 flex items-center gap-3 text-[12px] tracking-[0.12em] text-[#a7a99f] uppercase max-[520px]:max-w-[210px] max-[520px]:leading-[1.5]">
+            <span className="h-px w-8 shrink-0 bg-acid" aria-hidden="true" />
             {t(dual("Geser, seret, atau pakai tombol panah", "Swipe, drag, or use the arrow buttons"))}
           </p>
           <p className="m-0 font-mono text-[clamp(20px,2.4vw,30px)] leading-none tabular-nums text-acid">
@@ -108,7 +112,20 @@ export function CertificatesSection() {
           </p>
         </motion.div>
 
-        <motion.div variants={certFrame}>
+        <motion.div
+          variants={certFrame}
+          className="relative overflow-hidden border border-paper/12 bg-ink/55 px-[clamp(8px,1.7vw,24px)] pt-4 pb-[clamp(18px,2.4vw,32px)] shadow-[0_36px_120px_rgba(0,0,0,0.28)] max-[360px]:pt-3 max-[360px]:pb-4"
+        >
+          <span className="absolute top-0 left-0 h-px w-[28%] bg-acid" aria-hidden="true" />
+          <span className="absolute top-0 left-0 h-8 w-px bg-acid" aria-hidden="true" />
+          <span className="absolute right-0 bottom-0 h-px w-[18%] bg-paper/25" aria-hidden="true" />
+          <span className="absolute right-0 bottom-0 h-8 w-px bg-paper/25" aria-hidden="true" />
+
+          <div className="flex items-center justify-between gap-4 px-2 pb-1 text-[12px] tracking-[0.14em] uppercase">
+            <p className="m-0 text-paper/55">{t(dual("Arsip pembelajaran", "Learning archive"))}</p>
+            <p className="m-0 font-mono tabular-nums text-paper/75">2024 — 2026</p>
+          </div>
+
           <CoverflowCarousel
             slides={slides}
             onSelect={setActive}
@@ -116,15 +133,17 @@ export function CertificatesSection() {
             showPagination
             showNavigation
             aspectRatio={1.414}
-            // Wider than the component default: these are dense A4 scans, and
-            // at the stock 260px cap the certificate text is unreadable.
-            cardWidth={compact ? "min(78vw, 340px)" : "clamp(300px, 34vw, 520px)"}
-            rotate={38}
-            depth={0.52}
-            perspective={2.6}
-            fade={0.16}
+            // CSS owns the breakpoint, so the document does not jump after
+            // hydration and both sides meet at the same 430px width.
+            cardWidth="clamp(430px, 46vw, 700px)"
+            mobileCardWidth="min(calc(100vw - 64px), 400px)"
+            rotate={14}
+            depth={0.26}
+            perspective={4}
+            gap={-0.16}
+            fade={0.24}
             label={t(dual("Galeri sertifikat pelatihan", "Training certificate gallery"))}
-            className="max-w-[1200px] mx-auto"
+            className="mx-auto max-w-[1320px]"
           />
         </motion.div>
 

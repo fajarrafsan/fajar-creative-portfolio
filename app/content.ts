@@ -1,7 +1,7 @@
 // Site content. Kept apart from the view layer so the copy, links, and stack
 // lists can be edited without touching any animation code.
 
-import { dual } from "@/app/lib/i18n";
+import { dual, type Dual } from "@/app/lib/i18n";
 
 export const linkedInUrl = "https://www.linkedin.com/in/fajar-rafsan-80822b394/";
 export const githubUrl = "https://github.com/fajarrafsan";
@@ -97,7 +97,18 @@ export const copy = {
   heroStackAria: dual("Stack utama", "Primary stack"),
   viewProjects: dual("Lihat proyek", "View projects"),
   scrollToProjects: dual("Gulir ke proyek pilihan", "Scroll to selected projects"),
-  marqueeAria: dual("Teknologi utama", "Core technologies"),
+  marqueeAria: dual("Teknologi dan praktik utama", "Core technologies and practices"),
+  marqueeSignal: dual("Sinyal stack", "Stack signal"),
+  marqueeChannels: dual("24 modul · 02 kanal", "24 modules · 02 channels"),
+  marqueeCore: dual("Runtime inti", "Core runtime"),
+  marqueeDelivery: dual("Praktik delivery", "Delivery practice"),
+  marqueeTools: dual("alat", "tools"),
+  marqueePractices: dual("praktik", "practices"),
+  marqueePause: dual("Jeda animasi teknologi", "Pause technology animation"),
+  marqueeResume: dual("Lanjutkan animasi teknologi", "Resume technology animation"),
+  marqueePauseShort: dual("Jeda", "Pause"),
+  marqueeResumeShort: dual("Lanjut", "Resume"),
+  marqueePausedStatus: dual("Animasi teknologi dijeda", "Technology animation paused"),
   sectionProfile: dual("Profil", "Profile"),
   sectionArchitecture: dual("Arsitektur gerak", "Motion architecture"),
   architectureEyebrow: dual("Backend bergerak", "Backend in motion"),
@@ -120,13 +131,27 @@ export const copy = {
     "Outside the daily set: C from algorithm training, Postman for API checks, and Git Flow for branch workflow.",
   ),
   utilityEyebrow: dual("Utilitas", "Utility"),
-  sectionExperience: dual("Pengalaman & pendidikan", "Experience & education"),
+  workIndexLabel: dual("Proyek lainnya", "More projects"),
+  workIndexHint: dual("Buka detail", "Open details"),
+  sectionExperience: dual("Pengalaman", "Experience"),
   experienceLead: dual(
     "Akuntansi melatih ketelitian saya.\nRekayasa memberinya sistem.",
     "Accounting trained my precision.\nEngineering gave it a system.",
   ),
   experienceTitle: dual("Belajar dalam.", "Learn deeply."),
   experienceTitleEm: dual("Mengajar kembali.", "Teach it back."),
+  sectionEducation: dual("Pendidikan", "Education"),
+  educationTitle: dual("Akuntansi yang jadi", "Accounting that became"),
+  educationTitleEm: dual("fondasi rekayasa.", "an engineering base."),
+  educationLead: dual(
+    "Satu beasiswa membiayai dua hal sekaligus:\ngelar akuntansi, dan bootcamp yang mengubah arah karier.",
+    "One scholarship funded two things at once:\nan accounting degree, and the bootcamp that changed course.",
+  ),
+  educationBridge: dual(
+    "Beasiswa itu juga mendanai bootcamp pemrograman selama lebih dari dua tahun — sepuluh sertifikat di bawah ini lahir dari sana.",
+    "That scholarship also funded more than two years of programming bootcamp — the ten certificates below came out of it.",
+  ),
+  educationBridgeCta: dual("Lihat sertifikat", "See the certificates"),
   sectionConnect: dual("Terhubung", "Connect"),
   contactBlurb: dual(
     "Terbuka untuk kesempatan fullstack, kolaborasi produk, dan diskusi sistem ujung ke ujung.",
@@ -136,7 +161,7 @@ export const copy = {
   contactLine2: dual("ANDAL.", "RELIABLE."),
   sendEmail: dual("Kirim email", "Send email"),
   mailSubject: dual("Peluang Fullstack", "Fullstack opportunity"),
-  downloadCv: dual("Unduh CV lengkap", "Download full CV"),
+  downloadCv: dual("Pilih & unduh CV", "Choose & download CV"),
   footer: dual("© 2026 Fajar Rafsan. Fullstack Developer.", "© 2026 Fajar Rafsan. Fullstack Developer."),
   backToTop: dual("Kembali ke atas ↑", "Back to top ↑"),
   copyEmail: dual("salin", "copy"),
@@ -144,6 +169,10 @@ export const copy = {
   copiedStatus: dual("Alamat email tersalin ke papan klip", "Email address copied to the clipboard"),
   year: dual("Tahun", "Year"),
   liveDemo: dual("Demo live", "Live demo"),
+  projectCase: dual("Kasus", "Case"),
+  projectLiveStatus: dual("Aktif", "Live"),
+  projectSourceStatus: dual("Sumber", "Source"),
+  opensNewTab: dual("dibuka di tab baru", "opens in a new tab"),
   cursorView: dual("Lihat", "View"),
   panelTechAria: dual("Teknologi pada panel ini", "Technologies on this panel"),
   graphCore: dual("Inti", "Core"),
@@ -228,6 +257,16 @@ export const copy = {
       { text: " — the boundaries of responsibility stay clear." },
     ],
   ),
+  architectureFlowLabel: dual("Alur sinyal", "Signal flow"),
+  architectureFlowMode: dual("sinkron → asinkron", "sync → async"),
+  architectureFlow: [
+    { number: "01", stage: dual("Masuk", "Ingress"), route: "Client → Gateway", protocol: "HTTPS" },
+    { number: "02", stage: dual("Verifikasi", "Trust"), route: "Gateway → Auth", protocol: "Bearer" },
+    { number: "03", stage: dual("Eksekusi", "Execute"), route: "Auth → Service", protocol: "Bean" },
+    { number: "04", stage: dual("Jalur cepat", "Fast path"), route: "Service ↔ Cache", protocol: "RESP" },
+    { number: "05", stage: dual("Persistensi", "Persist"), route: "Service → Data", protocol: "JDBC" },
+    { number: "06", stage: dual("Distribusi", "Fan out"), route: "Service → Events / Payments", protocol: "AMQP · Webhook" },
+  ],
   architectureMeta: dual(
     [
       { value: "08", label: "node" },
@@ -547,6 +586,10 @@ export const stackGroups = [
   },
 ];
 
+/**
+ * Work only. The degree and the bootcamp used to sit in this list too, which
+ * meant the page stated them twice once education got its own section.
+ */
 export const experience = [
   {
     period: dual("SEP 2025 — DES 2025", "SEP 2025 — DEC 2025"),
@@ -566,41 +609,235 @@ export const experience = [
       "Supported accounting classes: ledger structure, transactional logic, and grading assignments and exams.",
     ),
   },
+];
+
+/**
+ * Education.
+ *
+ * The scholarship is the thread worth pulling: the same PUB programme that
+ * funded the accounting degree also funded the two-year programming bootcamp,
+ * and every certificate in section 08 comes from it. Those three facts used to
+ * sit in three different places — a row in `experience`, a paragraph inside the
+ * CV preview, and the certificate issuer — so the story never actually got
+ * told. Held here once, and read by both the section and the CV.
+ */
+export const education = {
+  program: dual("S1 Akuntansi", "BSc Accounting"),
+  place: "Universitas Nasional Pasim",
+  city: "Bandung",
+  period: "2023 — 2026",
+  gpa: "3.64",
+  gpaScale: "4.00",
+  gpaLabel: dual("IPK", "GPA"),
+  scholarship: dual("Beasiswa Penuh PUB", "Full PUB Scholarship"),
+  scholarshipNote: dual(
+    "Diseleksi lewat proses beasiswa nasional yang kompetitif.",
+    "Selected through a competitive national scholarship process.",
+  ),
+  note: dual(
+    "Akuntansi mengajarkan hal yang ternyata sama persis dengan tuntutan backend: setiap angka harus bisa ditelusuri asalnya, setiap transaksi harus seimbang, dan tidak ada data yang boleh hilang di tengah jalan. Itu yang saya bawa saat merancang skema relasional dan menulis logika bisnis.",
+    "Accounting teaches exactly what a backend demands: every figure has to be traceable to its source, every transaction has to balance, and nothing may go missing along the way. That is what I carry into designing relational schemas and writing business logic.",
+  ),
+  facts: [
+    {
+      label: dual("Mengajar di kampus", "Taught on campus"),
+      value: dual("2 peran", "2 roles"),
+      detail: dual("Asisten dosen & instruktur Java", "Teaching assistant & Java instructor"),
+    },
+    {
+      label: dual("Rentang nilai", "Score range"),
+      value: "76 — 90",
+      detail: dual("Sepuluh sertifikat bootcamp", "Across the ten bootcamp certificates"),
+    },
+  ],
+};
+
+/**
+ * The bootcamp, told as the path it actually was rather than a pile of
+ * certificates.
+ *
+ * Stages are grouped from the certificate dates in `certificates` below, which
+ * is the only record of the sequence there is — so the order here is the order
+ * those were issued, not necessarily the order the classes ran.
+ */
+export const bootcamp = {
+  name: dual("Bootcamp Pemrograman PUB", "PUB Programming Bootcamp"),
+  place: "PUB Training Center",
+  city: "Bandung",
+  period: "2024 — 2026",
+  summary: dual(
+    "Dua tahun kelas terstruktur yang didanai beasiswa yang sama dengan kuliah — dari struktur data sampai React, masing-masing 16 sesi.",
+    "Two years of structured classes funded by the same scholarship as the degree — from data structures through to React, sixteen sessions each.",
+  ),
+  path: [
+    {
+      period: dual("Jun 2024", "Jun 2024"),
+      title: dual("Struktur data & basis data", "Data structures & databases"),
+      detail: dual("Fondasi penyimpanan dan pencarian", "The storage and lookup foundation"),
+    },
+    {
+      period: dual("Mei 2025", "May 2025"),
+      title: dual("Back-end Java", "Java back-end"),
+      detail: dual("Fundamental lalu lanjutan", "Fundamental, then advanced"),
+    },
+    {
+      period: dual("Mei 2025", "May 2025"),
+      title: dual("Web & kontrol versi", "Web & version control"),
+      detail: dual("HTML, CSS, JavaScript, Git", "HTML, CSS, JavaScript, Git"),
+    },
+    {
+      period: dual("Sep 2025", "Sep 2025"),
+      title: dual("Logika & algoritma dengan C", "Logic & algorithms in C"),
+      detail: dual("Bahasa C, tanpa jaring pengaman", "C, with no safety net"),
+    },
+    {
+      period: dual("2026", "2026"),
+      title: dual("Front-end React", "React front-end"),
+      detail: dual("Fundamental lalu lanjutan", "Fundamental, then advanced"),
+    },
+  ],
+};
+
+export type CvRole = "fullstack" | "backend" | "frontend";
+export type CvLanguage = "id" | "en";
+
+export type CvFileDescriptor = {
+  href: string;
+  download: string;
+  filename: string;
+  preview: string;
+  pages: number;
+  size: string;
+};
+
+export type CvProfile = {
+  id: CvRole;
+  index: string;
+  label: Dual<string>;
+  focus: string;
+  summary: Dual<string>;
+  recommended?: boolean;
+  files: Record<CvLanguage, CvFileDescriptor>;
+};
+
+export const cvProfiles: CvProfile[] = [
   {
-    period: dual("2023 — 2026", "2023 — 2026"),
-    role: dual("S1 Akuntansi · IPK 3.64", "BSc Accounting · GPA 3.64"),
-    place: "Universitas Nasional Pasim",
-    detail: dual(
-      "Penerima Beasiswa Penuh PUB, sekaligus menempuh 2+ tahun bootcamp pemrograman yang didanai beasiswa tersebut.",
-      "Full PUB Scholarship recipient, alongside 2+ years of the programming bootcamp that scholarship funded.",
+    id: "fullstack",
+    index: "01",
+    label: dual("Full-Stack", "Full-Stack"),
+    focus: "Java Spring Boot · React.js",
+    summary: dual(
+      "Versi paling menyeluruh untuk posisi yang membutuhkan kepemilikan produk dari API hingga antarmuka.",
+      "The broadest version for roles that need product ownership from API through interface.",
     ),
+    recommended: true,
+    files: {
+      id: {
+        href: "/cv/CV_Fajar_Rafsan_Tanjung_FullStack_Developer_ID.pdf",
+        download: "CV_Fajar_Rafsan_Tanjung_FullStack_Developer_ID.pdf",
+        filename: "CV_Fajar_Rafsan_Tanjung_FullStack_Developer_ID.pdf",
+        preview: "/cv/previews/fullstack-id.jpg",
+        pages: 2,
+        size: "80 KB",
+      },
+      en: {
+        href: "/cv/CV_Fajar_Rafsan_Tanjung_FullStack_Developer_EN.pdf",
+        download: "CV_Fajar_Rafsan_Tanjung_FullStack_Developer_EN.pdf",
+        filename: "CV_Fajar_Rafsan_Tanjung_FullStack_Developer_EN.pdf",
+        preview: "/cv/previews/fullstack-en.jpg",
+        pages: 2,
+        size: "81 KB",
+      },
+    },
+  },
+  {
+    id: "backend",
+    index: "02",
+    label: dual("Backend", "Backend"),
+    focus: "Java · Spring Boot · Microservices",
+    summary: dual(
+      "Menonjolkan REST API, autentikasi, sistem terdistribusi, messaging, cache, dan integritas data.",
+      "Highlights REST APIs, authentication, distributed systems, messaging, caching, and data integrity.",
+    ),
+    files: {
+      id: {
+        href: "/cv/CV_Fajar_Rafsan_Tanjung_Backend_Developer_ID.pdf",
+        download: "CV_Fajar_Rafsan_Tanjung_Backend_Developer_ID.pdf",
+        filename: "CV_Fajar_Rafsan_Tanjung_Backend_Developer_ID.pdf",
+        preview: "/cv/previews/backend-id.jpg",
+        pages: 2,
+        size: "85 KB",
+      },
+      en: {
+        href: "/cv/CV_Fajar_Rafsan_Tanjung_Backend_Developer_EN.pdf",
+        download: "CV_Fajar_Rafsan_Tanjung_Backend_Developer_EN.pdf",
+        filename: "CV_Fajar_Rafsan_Tanjung_Backend_Developer_EN.pdf",
+        preview: "/cv/previews/backend-en.jpg",
+        pages: 2,
+        size: "86 KB",
+      },
+    },
+  },
+  {
+    id: "frontend",
+    index: "03",
+    label: dual("Frontend", "Frontend"),
+    focus: "React · TypeScript · Tailwind CSS",
+    summary: dual(
+      "Menonjolkan UI responsif, arsitektur komponen, autentikasi sisi klien, dan integrasi REST API.",
+      "Highlights responsive UI, component architecture, client-side authentication, and REST API integration.",
+    ),
+    files: {
+      id: {
+        href: "/cv/CV_Fajar_Rafsan_Tanjung_Frontend_Developer_ID.pdf",
+        download: "CV_Fajar_Rafsan_Tanjung_Frontend_Developer_ID.pdf",
+        filename: "CV_Fajar_Rafsan_Tanjung_Frontend_Developer_ID.pdf",
+        preview: "/cv/previews/frontend-id.jpg",
+        pages: 2,
+        size: "85 KB",
+      },
+      en: {
+        href: "/cv/CV_Fajar_Rafsan_Tanjung_Frontend_Developer_EN.pdf",
+        download: "CV_Fajar_Rafsan_Tanjung_Frontend_Developer_EN.pdf",
+        filename: "CV_Fajar_Rafsan_Tanjung_Frontend_Developer_EN.pdf",
+        preview: "/cv/previews/frontend-en.jpg",
+        pages: 2,
+        size: "85 KB",
+      },
+    },
   },
 ];
 
-export const cvFile = {
-  href: "/cv/Fajar_Rafsan_Tanjung.pdf",
-  download: "Fajar_Rafsan_Tanjung.pdf",
-  filename: "FAJAR_RAFSAN_TANJUNG.PDF",
-};
+/** Backwards-compatible general CV target for code outside the chooser. */
+export const cvFile = cvProfiles[0].files.id;
 
 export const cvPhone = "0812-8619-6886";
 export const cvPhoneTel = "+6281286196886";
 
-/** Preview chrome and the HRD download prompt. Facts live in `cvDocument`. */
+/** Copy for the role/language-aware CV selection desk. */
 export const cvPreviewCta = {
-  label: dual("Unduh CV lengkap", "Download full CV"),
-  header: dual("Unduh PDF", "Download PDF"),
+  eyebrow: dual("Arsip CV · 06 dokumen", "CV archive · 06 documents"),
+  title: dual("Pilih CV yang paling relevan.", "Choose the most relevant CV."),
+  description: dual(
+    "Setiap versi menonjolkan pengalaman yang berbeda. Pilih target posisi dan bahasa sebelum membuka atau mengunduh.",
+    "Each version foregrounds different experience. Choose the target role and language before opening or downloading.",
+  ),
+  roleLegend: dual("Target posisi", "Target role"),
+  languageLegend: dual("Bahasa dokumen", "Document language"),
+  languageId: dual("Bahasa Indonesia", "Indonesian"),
+  languageEn: dual("Bahasa Inggris", "English"),
+  recommended: dual("Pilihan umum", "General choice"),
+  selected: dual("Dokumen dipilih", "Selected document"),
+  preview: dual("Pratinjau halaman pertama", "First-page preview"),
+  previewHint: dual("Klik pratinjau untuk membuka PDF lengkap", "Select the preview to open the full PDF"),
+  pages: dual("halaman", "pages"),
+  fileReady: dual("PDF siap dibuka", "PDF ready"),
+  openPdf: dual("Buka PDF", "Open PDF"),
+  downloadPdf: dual("Unduh PDF", "Download PDF"),
+  openChooser: dual("Pilih dan lihat CV", "Choose and view CV"),
+  opensNewTab: dual("dibuka di tab baru", "opens in a new tab"),
   close: dual("Tutup", "Close"),
   closeAria: dual("Tutup pratinjau CV", "Close CV preview"),
-  support: dual(
-    "Silakan tinjau dokumen PDF untuk rincian pengalaman, proyek, dan kualifikasi.",
-    "Please review the PDF for details of experience, projects, and qualifications.",
-  ),
-  skills: dual("Keahlian & penguasaan teknologi", "Skills & technical proficiency"),
-  jobs: dual("Pengalaman kerja", "Work experience"),
-  education: dual("Pendidikan", "Education"),
-  achievements: dual("Pencapaian", "Achievements"),
-  projects: dual("Proyek pilihan", "Selected projects"),
 };
 
 export const cvDocument = {
@@ -957,8 +1194,21 @@ export const artThemes: Record<string, string> = {
 
 export type Project = (typeof projects)[number] | UtilityProject;
 
-export const marqueeTop = ["JAVA", "SPRING BOOT", "REACT", "TYPESCRIPT", "POSTGRESQL", "REDIS"];
-export const marqueeBottom = ["REST API", "MICROSERVICES", "TAILWIND", "JWT / OAUTH", "WEBSOCKET", "DOCKER"];
+/**
+ * Ticker words.
+ *
+ * Kept long enough that a full loop is wider than a desktop viewport. At six
+ * words each the sequence repeated inside a single screen — "JAVA" appeared
+ * twice at once — which reads as a short loop rather than a running feed.
+ */
+export const marqueeTop = [
+  "JAVA", "SPRING BOOT", "REACT", "TYPESCRIPT", "POSTGRESQL", "REDIS",
+  "HIBERNATE", "NODE.JS", "TAILWIND", "VITE", "MYSQL", "EXPRESS",
+];
+export const marqueeBottom = [
+  "REST API", "MICROSERVICES", "TAILWIND", "JWT / OAUTH", "WEBSOCKET", "DOCKER",
+  "RABBITMQ", "SPRING SECURITY", "FLYWAY", "SWAGGER", "GIT FLOW", "UNIT TESTING",
+];
 
 /**
  * Training certificates, transcribed from the scans in `public/certificates`.
