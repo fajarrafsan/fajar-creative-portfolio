@@ -15,7 +15,7 @@ import { InkField } from "@/app/components/ink-field";
 import { TechIcon } from "@/app/components/tech-icons";
 import { copy, frontendArchitecture, type RichText } from "@/app/content";
 import { useT, type Dual } from "@/app/lib/i18n";
-import { inViewport, archItem, archParent, archWord, ease, useLatchedInView } from "@/app/lib/motion";
+import { inViewport, archItem, archParent, archWord, ease, reveal, useLatchedInView } from "@/app/lib/motion";
 
 export type HorizontalPanel = {
   number: string;
@@ -260,6 +260,7 @@ function Panel({
       aria-labelledby={headingId}
       inert={inert || undefined}
       aria-hidden={inert || undefined}
+      {...(pin ? {} : reveal)}
       style={
         pin
           ? { flex: `0 0 ${paneWidth}px`, width: paneWidth,

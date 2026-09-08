@@ -19,7 +19,7 @@ import roomlySm from "@/app/covers/roomly-sm.webp";
 import shopifyCSm from "@/app/covers/shopify-c-sm.webp";
 import siaSm from "@/app/covers/sia-sm.webp";
 import tiketKilatSm from "@/app/covers/tiket-kilat-sm.webp";
-import { inViewport, LatchedReveal, ease, useMediaQuery } from "@/app/lib/motion";
+import { inViewport, reveal, ease, useMediaQuery } from "@/app/lib/motion";
 import { useT, dual } from "@/app/lib/i18n";
 import { PaperField } from "@/app/components/paper-field";
 import { ArrowOut, Chevron, SocialIcon } from "@/app/components/tech-icons";
@@ -111,9 +111,18 @@ const DECK_INSET = STACK_TOP + STACK_PEEK_MAX * STACK_STEP + 24;
  * spends JS only when a card first arrives.
  */
 const deckStagger: Variants = {
-  hidden: {},
-  shown: { transition: { staggerChildren: 0.055, delayChildren: 0.08 } },
+  hidden: { opacity: 0, y: 24 },
+  shown: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.54, ease, staggerChildren: 0.055, delayChildren: 0.08 },
+  },
 };
+
+// A sticky card needs to start assembling before it reaches its pin line.
+// This still fires inside the screen, but is intentionally shallower than the
+// general content trigger because the card itself is almost a viewport tall.
+const deckViewport = { once: true, margin: "0px 0px -4% 0px", amount: 0.06 } as const;
 const deckPiece: Variants = {
   hidden: { opacity: 0, y: 16 },
   shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
@@ -171,10 +180,11 @@ function ProjectCard({
             }
           : undefined
       }
-      initial={reduced ? false : "hidden"}
-      whileInView="shown"
-      viewport={inViewport}
-      variants={deckStagger}
+      initial={reduced ? false : stacked ? "hidden" : reveal.initial}
+      whileInView={stacked ? "shown" : reveal.whileInView}
+      viewport={stacked ? deckViewport : inViewport}
+      variants={stacked ? deckStagger : undefined}
+      transition={stacked ? undefined : reveal.transition}
     >
       {/* Acid top hairline on the active card — the focal edge of the deck. */}
       <motion.span
@@ -481,7 +491,12 @@ function ProjectIndexRow({ project }: { project: Project }) {
   const cover = smallCovers[project.variant] ?? bundledCovers[project.variant] ?? project.cover;
 
   return (
-    <li className="project-index-row border-b border-ink/20" data-open={open ? "true" : "false"}>
+    <motion.li
+      className="project-index-row border-b border-ink/20"
+      data-open={open ? "true" : "false"}
+      {...reveal}
+      initial={reduced ? false : reveal.initial}
+    >
       <button
         id={triggerId}
         type="button"
@@ -602,7 +617,7 @@ function ProjectIndexRow({ project }: { project: Project }) {
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </li>
+    </motion.li>
   );
 }
 
@@ -708,8 +723,12 @@ export function ProjectStack() {
         style={{ perspective: "1200px" }}
       >
         {(stacked ? projects : projects.slice(0, PHONE_FEATURED)).map((project, index) => (
+          // The server renders the flow layout first; the media query then
+          // upgrades a capable desktop to the sticky deck. Those modes use
+          // different animation contracts, so they cannot reuse Motion's
+          // once-only observer. The mode key gives the deck a fresh cycle.
           <ProjectCard
-            key={project.number}
+            key={`${stacked ? "deck" : "flow"}-${project.number}`}
             project={project}
             index={index}
             stacked={stacked}
@@ -751,7 +770,10 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
   const cover = bundledCovers[project.variant] ?? project.cover;
 
   return (
-    <article className="utility-card group/art relative z-[1] grid min-w-0 overflow-hidden border-2 border-ink bg-paper md:grid-cols-[minmax(220px,0.38fr)_minmax(0,1fr)]">
+    <motion.article
+      className="utility-card group/art relative z-[1] grid min-w-0 overflow-hidden border-2 border-ink bg-paper md:grid-cols-[minmax(220px,0.38fr)_minmax(0,1fr)]"
+      {...reveal}
+    >
       <div
         className={`relative h-[clamp(190px,56vw,250px)] min-h-0 overflow-hidden md:h-full md:min-h-[240px] max-[360px]:h-[clamp(164px,52vw,184px)] ${artThemes[project.variant]}`}
         aria-hidden="true"
@@ -863,18 +885,18 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
           </div>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
 export function UtilityProjects() {
   return (
-    <LatchedReveal className="relative z-[1] mt-[clamp(36px,5vw,64px)]">
+    <div className="relative z-[1] mt-[clamp(36px,5vw,64px)]">
       <div className="flex flex-col gap-5">
         {utilityProjects.map((project) => (
           <UtilityProjectCard key={project.number} project={project} />
         ))}
       </div>
-    </LatchedReveal>
+    </div>
   );
 }

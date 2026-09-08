@@ -24,26 +24,33 @@ export const ease = [0.16, 1, 0.3, 1] as const;
  * un-animated content on first paint.
  */
 /**
- * When a scroll entrance fires.
+ * Content starts resolving only after it has crossed the visible fold.
  *
- * This used to shrink the viewport's bottom edge by 120px AND demand a quarter
- * of the element be visible. Those stack: a 220px block had to travel 175px
- * past the fold before the animation even started, and then spend 0.72s
- * playing — measured at 270px of scroll, a third of a screen, between arriving
- * and being readable. It read as content lagging behind the scroll.
- *
- * Now the bottom edge is EXPANDED instead, so a block begins resolving just
- * before it reaches the fold and has settled by the time it is properly in
- * view. Shared so every section triggers on the same terms.
+ * A positive bottom margin used to extend the observer below the screen, so
+ * short blocks could finish their entrance before the reader ever saw them.
+ * The inset below keeps the trigger line inside the viewport; the modest
+ * amount also works for both small labels and tall mobile cards.
  */
-export const inViewport = { once: true, margin: "0px 0px 8% 0px", amount: 0.08 } as const;
+export const inViewport = { once: true, margin: "0px 0px -10% 0px", amount: 0.12 } as const;
+
+/**
+ * Diagrams have a staged assembly after their observer fires. Give that
+ * sequence a shallower inset so its frame begins while the graph is entering,
+ * without pre-triggering outside the viewport like the old shared preset.
+ */
+export const graphViewport = { once: true, margin: "0px 0px -4% 0px", amount: 0.06 } as const;
 
 export const reveal = {
-  initial: { opacity: 0, y: 18 },
+  initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: inViewport,
-  transition: { duration: 0.5, ease },
+  transition: { duration: 0.54, ease },
 } as const;
+
+const latchedReveal: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.54, ease } },
+};
 
 /**
  * Scroll-entrance that survives locale re-renders.
@@ -79,9 +86,9 @@ export function LatchedReveal({
     <motion.div
       ref={ref}
       className={className}
-      initial={shown ? false : reduced ? false : { opacity: 0, y: 18 }}
-      animate={shown ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
-      transition={{ duration: 0.5, ease }}
+      variants={latchedReveal}
+      initial={shown || reduced ? false : "hidden"}
+      animate={shown ? "shown" : "hidden"}
     >
       {children}
     </motion.div>
@@ -91,12 +98,12 @@ export function LatchedReveal({
 /** Parent/child pair for lists that should cascade rather than pop in together. */
 export const staggerParent: Variants = {
   hidden: {},
-  shown: { transition: { staggerChildren: 0.055, delayChildren: 0.1 } },
+  shown: { transition: { staggerChildren: 0.055, delayChildren: 0.04 } },
 };
 
 export const staggerChild: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  shown: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
+  hidden: { opacity: 0, y: 20 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.52, ease } },
 };
 
 /** Profile: headline, chips, copy, then a nested stats stagger. */

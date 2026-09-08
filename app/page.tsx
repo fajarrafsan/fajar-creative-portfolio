@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type Ref } from "react";
-import { MotionConfig, motion, useReducedMotion } from "motion/react";
+import { MotionConfig, motion, useReducedMotion, type Variants } from "motion/react";
 import {
   capabilities,
   copy,
@@ -40,7 +40,6 @@ import { inViewport,
   ease,
   reveal,
   staggerChild,
-  staggerParent,
   useHeroParallax,
   useLatchedInView,
 } from "@/app/lib/motion";
@@ -57,9 +56,24 @@ import { CertificatesSection } from "@/app/sections/certificates-section";
 import { EducationSection } from "@/app/sections/education-section";
 import { CvPreview, openCvPreview } from "@/app/sections/cv-preview";
 import { IntroGate, useIntroReady } from "@/app/sections/intro";
-import { useT } from "@/app/lib/i18n";
+import { dual, useT } from "@/app/lib/i18n";
 import { PaperField } from "@/app/components/paper-field";
 import { MotionInk } from "@/app/components/ink-field";
+
+const sectionLabelFill: Variants = {
+  hidden: { scaleY: 0 },
+  shown: { scaleY: 1, transition: { duration: 0.55, ease, delay: 0.08 } },
+};
+
+const sectionLabelIndex: Variants = {
+  hidden: { y: "120%" },
+  shown: { y: "0%", transition: { duration: 0.65, ease, delay: 0.12 } },
+};
+
+const sectionLabelText: Variants = {
+  hidden: { y: "110%", opacity: 0 },
+  shown: { y: "0%", opacity: 1, transition: { duration: 0.6, ease, delay: 0.16 } },
+};
 
 function SectionLabel({ index, label, lively }: { index: string; label: string; lively?: boolean }) {
   const reduced = useReducedMotion();
@@ -71,18 +85,14 @@ function SectionLabel({ index, label, lively }: { index: string; label: string; 
         {slide ? (
           <motion.span
             className="absolute inset-x-0 bottom-0 h-1/2 origin-bottom bg-acid"
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 0.55, ease, delay: 0.12 }}
+            variants={sectionLabelFill}
             aria-hidden="true"
           />
         ) : null}
         <span className="relative z-[1] overflow-hidden leading-none">
           <motion.span
             className="block"
-            initial={slide ? { y: "120%" } : false}
-            animate={{ y: "0%" }}
-            transition={{ duration: slide ? 0.65 : 0, ease, delay: slide ? 0.18 : 0 }}
+            variants={slide ? sectionLabelIndex : undefined}
           >
             {index}
           </motion.span>
@@ -100,9 +110,7 @@ function SectionLabel({ index, label, lively }: { index: string; label: string; 
           >
             <motion.span
               className="block"
-              initial={{ y: "120%" }}
-              animate={{ y: "0%" }}
-              transition={{ duration: 0.65, ease, delay: 0.18 }}
+              variants={sectionLabelIndex}
             >
               {index}
             </motion.span>
@@ -112,9 +120,7 @@ function SectionLabel({ index, label, lively }: { index: string; label: string; 
       <p className="m-0 overflow-hidden">
         <motion.span
           className="block"
-          initial={slide ? { y: "110%", opacity: 0 } : false}
-          animate={{ y: "0%", opacity: 1 }}
-          transition={{ duration: slide ? 0.6 : 0, ease, delay: slide ? 0.22 : 0 }}
+          variants={slide ? sectionLabelText : undefined}
         >
           {label}
         </motion.span>
@@ -123,12 +129,180 @@ function SectionLabel({ index, label, lively }: { index: string; label: string; 
   );
 }
 
+const capabilityLayers = [
+  dual("Lapisan layanan", "Service layer"),
+  dual("Jaringan sistem", "System network"),
+  dual("Lapisan data", "Data layer"),
+  dual("Lapisan delivery", "Delivery layer"),
+] as const;
+
+const capabilitySignals = [
+  ["REST API", "JWT", "SECURITY"],
+  ["GATEWAY", "AMQP", "EVENTS"],
+  ["SQL", "CACHE", "FLYWAY"],
+  ["REACT 19", "PAYMENTS", "REAL-TIME"],
+] as const;
+
+const workflowSupport = [
+  { name: "C", context: dual("Algoritma", "Algorithms") },
+  { name: "Postman", context: dual("Uji API", "API checks") },
+  { name: "Git Flow", context: dual("Alur cabang", "Branch flow") },
+] as const;
+
+const capabilityCardSpans = [
+  "lg:col-span-7",
+  "lg:col-span-5",
+  "lg:col-span-5",
+  "lg:col-span-7",
+] as const;
+
+function CapabilityCard({ item, index }: { item: (typeof capabilities)[number]; index: number }) {
+  const t = useT();
+  const signals = capabilitySignals[index] ?? [];
+
+  return (
+    <motion.article
+      variants={staggerChild}
+      initial="hidden"
+      whileInView="shown"
+      viewport={inViewport}
+      className={`group/cap relative isolate col-span-1 flex min-h-[310px] overflow-hidden bg-[#121512]/92 p-[clamp(20px,2vw,30px)] transition-[background-color,box-shadow] duration-250 hover:bg-[#171b17] hover:shadow-[inset_0_0_0_1px_rgba(216,255,62,0.48)] md:col-span-1 max-[680px]:min-h-[270px] max-[420px]:min-h-0 max-[360px]:p-4 ${capabilityCardSpans[index] ?? "lg:col-span-6"}`}
+    >
+      <span
+        className="pointer-events-none absolute inset-0 -z-[2] bg-[linear-gradient(rgba(240,239,232,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.035)_1px,transparent_1px)] bg-[size:44px_44px] opacity-0 transition-opacity duration-300 group-hover/cap:opacity-100"
+        aria-hidden="true"
+      />
+      <span
+        className="pointer-events-none absolute top-0 left-0 h-[2px] w-full origin-left scale-x-[0.16] bg-acid transition-transform duration-300 group-hover/cap:scale-x-100 motion-reduce:transition-none"
+        aria-hidden="true"
+      />
+      <span
+        className="font-display pointer-events-none absolute -right-[0.02em] -bottom-[0.18em] -z-[1] text-[clamp(132px,15vw,244px)] leading-none font-[780] tracking-[-0.09em] text-paper/[0.025] transition-colors duration-300 select-none group-hover/cap:text-acid/[0.055]"
+        aria-hidden="true"
+      >
+        {item.number}
+      </span>
+
+      <div className="relative flex w-full flex-col">
+        <div className="flex items-start justify-between gap-5 border-b border-paper/12 pb-5 max-[360px]:pb-4">
+          <p className="m-0 flex items-center gap-2.5 font-mono text-[11px] tracking-[0.15em] text-acid uppercase">
+            <span className="size-1.5 bg-acid shadow-[0_0_12px_rgba(216,255,62,0.65)]" aria-hidden="true" />
+            LAYER / {item.number}
+          </p>
+          <span className="flex shrink-0 items-center" aria-hidden="true">
+            {item.icons.map((icon, iconIndex) => (
+              <span
+                key={icon}
+                className={`grid size-11 place-items-center border border-paper/16 bg-ink text-paper/58 transition-[color,border-color] duration-250 group-hover/cap:border-acid/55 group-hover/cap:text-acid max-[360px]:size-9 ${iconIndex > 0 ? "-ml-px" : ""}`}
+              >
+                <TechIcon name={icon} className="size-[18px] max-[360px]:size-4" />
+              </span>
+            ))}
+          </span>
+        </div>
+
+        <div className="flex flex-1 flex-col justify-end pt-[clamp(34px,4vw,58px)] max-[360px]:pt-7">
+          <p className="mb-3 text-[11px] tracking-[0.14em] text-paper/48 uppercase">
+            {t(capabilityLayers[index] ?? capabilityLayers[0])}
+          </p>
+          <h3 className="font-display m-0 max-w-[18ch] text-[clamp(30px,3vw,46px)] leading-[0.92] font-[610] tracking-[-0.058em] max-[420px]:text-[27px] max-[360px]:tracking-[-0.04em]">
+            {t(item.title)}
+          </h3>
+          <p className="mt-4 mb-0 max-w-[54ch] text-[16px] leading-[1.58] text-[#b4b6ac] max-[360px]:mt-3">
+            {t(item.detail)}
+          </p>
+        </div>
+
+        <div className="mt-7 flex items-end justify-between gap-5 border-t border-paper/12 pt-4 max-[420px]:mt-6 max-[360px]:mt-5">
+          <ul
+            className="m-0 flex list-none flex-wrap gap-1.5 p-0"
+            aria-label={t(dual("Fokus kemampuan", "Capability focus"))}
+          >
+            {signals.map((signal) => (
+              <li
+                key={signal}
+                className="border border-paper/14 bg-ink/50 px-2 py-1.5 font-mono text-[10px] leading-none tracking-[0.11em] text-paper/58 transition-colors duration-250 group-hover/cap:border-acid/30 group-hover/cap:text-paper"
+              >
+                {signal}
+              </li>
+            ))}
+          </ul>
+          <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-paper/36" aria-hidden="true">
+            {String(index + 1).padStart(2, "0")} / {String(capabilities.length).padStart(2, "0")}
+          </span>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+function ToolchainGroup({ group, index }: { group: (typeof stackGroups)[number]; index: number }) {
+  const t = useT();
+  const headingId = `toolchain-group-${index + 1}`;
+
+  return (
+    <motion.article
+      className="group/tools relative flex min-w-0 flex-col bg-[#0c0f0d] transition-colors duration-250 hover:bg-[#101410]"
+      variants={staggerChild}
+      initial="hidden"
+      whileInView="shown"
+      viewport={inViewport}
+      aria-labelledby={headingId}
+    >
+      <span
+        className="absolute top-0 left-0 h-[2px] w-full origin-left scale-x-[0.14] bg-acid transition-transform duration-250 group-hover/tools:scale-x-100 motion-reduce:transition-none"
+        aria-hidden="true"
+      />
+      <div className="flex min-h-[92px] items-center justify-between gap-4 border-b border-paper/12 px-5 pt-2 max-[680px]:min-h-[78px] max-[680px]:px-4 max-[360px]:min-h-[70px] max-[360px]:px-3.5">
+        <div>
+          <p className="m-0 mb-2 font-mono text-[10px] tracking-[0.15em] text-paper/38 uppercase">
+            GROUP / {String(index + 1).padStart(2, "0")}
+          </p>
+          <h3 id={headingId} className="m-0 text-[13px] font-[590] tracking-[0.11em] text-paper uppercase">
+            {t(group.label)}
+          </h3>
+        </div>
+        <span className="grid size-10 shrink-0 place-items-center border border-acid/35 font-mono text-[11px] text-acid" aria-hidden="true">
+          {String(group.items.length).padStart(2, "0")}
+        </span>
+      </div>
+
+      <ul className="m-0 grid flex-1 list-none grid-cols-1 p-0 max-[560px]:grid-cols-2">
+        {group.items.map((item, itemIndex) => (
+          <li
+            key={item.name}
+            className="group/tool relative flex min-h-[66px] min-w-0 items-center gap-3 border-b border-paper/10 px-5 transition-colors duration-200 last:border-b-0 hover:bg-acid/[0.045] max-[680px]:px-4 max-[560px]:min-h-[62px] max-[560px]:odd:border-r max-[560px]:even:border-r-0 max-[560px]:[&:nth-last-child(-n+2)]:border-b-0 max-[360px]:gap-2 max-[360px]:px-3"
+          >
+            <span
+              className="absolute inset-y-0 left-0 w-[2px] origin-bottom scale-y-0 bg-acid transition-transform duration-200 group-hover/tool:scale-y-100 motion-reduce:transition-none"
+              aria-hidden="true"
+            />
+            <span className="grid size-9 shrink-0 place-items-center border border-paper/16 text-paper/58 transition-colors duration-200 group-hover/tool:border-acid/55 group-hover/tool:text-acid max-[360px]:size-8">
+              <TechIcon name={item.icon} className="size-4" />
+            </span>
+            <strong className="min-w-0 break-words text-[15px] leading-[1.25] font-[520] tracking-[-0.02em] [overflow-wrap:anywhere] max-[560px]:text-[14px]">
+              {item.name}
+            </strong>
+            <span className="ml-auto font-mono text-[9px] tracking-[0.12em] text-paper/24 transition-colors duration-200 group-hover/tool:text-acid max-[560px]:hidden" aria-hidden="true">
+              {String(index + 1)}.{String(itemIndex + 1)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </motion.article>
+  );
+}
+
 function ArchitecturePanel() {
   const t = useT();
   const rootRef = useRef<HTMLDivElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
   const { reduced, shown } = useLatchedInView(rootRef, inViewport);
+  const { reduced: copyReduced, shown: copyShown } = useLatchedInView(copyRef, inViewport);
   const enter = shown ? "shown" : "hidden";
   const initial = shown ? false : reduced ? "shown" : "hidden";
+  const copyEnter = copyShown ? "shown" : "hidden";
+  const copyInitial = copyShown ? false : copyReduced ? "shown" : "hidden";
 
   return (
     <>
@@ -187,10 +361,11 @@ function ArchitecturePanel() {
       </motion.header>
 
       <motion.div
+        ref={copyRef}
         className="system-copy relative z-[5] flex min-w-0 flex-col border border-paper/15 bg-ink-soft/65 p-[clamp(22px,2.35vw,32px)] min-[1001px]:h-full min-[1001px]:self-stretch max-[680px]:p-5 max-[360px]:p-4"
         variants={archParent}
-        initial={initial}
-        animate={enter}
+        initial={copyInitial}
+        animate={copyEnter}
       >
         <motion.p
           variants={archItem}
@@ -730,122 +905,160 @@ function Portfolio() {
         <UtilityProjects />
       </section>
 
-      <section className="capabilities relative overflow-hidden bg-ink px-[3vw] py-[clamp(100px,12vw,190px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5" id="stack" aria-labelledby="capabilities-title">
+      <section className="capabilities relative isolate overflow-hidden bg-ink px-[3vw] py-[clamp(96px,10vw,160px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5" id="stack" aria-labelledby="capabilities-title">
         <div
-          className="pointer-events-none absolute -top-[20%] right-[-8%] size-[min(640px,50vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.1),transparent_68%)]"
+          className="pointer-events-none absolute inset-0 -z-[3] bg-[linear-gradient(rgba(240,239,232,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.035)_1px,transparent_1px)] bg-[size:72px_72px]"
           aria-hidden="true"
         />
-        <motion.div className="relative mb-[clamp(56px,7vw,96px)] grid grid-cols-[1fr_2.4fr] items-end gap-[5vw] max-[1000px]:grid-cols-1 max-[360px]:mb-9" {...reveal}>
-          <SectionLabel index="04" label={t(copy.sectionStack)} />
-          <div className="max-[1000px]:mt-10 max-[360px]:mt-6">
-            <h2 id="capabilities-title" className="font-display mb-4 max-w-[18ch] text-[clamp(38px,5.2vw,76px)] leading-[0.94] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.6vw,54px)] max-[420px]:text-[clamp(30px,9.4vw,36px)]">
+        <div
+          className="pointer-events-none absolute -top-[20%] right-[-8%] -z-[2] size-[min(720px,54vw)] rounded-full bg-[radial-gradient(circle,rgba(216,255,62,0.12),rgba(216,255,62,0.025)_42%,transparent_70%)]"
+          aria-hidden="true"
+        />
+        <span
+          className="font-display pointer-events-none absolute -bottom-[0.24em] left-[1.4vw] -z-[2] text-[clamp(220px,31vw,520px)] leading-none font-[790] tracking-[-0.1em] text-paper/[0.018] select-none max-[1000px]:hidden"
+          aria-hidden="true"
+        >
+          04
+        </span>
+
+        <div className="relative mx-auto max-w-[1760px]">
+        <motion.div className="relative mb-[clamp(48px,6vw,78px)] grid grid-cols-[minmax(220px,0.82fr)_minmax(0,2.18fr)] items-stretch gap-[5vw] max-[1000px]:grid-cols-1 max-[1000px]:gap-8 max-[360px]:mb-8 max-[360px]:gap-6" {...reveal}>
+          <div className="flex min-h-[236px] flex-col justify-between max-[1000px]:min-h-0">
+            <SectionLabel index="04" label={t(copy.sectionStack)} />
+            <div className="max-w-[290px] border-l border-acid/45 pl-4 max-[1000px]:hidden">
+              <p className="m-0 font-mono text-[10px] tracking-[0.16em] text-paper/42 uppercase">SYSTEM / CAPABILITY</p>
+              <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-4 border-t border-paper/12 pt-4">
+                <strong className="font-display text-[64px] leading-[0.78] font-[620] tracking-[-0.08em] text-acid">04</strong>
+                <div className="pb-0.5 font-mono text-[10px] leading-[1.65] tracking-[0.12em] text-paper/52 uppercase">
+                  <span className="block">Layers / online</span>
+                  <span className="block text-paper/78">API <i className="mx-1.5 text-acid not-italic" aria-hidden="true">→</i> UI</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-y border-paper/12 py-3 font-mono text-[10px] tracking-[0.14em] uppercase max-[360px]:mb-4">
+              <span className="flex items-center gap-2.5 text-paper/48">
+                <i className="size-1.5 rounded-full bg-acid shadow-[0_0_12px_rgba(216,255,62,0.5)] not-italic" aria-hidden="true" />
+                {t(dual("Peta kemampuan aktif", "Active capability map"))}
+              </span>
+              <span className="text-acid">04 {t(dual("lapisan", "layers"))} / 08 nodes</span>
+            </div>
+            <h2 id="capabilities-title" className="font-display mb-5 max-w-[16ch] text-[clamp(44px,6.2vw,94px)] leading-[0.88] font-[560] tracking-[-0.076em] max-[680px]:text-[clamp(36px,11vw,58px)] max-[420px]:text-[clamp(30px,9.4vw,38px)] max-[360px]:leading-[0.94]">
               {t(copy.capabilitiesTitle)}
             </h2>
-            <p className="m-0 max-w-[46ch] text-[15px] leading-[1.55] text-[#a7a99f]">
-              {t(copy.capabilitiesBody)}
-            </p>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-8 max-[680px]:grid-cols-1 max-[680px]:gap-5">
+              <p className="m-0 max-w-[54ch] text-[16px] leading-[1.58] text-[#b4b6ac]">
+                {t(copy.capabilitiesBody)}
+              </p>
+              <dl className="m-0 flex shrink-0 border border-paper/12 bg-ink/60">
+                <div className="min-w-[92px] border-r border-paper/12 p-3 max-[360px]:min-w-0 max-[360px]:flex-1">
+                  <dt className="font-mono text-[9px] tracking-[0.13em] text-paper/38 uppercase">LAYERS</dt>
+                  <dd className="font-display m-0 mt-2 text-[24px] leading-none text-acid">04</dd>
+                </div>
+                <div className="min-w-[92px] p-3 max-[360px]:min-w-0 max-[360px]:flex-1">
+                  <dt className="font-mono text-[9px] tracking-[0.13em] text-paper/38 uppercase">FOCUS</dt>
+                  <dd className="font-display m-0 mt-2 text-[24px] leading-none text-paper">API/UI</dd>
+                </div>
+              </dl>
+            </div>
           </div>
         </motion.div>
-        <motion.div
-          className="relative grid grid-cols-2 gap-4 max-[720px]:grid-cols-1 max-[360px]:gap-3"
-          variants={staggerParent}
-          initial="hidden"
-          whileInView="shown"
-          viewport={inViewport}
-        >
-          {capabilities.map((item) => (
-            <motion.article
-              variants={staggerChild}
-              className="group/cap flex min-h-[240px] flex-col justify-between border border-paper/12 bg-ink-soft/80 p-6 transition-colors duration-200 hover:border-acid max-[680px]:min-h-[220px] max-[680px]:p-5 max-[420px]:min-h-0 max-[420px]:p-4 max-[360px]:gap-5 max-[360px]:p-3.5"
-              key={item.number}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <span className="font-mono text-[11px] tracking-[0.16em] text-acid">{item.number}</span>
-                <span className="flex gap-2" aria-hidden="true">
-                  {item.icons.map((icon) => (
-                    <span
-                      key={icon}
-                      className="grid size-11 place-items-center border border-paper/15 text-[#9ea090] transition-colors duration-200 group-hover/cap:border-acid/40 group-hover/cap:text-acid max-[360px]:size-9"
-                    >
-                      <TechIcon name={icon} className="size-[18px]" />
-                    </span>
-                  ))}
-                </span>
-              </div>
-              <div>
-                <h3 className="mt-10 mb-3 text-[clamp(26px,2.6vw,36px)] leading-[1.05] font-[590] tracking-[-0.05em] max-[420px]:mt-8 max-[420px]:text-[22px] max-[360px]:mt-5">
-                  {t(item.title)}
-                </h3>
-                <p className="m-0 max-w-[46ch] text-[15px] leading-[1.5] text-[#a7a99f]">{t(item.detail)}</p>
-              </div>
-            </motion.article>
-          ))}
-        </motion.div>
+
+        <div className="relative border border-paper/14 bg-paper/12 p-px shadow-[0_32px_100px_rgba(0,0,0,0.2)]">
+          <div className="flex min-h-11 items-center justify-between gap-4 border-b border-paper/12 bg-[#0d100e] px-4 font-mono text-[10px] tracking-[0.14em] uppercase max-[420px]:px-3">
+            <span className="flex items-center gap-2.5 text-paper/52">
+              <i className="h-px w-6 bg-acid not-italic" aria-hidden="true" />
+              Capability matrix
+            </span>
+            <span className="text-paper/32">SYS.CORE / 04</span>
+          </div>
+          <div className="grid grid-cols-1 gap-px bg-paper/12 md:grid-cols-2 lg:grid-cols-12">
+            {capabilities.map((item, index) => (
+              <CapabilityCard item={item} index={index} key={item.number} />
+            ))}
+          </div>
+        </div>
+        </div>
       </section>
 
       <section
-        className="toolchain relative overflow-hidden border-t border-paper/10 bg-surface px-[3vw] py-[clamp(96px,11vw,170px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5"
+        className="toolchain relative isolate overflow-hidden border-t border-paper/10 bg-surface px-[3vw] py-[clamp(92px,9.5vw,152px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5"
         id="tech"
         aria-labelledby="toolchain-title"
       >
         <div
-          className="pointer-events-none absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.04)_1px,transparent_1px)] bg-[size:72px_72px]"
+          className="pointer-events-none absolute inset-0 -z-[2] bg-[image:linear-gradient(rgba(240,239,232,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.04)_1px,transparent_1px)] bg-[size:72px_72px]"
           aria-hidden="true"
         />
-        <div className="relative">
-          <motion.div className="mb-[clamp(52px,6.5vw,88px)] grid grid-cols-[1fr_2.4fr] items-end gap-[5vw] max-[1000px]:grid-cols-1 max-[360px]:mb-9" {...reveal}>
-            <SectionLabel index="05" label={t(copy.sectionToolchain)} />
-            <div className="max-[1000px]:mt-10 max-[360px]:mt-6">
+        <div className="pointer-events-none absolute -top-28 left-[34%] -z-[1] h-[420px] w-[720px] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(216,255,62,0.075),transparent_68%)] blur-2xl" aria-hidden="true" />
+        <div className="relative mx-auto max-w-[1760px]">
+          <motion.div className="mb-[clamp(46px,5.5vw,72px)] grid grid-cols-[minmax(220px,0.82fr)_minmax(0,2.18fr)] items-stretch gap-[5vw] max-[1000px]:grid-cols-1 max-[1000px]:gap-8 max-[360px]:mb-8 max-[360px]:gap-6" {...reveal}>
+            <div className="flex min-h-[236px] flex-col justify-between max-[1000px]:min-h-0">
+              <SectionLabel index="05" label={t(copy.sectionToolchain)} />
+              <div className="max-w-[290px] border-l border-acid/45 pl-4 max-[1000px]:hidden">
+                <p className="m-0 font-mono text-[10px] tracking-[0.16em] text-paper/42 uppercase">DAILY / TOOL RACK</p>
+                <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-4 border-t border-paper/12 pt-4">
+                  <strong className="font-display text-[64px] leading-[0.78] font-[620] tracking-[-0.08em] text-acid">16</strong>
+                  <div className="pb-0.5 font-mono text-[10px] leading-[1.65] tracking-[0.12em] text-paper/52 uppercase">
+                    <span className="block">Daily tools</span>
+                    <span className="block text-paper/78">04 / groups</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-y border-paper/12 py-3 font-mono text-[10px] tracking-[0.14em] uppercase max-[360px]:mb-4">
+                <span className="flex items-center gap-2.5 text-paper/48">
+                  <i className="size-1.5 bg-acid not-italic" aria-hidden="true" />
+                  {t(dual("Perangkat produksi", "Production toolkit"))}
+                </span>
+                <span className="text-acid">DAILY SET / READY</span>
+              </div>
               <h2
                 id="toolchain-title"
-                className="font-display mb-4 max-w-[16ch] text-[clamp(38px,5.2vw,76px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.6vw,54px)] max-[420px]:text-[clamp(28px,8.8vw,34px)]"
+                className="font-display mb-5 max-w-[15ch] text-[clamp(44px,6.2vw,94px)] leading-[0.88] font-[560] tracking-[-0.076em] max-[680px]:text-[clamp(36px,11vw,58px)] max-[420px]:text-[clamp(30px,9.4vw,38px)] max-[360px]:leading-[0.94]"
               >
                 {t(copy.toolchainTitle)}
               </h2>
-              <p className="m-0 max-w-[52ch] text-[15px] leading-[1.55] text-[#a7a99f]">
+              <p className="m-0 max-w-[56ch] text-[16px] leading-[1.58] text-[#b4b6ac]">
                 {t(copy.toolchainBody)}
-              </p>
-              <p className="mt-3 mb-0 max-w-[52ch] text-[13px] leading-[1.5] text-[#8d8f85]">
-                {t(copy.toolchainNote)}
               </p>
             </div>
           </motion.div>
 
-          <motion.div
-            className="grid grid-cols-4 gap-4 max-[1000px]:grid-cols-2 max-[560px]:grid-cols-1 max-[360px]:gap-3"
-            variants={staggerParent}
-            initial="hidden"
-            whileInView="shown"
-            viewport={inViewport}
-          >
-            {stackGroups.map((group, index) => (
-              <motion.div
-                className="flex flex-col border border-paper/12 bg-ink p-5 max-[680px]:p-4 max-[360px]:p-3.5"
-                key={group.items[0].name}
-                variants={staggerChild}
-              >
-                <p className="mb-5 flex items-center justify-between gap-3 text-[11px] tracking-[0.12em] text-[#8d8f85] uppercase max-[360px]:mb-3">
-                  <span className="flex items-center gap-2.5">
-                    <i className="h-px w-5 shrink-0 bg-acid not-italic" aria-hidden="true" />
-                    {t(group.label)}
-                  </span>
-                  <span className="font-mono text-acid/80">{String(index + 1).padStart(2, "0")}</span>
-                </p>
-                <ul className="m-0 flex list-none flex-col gap-1.5 p-0 max-[360px]:grid max-[360px]:grid-cols-2 max-[360px]:gap-2">
-                  {group.items.map((item) => (
-                    <li key={item.name}>
-                      <span className="group/tech flex min-h-11 items-center gap-3 px-1 transition-colors duration-200 hover:text-acid max-[360px]:min-h-10 max-[360px]:gap-2 max-[360px]:px-0">
-                        <span className="grid size-11 shrink-0 place-items-center border border-paper/15 text-[#8a8c82] transition-colors duration-200 group-hover/tech:border-acid group-hover/tech:bg-acid group-hover/tech:text-ink max-[360px]:size-8">
-                          <TechIcon name={item.icon} className="size-[18px]" />
-                        </span>
-                        <span className="text-[15px] tracking-[-0.015em] max-[360px]:text-[13px]">{item.name}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="border border-paper/14 bg-paper/12 p-px shadow-[0_32px_100px_rgba(0,0,0,0.24)]">
+            <div className="flex min-h-12 items-center justify-between gap-4 border-b border-paper/12 bg-[#0d100e] px-4 font-mono text-[10px] tracking-[0.14em] uppercase max-[420px]:px-3">
+              <span className="flex items-center gap-2.5 text-paper/52">
+                <i className="h-px w-6 bg-acid not-italic" aria-hidden="true" />
+                Tool matrix / production
+              </span>
+              <span className="text-acid">16 units · online</span>
+            </div>
+            <div className="grid grid-cols-4 gap-px bg-paper/12 max-[1000px]:grid-cols-2 max-[560px]:grid-cols-1">
+              {stackGroups.map((group, index) => (
+                <ToolchainGroup group={group} index={index} key={group.items[0].name} />
+              ))}
+            </div>
+            <motion.div
+              {...reveal}
+              className="flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-paper/12 bg-[#0d100e] px-4 py-3.5 max-[420px]:px-3"
+              aria-label={t(copy.toolchainNote)}
+            >
+              <span className="shrink-0 font-mono text-[10px] tracking-[0.14em] text-acid uppercase">Workflow / support</span>
+              <ul className="m-0 flex min-w-0 flex-1 list-none flex-wrap gap-1.5 p-0">
+                {workflowSupport.map((tool) => (
+                  <li className="flex min-h-8 items-center border border-paper/14 bg-ink/55 px-2.5 text-[12px] leading-none text-paper/68" key={tool.name}>
+                    <strong className="font-[590] text-paper">{tool.name}</strong>
+                    <span className="mx-1.5 text-acid" aria-hidden="true">/</span>
+                    {t(tool.context)}
+                  </li>
+                ))}
+              </ul>
+              <span className="font-mono text-[9px] tracking-[0.12em] text-paper/30 uppercase max-[760px]:hidden" aria-hidden="true">EXT.03 / READY</span>
+            </motion.div>
+          </div>
         </div>
       </section>
 

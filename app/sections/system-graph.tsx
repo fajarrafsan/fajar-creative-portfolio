@@ -2,7 +2,7 @@
 
 import { useState, type CSSProperties } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { inViewport,
+import { graphViewport,
   graphBoxFrame,
   graphContentPhase,
   graphCore,
@@ -277,7 +277,7 @@ function ArchitectureGraph({
       variants={graphParent}
       initial="hidden"
       whileInView="shown"
-      viewport={inViewport}
+      viewport={graphViewport}
       className={`graph-frame relative isolate aspect-square overflow-hidden border border-paper/15 bg-ink-soft/85 max-[680px]:aspect-auto ${className ?? ""}`}
       aria-label={ariaLabel}
     >

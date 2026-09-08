@@ -117,8 +117,8 @@ export const copy = {
   sectionStack: dual("Inti stack", "Core stack"),
   capabilitiesTitle: dual("Dari endpoint pertama sampai layar.", "From the first endpoint to the screen."),
   capabilitiesBody: dual(
-    "Empat lapisan yang saya pakai membangun sistem: service, data, jaringan service, dan interface.",
-    "Four layers I use to build systems: services, data, the service network, and the interface.",
+    "Empat lapisan yang saya pakai membangun sistem: service, jaringan service, data, dan interface.",
+    "Four layers I use to build systems: services, the service network, data, and the interface.",
   ),
   sectionToolchain: dual("Perangkat kerja", "Toolchain"),
   toolchainTitle: dual("Alat yang saya pakai setiap hari.", "The tools I use every day."),

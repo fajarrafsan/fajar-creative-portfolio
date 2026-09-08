@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { CoverflowCarousel } from "@/components/ui/coverflow-carousel";
 import { certificateIssuer, certificates } from "@/app/content";
-import { inViewport, certCounter, certFrame, certParent, certItem } from "@/app/lib/motion";
+import { inViewport, certCounter, certFrame, LatchedReveal } from "@/app/lib/motion";
 import { dual, useT } from "@/app/lib/i18n";
 
 /**
@@ -41,11 +41,7 @@ export function CertificatesSection() {
   const current = certificates[active];
 
   return (
-    <motion.section
-      variants={certParent}
-      initial="hidden"
-      whileInView="shown"
-      viewport={inViewport}
+    <section
       className="certificates relative overflow-hidden border-t border-paper/12 bg-surface px-[3vw] py-[clamp(96px,11vw,170px)] text-paper max-[680px]:px-[18px] max-[420px]:px-3.5"
       id="certificates"
       aria-labelledby="certificates-title"
@@ -60,23 +56,22 @@ export function CertificatesSection() {
       />
 
       <div className="relative">
-        <div className="mb-[clamp(40px,5vw,64px)] grid grid-cols-[1fr_3.15fr] gap-[5vw] max-[1000px]:grid-cols-1">
-          <motion.div variants={certItem}>
+        <LatchedReveal className="mb-[clamp(40px,5vw,64px)] grid grid-cols-[1fr_3.15fr] gap-[5vw] max-[1000px]:grid-cols-1">
+          <div>
             <div className="flex items-center gap-5 text-[11px] tracking-[0.1em] uppercase">
               <span className="grid size-[38px] shrink-0 place-items-center rounded-full border border-current">08</span>
               <p className="m-0">{t(dual("Sertifikat", "Certificates"))}</p>
             </div>
-          </motion.div>
+          </div>
 
           <div className="max-[1000px]:mt-[52px] max-[360px]:mt-7">
-            <motion.h2
-              variants={certItem}
+            <h2
               id="certificates-title"
               className="font-display mb-5 max-w-[900px] text-[clamp(38px,5.2vw,76px)] leading-[0.95] font-[540] tracking-[-0.068em] max-[680px]:text-[clamp(34px,10.6vw,54px)] max-[360px]:mb-4 max-[360px]:text-[clamp(28px,9vw,32px)]"
             >
               {t(dual("Sepuluh sertifikat, satu jalur belajar.", "Ten certificates, one learning path."))}
-            </motion.h2>
-            <motion.p variants={certItem} className="m-0 max-w-[590px] text-[16px] leading-[1.62] text-[#a7a99f] max-[360px]:text-[15px] max-[360px]:leading-[1.55]">
+            </h2>
+            <p className="m-0 max-w-[590px] text-[16px] leading-[1.62] text-[#a7a99f] max-[360px]:text-[15px] max-[360px]:leading-[1.55]">
               {t(
                 dual(
                   "Dari algoritma dan struktur data sampai back-end Java dan front-end React — semuanya dari ",
@@ -93,13 +88,13 @@ export function CertificatesSection() {
                 ),
               )}
               <span className="text-acid">{t(dual("instruktur", "instructor"))}</span>.
-            </motion.p>
+            </p>
           </div>
-        </div>
+        </LatchedReveal>
 
         {/* Live counter — reads as an index, and gives the carousel a heading
             that changes with it for anyone not watching the cards. */}
-        <motion.div variants={certItem} className="mb-3 flex items-end justify-between gap-4">
+        <LatchedReveal className="mb-3 flex items-end justify-between gap-4">
           <p className="m-0 flex items-center gap-3 text-[12px] tracking-[0.12em] text-[#a7a99f] uppercase max-[520px]:max-w-[210px] max-[520px]:leading-[1.5]">
             <span className="h-px w-8 shrink-0 bg-acid" aria-hidden="true" />
             {t(dual("Geser, seret, atau pakai tombol panah", "Swipe, drag, or use the arrow buttons"))}
@@ -110,10 +105,13 @@ export function CertificatesSection() {
             </motion.span>
             <span className="ml-1 text-[11px] tracking-[0.12em] text-paper/35">/ {String(certificates.length).padStart(2, "0")}</span>
           </p>
-        </motion.div>
+        </LatchedReveal>
 
         <motion.div
           variants={certFrame}
+          initial="hidden"
+          whileInView="shown"
+          viewport={inViewport}
           className="relative overflow-hidden border border-paper/12 bg-ink/55 px-[clamp(8px,1.7vw,24px)] pt-4 pb-[clamp(18px,2.4vw,32px)] shadow-[0_36px_120px_rgba(0,0,0,0.28)] max-[360px]:pt-3 max-[360px]:pb-4"
         >
           <span className="absolute top-0 left-0 h-px w-[28%] bg-acid" aria-hidden="true" />
@@ -147,10 +145,10 @@ export function CertificatesSection() {
           />
         </motion.div>
 
-        <motion.p variants={certItem} className="sr-only" aria-live="polite">
+        <p className="sr-only" aria-live="polite">
           {current ? t(dual(`Menampilkan ${t(current.title)}, ${t(current.date)}`, `Showing ${t(current.title)}, ${t(current.date)}`)) : ""}
-        </motion.p>
+        </p>
       </div>
-    </motion.section>
+    </section>
   );
 }

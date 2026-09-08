@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { bootcamp, certificates, copy, education } from "@/app/content";
 import { dual, useT } from "@/app/lib/i18n";
-import { inViewport, ease, staggerChild, staggerParent } from "@/app/lib/motion";
+import { ease, reveal } from "@/app/lib/motion";
 import { ArrowOut } from "@/app/components/tech-icons";
 
 /**
@@ -20,22 +20,18 @@ export function EducationSection() {
   const t = useT();
 
   return (
-    <motion.section
-      variants={staggerParent}
-      initial="hidden"
-      whileInView="shown"
-      viewport={inViewport}
+    <section
       className="education relative overflow-hidden bg-paper px-[3vw] py-[clamp(96px,11vw,170px)] text-ink max-[680px]:px-[18px] max-[420px]:px-3.5"
       id="education"
       aria-labelledby="education-title"
     >
-      <motion.div variants={staggerChild} className="flex items-center gap-5 text-[11px] tracking-[0.1em] uppercase">
+      <motion.div {...reveal} className="flex items-center gap-5 text-[11px] tracking-[0.1em] uppercase">
         <span className="grid size-[38px] shrink-0 place-items-center rounded-full border border-current">07</span>
         <p className="m-0">{t(copy.sectionEducation)}</p>
       </motion.div>
 
       <motion.div
-        variants={staggerChild}
+        {...reveal}
         className="mt-[clamp(56px,7vw,104px)] mb-[clamp(56px,6vw,88px)] grid grid-cols-[0.8fr_2fr] items-end gap-[5vw] max-[1000px]:grid-cols-1 max-[1000px]:gap-8 max-[360px]:mt-8 max-[360px]:mb-10 max-[360px]:gap-5"
       >
         <p className="m-0 text-[15px] leading-[1.5] text-[#4c4d46]">
@@ -60,7 +56,7 @@ export function EducationSection() {
 
       <div className="grid grid-cols-[1.15fr_1fr] gap-[clamp(28px,3.5vw,56px)] max-[1000px]:grid-cols-1 max-[360px]:gap-5">
         {/* The degree itself, with the mark given the weight it earns. */}
-        <motion.article variants={staggerChild} className="border-2 border-ink bg-paper-deep p-[clamp(24px,2.6vw,40px)] max-[360px]:p-4">
+        <motion.article {...reveal} className="border-2 border-ink bg-paper-deep p-[clamp(24px,2.6vw,40px)] max-[360px]:p-4">
           <p className="m-0 text-[11px] tracking-[0.14em] text-[#6f7068] uppercase">{education.period}</p>
           <h3 className="font-display mt-3 mb-1 text-[clamp(28px,3.2vw,46px)] leading-[0.95] font-[620] tracking-[-0.05em] max-[360px]:text-[24px]">
             {t(education.program)}
@@ -92,7 +88,7 @@ export function EducationSection() {
 
         {/* The bootcamp, given the same weight as the degree — the scholarship
             paid for both, and this is the half that did the career switch. */}
-        <motion.article variants={staggerChild} className="flex flex-col border-2 border-ink p-[clamp(24px,2.6vw,40px)] max-[360px]:p-4">
+        <motion.article {...reveal} className="flex flex-col border-2 border-ink p-[clamp(24px,2.6vw,40px)] max-[360px]:p-4">
           <p className="m-0 text-[11px] tracking-[0.14em] text-[#6f7068] uppercase">
             {bootcamp.period} · {certificates.length} {t(dual("sertifikat", "certificates"))}
           </p>
@@ -127,11 +123,11 @@ export function EducationSection() {
       </div>
 
       <div className="mt-[clamp(28px,3vw,44px)] grid grid-cols-[1.15fr_1fr] gap-[clamp(28px,3.5vw,56px)] max-[1000px]:grid-cols-1 max-[360px]:mt-6 max-[360px]:gap-5">
-        <motion.p variants={staggerChild} className="m-0 text-[15px] leading-[1.6] text-[#3a3b36]">
+        <motion.p {...reveal} className="m-0 text-[15px] leading-[1.6] text-[#3a3b36]">
           {t(education.note)}
         </motion.p>
 
-        <motion.dl variants={staggerChild} className="m-0 grid grid-cols-2 gap-px bg-ink/15 max-[300px]:grid-cols-1">
+        <motion.dl {...reveal} className="m-0 grid grid-cols-2 gap-px bg-ink/15 max-[300px]:grid-cols-1">
           {education.facts.map((fact) => (
             <div className="bg-paper p-[clamp(16px,1.8vw,24px)] max-[360px]:p-3.5" key={t(fact.label)}>
               <dt className="text-[11px] tracking-[0.12em] text-[#6f7068] uppercase">{t(fact.label)}</dt>
@@ -146,7 +142,7 @@ export function EducationSection() {
 
       {/* Hands the reader to section 08, which is what the bootcamp produced. */}
       <motion.a
-        variants={staggerChild}
+        {...reveal}
         href="#certificates"
         data-cursor
         className="group/bridge mt-[clamp(34px,4vw,60px)] flex items-center justify-between gap-6 border-t border-ink py-[clamp(20px,2.2vw,30px)] transition-colors duration-250 hover:text-[#4c4d46] max-[680px]:flex-col max-[680px]:items-start max-[680px]:gap-4 max-[360px]:mt-6 max-[360px]:gap-3 max-[360px]:py-4"
@@ -164,6 +160,6 @@ export function EducationSection() {
           </motion.span>
         </span>
       </motion.a>
-    </motion.section>
+    </section>
   );
 }

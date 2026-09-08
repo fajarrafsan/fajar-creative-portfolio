@@ -275,7 +275,9 @@ export function ProfilePortrait() {
 export function ProfileCopy() {
   const t = useT();
   const rootRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
   const { reduced, shown } = useLatchedInView(rootRef, inViewport);
+  const { shown: statsShown } = useLatchedInView(statsRef, inViewport);
 
   return (
     <motion.div
@@ -389,9 +391,12 @@ export function ProfileCopy() {
       </motion.div>
 
       <motion.div
+        ref={statsRef}
         className="profile-stats mt-10 grid min-h-[120px] grid-cols-4 border-t-2 border-ink pt-5 min-[1001px]:mt-auto min-[1001px]:min-h-[152px] max-[680px]:mt-10 max-[680px]:grid-cols-2 max-[680px]:min-h-0 max-[360px]:mt-8 max-[360px]:pt-4"
         data-profile="foot"
         variants={profileStatParent}
+        initial={statsShown || reduced ? false : "hidden"}
+        animate={statsShown ? "shown" : "hidden"}
       >
         {profileStats.map((stat) => (
           <ProfileStat key={stat.value} value={stat.value} label={t(stat.label)} reduced={reduced} />
