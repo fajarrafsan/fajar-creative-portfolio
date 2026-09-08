@@ -6,50 +6,54 @@ import struct
 import zlib
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1] / "public"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+ROOT = PROJECT_ROOT / "public"
 ACID = (216, 255, 62, 255)
 INK = (11, 13, 12, 255)
+
+# The clipped-corner tile mirrors the technical corner marks used throughout
+# the portfolio. At favicon size it gives the mark a stronger silhouette than
+# a generic full square, while keeping almost the whole canvas available.
+BADGE = [(0.0, 0.0), (27.0, 0.0), (32.0, 5.0), (32.0, 32.0), (5.0, 32.0), (0.0, 27.0)]
 
 # Matching public/favicon.svg, 32-unit design space, even-odd fill.
 PATHS = [
     # F
     [
-        (3.6, 6.4),
-        (14.7, 6.4),
-        (14.7, 10.0),
-        (7.4, 10.0),
-        (7.4, 13.3),
-        (13.5, 13.3),
-        (13.5, 16.8),
-        (7.4, 16.8),
-        (7.4, 25.6),
-        (3.6, 25.6),
+        (2.5, 2.5),
+        (14.5, 2.5),
+        (14.5, 7.1),
+        (7.0, 7.1),
+        (7.0, 12.5),
+        (13.0, 12.5),
+        (13.0, 17.1),
+        (7.0, 17.1),
+        (7.0, 29.5),
+        (2.5, 29.5),
     ],
     # slash
-    [(15.4, 25.6), (18.3, 6.4), (20.8, 6.4), (17.9, 25.6)],
+    [(14.2, 29.5), (18.4, 2.5), (21.0, 2.5), (16.8, 29.5)],
     # R outer
     [
-        (21.5, 6.4),
-        (27.7, 6.4),
-        (29.6, 6.8),
-        (31.3, 8.6),
-        (31.3, 11.4),
-        (29.85, 13.15),
-        (31.2, 25.6),
-        (27.85, 25.6),
-        (24.9, 17.55),
-        (23.5, 17.55),
-        (23.5, 25.6),
-        (21.5, 25.6),
+        (20.2, 2.5),
+        (26.7, 2.5),
+        (29.7, 5.3),
+        (29.7, 13.3),
+        (27.5, 15.8),
+        (29.8, 29.5),
+        (25.7, 29.5),
+        (24.1, 19.0),
+        (24.1, 29.5),
+        (20.2, 29.5),
     ],
     # R counter (even-odd hole)
     [
-        (24.3, 9.85),
-        (26.75, 9.85),
-        (27.45, 10.15),
-        (27.45, 12.85),
-        (26.75, 13.4),
-        (24.3, 13.4),
+        (24.1, 7.0),
+        (26.0, 7.0),
+        (26.7, 7.7),
+        (26.7, 11.7),
+        (26.0, 12.5),
+        (24.1, 12.5),
     ],
 ]
 
@@ -68,6 +72,9 @@ def even_odd(x: float, y: float, poly: list[tuple[float, float]]) -> bool:
 
 
 def sample(u: float, v: float) -> tuple[int, int, int, int]:
+    if not even_odd(u, v, BADGE):
+        return INK
+
     hits = 0
     for poly in PATHS:
         if even_odd(u, v, poly):
@@ -108,24 +115,33 @@ def png_bytes(size: int, samples: int = 4) -> bytes:
     )
 
 
-def ico_from_png(png: bytes, size: int) -> bytes:
-    entry = struct.pack(
-        "<BBBBHHII",
-        size if size < 256 else 0,
-        size if size < 256 else 0,
-        0,
-        0,
-        1,
-        32,
-        len(png),
-        22,
-    )
-    return struct.pack("<HHH", 0, 1, 1) + entry + png
+def ico_from_pngs(images: list[tuple[int, bytes]]) -> bytes:
+    offset = 6 + 16 * len(images)
+    entries: list[bytes] = []
+    payloads: list[bytes] = []
+    for size, png in images:
+        entries.append(
+            struct.pack(
+                "<BBBBHHII",
+                size if size < 256 else 0,
+                size if size < 256 else 0,
+                0,
+                0,
+                1,
+                32,
+                len(png),
+                offset,
+            )
+        )
+        payloads.append(png)
+        offset += len(png)
+    return struct.pack("<HHH", 0, 1, len(images)) + b"".join(entries) + b"".join(payloads)
 
 
 def main() -> None:
     ROOT.mkdir(parents=True, exist_ok=True)
     assets = {
+        "favicon-16.png": 16,
         "favicon-32.png": 32,
         "favicon-48.png": 48,
         "apple-touch-icon.png": 180,
@@ -136,9 +152,16 @@ def main() -> None:
         (ROOT / name).write_bytes(png_bytes(size, samples=5 if size <= 48 else 3))
         print(f"wrote {name}")
 
-    png32 = (ROOT / "favicon-32.png").read_bytes()
-    (ROOT / "favicon.ico").write_bytes(ico_from_png(png32, 32))
+    ico = ico_from_pngs(
+        [
+            (16, (ROOT / "favicon-16.png").read_bytes()),
+            (32, (ROOT / "favicon-32.png").read_bytes()),
+            (48, (ROOT / "favicon-48.png").read_bytes()),
+        ]
+    )
+    (ROOT / "favicon.ico").write_bytes(ico)
     print("wrote favicon.ico")
+
 
 
 if __name__ == "__main__":
