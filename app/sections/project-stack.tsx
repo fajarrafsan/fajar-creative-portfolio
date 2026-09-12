@@ -6,7 +6,7 @@ import { artThemes, copy, projects, utilityProjects, type Project, type UtilityP
 import anistreamCover from "@/app/covers/anistream.webp";
 import arunikaCover from "@/app/covers/arunika.webp";
 import glowmarketCover from "@/app/covers/glowmarket.webp";
-import goldPriceCover from "@/app/covers/gold-price.webp";
+import aurumkalaCover from "@/app/covers/aurumkala.webp";
 import roomlyCover from "@/app/covers/roomly.webp";
 import siaCover from "@/app/covers/sia.webp";
 import shopifyCCover from "@/app/covers/shopify-c.webp";
@@ -14,7 +14,7 @@ import tiketKilatCover from "@/app/covers/tiket-kilat.webp";
 import anistreamSm from "@/app/covers/anistream-sm.webp";
 import arunikaSm from "@/app/covers/arunika-sm.webp";
 import glowmarketSm from "@/app/covers/glowmarket-sm.webp";
-import goldPriceSm from "@/app/covers/gold-price-sm.webp";
+import aurumkalaSm from "@/app/covers/aurumkala-sm.webp";
 import roomlySm from "@/app/covers/roomly-sm.webp";
 import shopifyCSm from "@/app/covers/shopify-c-sm.webp";
 import siaSm from "@/app/covers/sia-sm.webp";
@@ -32,7 +32,7 @@ const bundledCovers: Record<string, string> = {
   anistream: bundledSrc(anistreamCover),
   arunika: bundledSrc(arunikaCover),
   glowmarket: bundledSrc(glowmarketCover),
-  goldprice: bundledSrc(goldPriceCover),
+  aurumkala: bundledSrc(aurumkalaCover),
   roomly: bundledSrc(roomlyCover),
   sia: bundledSrc(siaCover),
   shopifyc: bundledSrc(shopifyCCover),
@@ -51,7 +51,7 @@ const smallCovers: Record<string, string> = {
   anistream: bundledSrc(anistreamSm),
   arunika: bundledSrc(arunikaSm),
   glowmarket: bundledSrc(glowmarketSm),
-  goldprice: bundledSrc(goldPriceSm),
+  aurumkala: bundledSrc(aurumkalaSm),
   roomly: bundledSrc(roomlySm),
   shopifyc: bundledSrc(shopifyCSm),
   sia: bundledSrc(siaSm),
@@ -270,8 +270,8 @@ function ProjectCard({
                       ? "absolute inset-0 bg-linear-to-t from-[#12233a]/28 via-transparent to-[#12233a]/10"
                       : project.variant === "arunika"
                         ? "absolute inset-0 bg-linear-to-t from-[#1a110c]/32 via-transparent to-[#1a110c]/12"
-                        : project.variant === "goldprice"
-                          ? "absolute inset-0 bg-linear-to-t from-[#1c1810]/28 via-transparent to-[#1c1810]/10"
+                        : project.variant === "aurumkala"
+                          ? "absolute inset-0 bg-linear-to-t from-[#071426]/30 via-transparent to-[#071426]/10"
                           : "absolute inset-0 bg-linear-to-t from-ink/42 via-ink/8 to-ink/14"
                 }
               />
@@ -768,10 +768,13 @@ export function ProjectStack() {
 function UtilityProjectCard({ project }: { project: UtilityProject }) {
   const translate = useT();
   const cover = bundledCovers[project.variant] ?? project.cover;
+  const smallCover = smallCovers[project.variant] ?? cover;
+  const responsiveCover = smallCover !== cover ? `${smallCover} 700w, ${cover} 1600w` : undefined;
+  const aurumkala = project.variant === "aurumkala";
 
   return (
     <motion.article
-      className="utility-card group/art relative z-[1] grid min-w-0 overflow-hidden border-2 border-ink bg-paper md:grid-cols-[minmax(220px,0.38fr)_minmax(0,1fr)]"
+      className="utility-card group/art relative z-[1] grid min-w-0 overflow-hidden border-2 border-ink bg-paper md:grid-cols-[minmax(300px,0.72fr)_minmax(0,1fr)]"
       {...reveal}
     >
       <div
@@ -781,19 +784,27 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
         {cover ? (
           <>
             <img
-              src={cover} loading="lazy"
+              src={cover}
+              srcSet={responsiveCover}
+              sizes="(max-width: 767px) 100vw, 42vw"
+              loading="lazy"
+              decoding="async"
               alt=""
               draggable={false}
-              className="pointer-events-none absolute inset-0 size-full scale-110 object-cover object-center opacity-45 blur-xl"
+              className="pointer-events-none absolute inset-0 size-full scale-110 object-cover object-center opacity-50 blur-2xl"
             />
-            <span className="absolute inset-0 bg-[#f4f1e8]/62" />
+            <span className={`absolute inset-0 ${aurumkala ? "bg-[#071426]/58" : "bg-[#f4f1e8]/62"}`} />
             <img
-              src={cover} loading="lazy"
+              src={cover}
+              srcSet={responsiveCover}
+              sizes="(max-width: 767px) 100vw, 42vw"
+              loading="lazy"
+              decoding="async"
               alt=""
               draggable={false}
-              className="pointer-events-none absolute inset-0 size-full object-contain object-center p-[2.5%] drop-shadow-[0_8px_22px_rgba(28,24,16,0.2)]"
+              className="pointer-events-none absolute inset-0 size-full object-contain object-center p-[2.5%] drop-shadow-[0_12px_30px_rgba(2,8,20,0.42)] transition-transform duration-700 ease-out group-hover/art:scale-[1.015] motion-reduce:transform-none"
             />
-            <span className="absolute inset-0 bg-linear-to-t from-[#1c1810]/30 via-transparent to-[#1c1810]/8" />
+            <span className={`absolute inset-0 bg-linear-to-t ${aurumkala ? "from-[#071426]/36 via-transparent to-[#f59e0b]/6" : "from-[#1c1810]/30 via-transparent to-[#1c1810]/8"}`} />
           </>
         ) : null}
         <span className="pointer-events-none absolute inset-[2.5%_2%] z-[5] border border-current/20" />

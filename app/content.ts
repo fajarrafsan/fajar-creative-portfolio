@@ -130,7 +130,7 @@ export const copy = {
     "Di luar daftar harian: C dari pelatihan algoritma, Postman untuk uji API, dan Git Flow untuk alur cabang.",
     "Outside the daily set: C from algorithm training, Postman for API checks, and Git Flow for branch workflow.",
   ),
-  utilityEyebrow: dual("Utilitas", "Utility"),
+  utilityEyebrow: dual("Sistem independen", "Independent system"),
   workIndexLabel: dual("Proyek lainnya", "More projects"),
   workIndexHint: dual("Buka detail", "Open details"),
   sectionExperience: dual("Pengalaman", "Experience"),
@@ -467,32 +467,44 @@ export const projects = [
 ];
 
 /**
- * Smaller public utilities. Kept off `projects` so the flagship stack, the
+ * Independent public systems. Kept off `projects` so the flagship stack, the
  * "05 systems" stat, and "Tiga SPA" copy stay accurate.
  */
 export const utilityProjects = [
   {
     number: "08",
-    title: "Gold-Price-Manager",
-    type: dual("Utilitas harga emas · Express", "Gold-price utility · Express"),
-    year: "2025",
-    note: dual(
-      "Utilitas harga emas: input 24K, rasio 22K/18K otomatis, dan riwayat perubahan. UI HTML + Tailwind, API Express di memori — bukan platform commerce.",
-      "A gold-price utility: 24K input, automatic 22K/18K ratios, and a change log. HTML + Tailwind UI with an in-memory Express API — not a commerce platform.",
+    title: "AURUMKALA",
+    type: dual(
+      "Monitor harga emas resmi · Spring Boot",
+      "Official gold-price monitor · Spring Boot",
     ),
-    stack: ["HTML5", "JavaScript", "Express", "Tailwind", "Node.js"],
-    metrics: [
-      ["Pattern", dual("Utilitas", "Utility")],
-      ["Karat", "24K · 22K · 18K"],
-      ["Deploy", "GitHub Pages"],
+    year: "2026",
+    note: dual(
+      "API dan dashboard admin untuk memantau harga resmi Antam dan UBS per pecahan, menyimpan snapshot historis, serta tetap menyajikan data terakhir yang terverifikasi saat sumber terganggu.",
+      "An API and admin dashboard that tracks official Antam and UBS prices by denomination, stores historical snapshots, and serves the last verified data whenever a source is unavailable.",
+    ),
+    stack: [
+      "Java 21",
+      "Spring Boot 3.5",
+      "Spring Security",
+      "JPA",
+      "PostgreSQL",
+      "Thymeleaf",
+      "Jsoup",
+      "OpenAPI",
     ],
-    variant: "goldprice",
-    mark: "GPM",
-    cover: "/projects/gold-price.webp",
+    metrics: [
+      [dual("Sumber", "Sources"), "ANTAM · UBS"],
+      [dual("Sinkron", "Sync"), dual("3× / hari", "3× / day")],
+      [dual("Ketahanan", "Resilience"), "Cache · Fallback"],
+    ],
+    variant: "aurumkala",
+    mark: "AK",
+    cover: "/projects/aurumkala.webp",
     coverPosition: "50% 50%",
-    demo: "https://fajarrafsan.github.io/Gold-Price-Manager/",
+    demo: null,
     links: [
-      ["Repository", "https://github.com/fajarrafsan/Gold-Price-Manager"],
+      ["Repository", "https://github.com/fajarrafsan/AURUMKALA"],
     ],
   },
 ];
@@ -1187,7 +1199,7 @@ export const artThemes: Record<string, string> = {
   roomly: "bg-[#174846] text-acid",
   glowmarket: "bg-[#f4eee4] text-[#27180d]",
   sia: "bg-[#12233a] text-[#7fb2ff]",
-  goldprice: "bg-[#1c1810] text-[#e4c56a]",
+  aurumkala: "bg-[#071426] text-[#fbbf24]",
   tiketkilat: "bg-[#e8f2fb] text-[#0b63d6]",
   shopifyc: "bg-[#f8f3f8] text-[#aa0ea2]",
 };
