@@ -58,6 +58,17 @@ const smallCovers: Record<string, string> = {
   tiketkilat: bundledSrc(tiketKilatSm),
 };
 
+const coverWidths: Record<string, number> = {
+  anistream: 1600,
+  arunika: 1600,
+  glowmarket: 1600,
+  aurumkala: 1600,
+  roomly: 1600,
+  shopifyc: 1800,
+  sia: 1600,
+  tiketkilat: 1440,
+};
+
 // Dashboard screenshots carry useful information all the way to their edges.
 // Keep those frames intact and let an ambient duplicate fill any spare space.
 //
@@ -152,9 +163,15 @@ function ProjectCard({
   const translate = useT();
   const reduced = Boolean(useReducedMotion());
   const cover = bundledCovers[project.variant] ?? project.cover;
+  const smallCover = smallCovers[project.variant] ?? cover;
+  const coverWidth = coverWidths[project.variant] ?? 1600;
+  const responsiveCover = cover && smallCover !== cover ? `${smallCover} 700w, ${cover} ${coverWidth}w` : undefined;
   const showFullFrame = fullFrameCovers.has(project.variant);
   const projectHref = project.demo ?? project.links.at(0)?.[1];
   const destinationLabel = project.demo ? translate(copy.projectLiveStatus) : translate(copy.projectSourceStatus);
+  const artSize = stacked
+    ? "h-full min-h-0"
+    : "h-[min(56vw,770px)] min-h-[520px] max-md:h-[clamp(220px,72vw,310px)] max-md:min-h-0 max-[361px]:h-[clamp(188px,64vw,216px)]";
 
   return (
     <motion.article
@@ -195,9 +212,11 @@ function ProjectCard({
       {/* The artwork used to be taller than wide on a phone (108vw). With the
           description no longer clamped there, that pushed each card past 1.2
           screens — one card could never be seen whole. A landscape crop reads
-          the cover just as well and hands the height back to the words. */}
+          the cover just as well and hands the height back to the words. Flow
+          cards keep an explicit height at every breakpoint; `h-full` is only
+          valid when the pinned deck gives the parent a definite height. */}
       <a
-        className={`project-art relative block h-[min(56vw,770px)] min-h-[520px] touch-manipulation overflow-hidden md:h-full md:min-h-0 max-[767px]:h-[clamp(220px,72vw,310px)] max-[767px]:min-h-0 max-[360px]:h-[clamp(188px,64vw,216px)] focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-acid ${artThemes[project.variant]}`}
+        className={`project-art relative block touch-manipulation overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-acid ${artSize} ${artThemes[project.variant]}`}
         href={projectHref}
         target={projectHref ? "_blank" : undefined}
         rel={projectHref ? "noreferrer" : undefined}
@@ -221,41 +240,71 @@ function ProjectCard({
               {showFullFrame ? (
                 <>
                   <img
-                    src={cover} loading="lazy"
+                    src={cover}
+                    srcSet={responsiveCover}
+                    sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 64px), 94vw"
+                    loading="lazy"
+                    decoding="async"
                     alt=""
                     draggable={false}
                     className="pointer-events-none absolute inset-0 size-full scale-110 object-cover opacity-45 blur-2xl"
                     style={{ objectPosition: project.coverPosition ?? "50% 50%" }}
                   />
                   <span className={`absolute inset-0 ${fullFrameTints[project.variant] ?? "bg-ink/55"}`} />
-                  <div className="absolute inset-[5%_2.5%] grid grid-cols-[minmax(0,0.65fr)_minmax(0,1.5fr)_minmax(0,0.65fr)] gap-[clamp(6px,1vw,14px)] max-md:grid-cols-1">
-                    <span className="relative overflow-hidden border border-current/20 bg-ink/20 max-md:hidden">
-                      <img
-                        src={cover} loading="lazy"
-                        alt=""
-                        draggable={false}
-                        className="pointer-events-none absolute inset-0 size-full object-cover object-left opacity-85"
-                      />
-                    </span>
+                  <div
+                    className={`absolute inset-[5%_2.5%] grid gap-[clamp(6px,1vw,14px)] ${
+                      stacked
+                        ? "grid-cols-[minmax(0,0.65fr)_minmax(0,1.5fr)_minmax(0,0.65fr)]"
+                        : "grid-cols-1"
+                    }`}
+                  >
+                    {stacked ? (
+                      <span className="relative overflow-hidden border border-current/20 bg-ink/20">
+                        <img
+                          src={cover}
+                          srcSet={responsiveCover}
+                          sizes="30vw"
+                          loading="lazy"
+                          decoding="async"
+                          alt=""
+                          draggable={false}
+                          className="pointer-events-none absolute inset-0 size-full object-cover object-left opacity-85"
+                        />
+                      </span>
+                    ) : null}
                     <img
-                      src={cover} loading="lazy"
+                      src={cover}
+                      srcSet={responsiveCover}
+                      sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) calc(100vw - 80px), 50vw"
+                      loading="lazy"
+                      decoding="async"
                       alt=""
                       draggable={false}
                       className="pointer-events-none relative size-full object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.38)]"
                     />
-                    <span className="relative overflow-hidden border border-current/20 bg-ink/20 max-md:hidden">
-                      <img
-                        src={cover} loading="lazy"
-                        alt=""
-                        draggable={false}
-                        className="pointer-events-none absolute inset-0 size-full object-cover object-right opacity-85"
-                      />
-                    </span>
+                    {stacked ? (
+                      <span className="relative overflow-hidden border border-current/20 bg-ink/20">
+                        <img
+                          src={cover}
+                          srcSet={responsiveCover}
+                          sizes="30vw"
+                          loading="lazy"
+                          decoding="async"
+                          alt=""
+                          draggable={false}
+                          className="pointer-events-none absolute inset-0 size-full object-cover object-right opacity-85"
+                        />
+                      </span>
+                    ) : null}
                   </div>
                 </>
               ) : (
                 <img
-                  src={cover} loading="lazy"
+                  src={cover}
+                  srcSet={responsiveCover}
+                  sizes="(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 64px), 94vw"
+                  loading="lazy"
+                  decoding="async"
                   alt=""
                   draggable={false}
                   className="pointer-events-none absolute inset-0 size-full object-cover"
