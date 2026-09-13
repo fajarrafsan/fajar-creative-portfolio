@@ -334,7 +334,7 @@ export function CvPreview() {
                         key={`${role}-${language}`}
                         src={activeFile.preview}
                         width={935}
-                        height={1210}
+                        height={1324}
                         alt={`${t(cvPreviewCta.preview)} — ${selectionLabel}`}
                         className="block h-auto w-full bg-white"
                         initial={reduced ? false : { opacity: 0, y: 8 }}
