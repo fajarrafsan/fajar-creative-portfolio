@@ -821,6 +821,11 @@
   transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Keep the original webpage colors and masthead legible in screenshot covers. */
+.project-art[data-cover-kind="webpage"]::after {
+  background: none;
+}
+
 .project-viewport-rail,
 .project-view-mark,
 .project-active-edge {
@@ -1131,6 +1136,97 @@
 
   .project-note {
     margin-bottom: 0.15rem;
+  }
+}
+
+/* The website itself is the cover. A full-height media column keeps its UI
+   readable instead of shrinking the whole page into a shallow horizontal strip. */
+@media (min-width: 1024px) {
+  .project-card[data-cover-layout="webpage"] {
+    grid-template-columns: minmax(0, 1.5fr) minmax(380px, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+    border-top: 0;
+    border-left: 2px solid var(--color-ink);
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-main,
+  .project-card[data-cover-layout="webpage"] .project-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    grid-row: auto;
+  }
+
+  .project-card[data-cover-layout="webpage"] h3 {
+    font-size: clamp(32px, 3.4vw, 52px);
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-copy-body {
+    padding-top: 0;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-aside {
+    margin-top: auto;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-year {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-actions {
+    padding-top: 0;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-viewport-rail {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-metric {
+    padding-inline: 0.5rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .project-card[data-cover-layout="webpage"] .project-meta {
+    gap: 0.75rem;
+    padding-block: 1rem;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-tech {
+    padding: 0.3rem 0.45rem;
+    font-size: 10px;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-main,
+  .project-card[data-cover-layout="webpage"] .project-aside {
+    gap: 0.5rem;
+  }
+
+  .project-card[data-cover-layout="webpage"] .project-metrics {
+    padding: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 767px) {
+  .project-art[data-cover-kind="webpage"] {
+    height: clamp(228px, 75vw, 340px) !important;
+    min-height: 0 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-card[data-cover-layout="webpage"] .project-meta {
+    border-left: 0;
+    border-top: 2px solid var(--color-ink);
   }
 }
 

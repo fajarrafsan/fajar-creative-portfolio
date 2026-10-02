@@ -313,6 +313,7 @@ export type Project = {
   variant: string;
   mark: string;
   cover: string;
+  coverAlt?: Dual;
   coverPosition?: string;
   demo: string | null;
   demoLabel?: Dual;
@@ -380,6 +381,7 @@ export const projects: Project[] = [
     variant: "warta",
     mark: "WRT",
     cover: "/projects/warta.webp",
+    coverAlt: dual("Beranda Warta dengan navigasi kategori dan artikel contoh", "Warta homepage with category navigation and sample articles"),
     coverPosition: "50% 50%",
     demo: "https://sharing-vision-frontend-ivory.vercel.app",
     demoLabel: dual("Demo tampilan", "UI demo"),
@@ -407,6 +409,7 @@ export const projects: Project[] = [
     variant: "kuis",
     mark: "KUI",
     cover: "/projects/kuis-akademik.webp",
+    coverAlt: dual("Dashboard Kuis Akademik dengan navigasi dan ringkasan organisasi contoh", "Kuis Akademik dashboard with navigation and a sample organization overview"),
     coverPosition: "50% 50%",
     demo: null,
     statusLabel: dual("Pengembangan", "In development"),
@@ -1346,8 +1349,8 @@ export const frontendArchitecture = {
 };
 
 export const artThemes: Record<string, string> = {
-  warta: "bg-[#eee9e2] text-[#c85070]",
-  kuis: "bg-[#09172b] text-[#67e8f9]",
+  warta: "bg-[#e9e8e6] text-[#c85070]",
+  kuis: "bg-[#dce9e6] text-[#12645e]",
   anistream: "bg-[#0b0d12] text-[#e11d2e]",
   arunika: "bg-[#1a110c] text-[#e4c9a0]",
   roomly: "bg-[#174846] text-acid",

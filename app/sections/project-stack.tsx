@@ -68,7 +68,7 @@ const smallCovers: Record<string, string> = {
 
 const coverWidths: Record<string, number> = {
   warta: 1600,
-  kuis: 1600,
+  kuis: 1440,
   anistream: 1600,
   arunika: 1600,
   glowmarket: 1600,
@@ -86,12 +86,11 @@ const coverWidths: Record<string, number> = {
 // ~3.1 ratio, so it fills without help. Left in the set it was letterboxed and
 // the ambient copies tiled either side of it — three visible console frames,
 // the outer two sliced through the middle of the table.
-const posterCovers = new Set(["warta", "kuis"]);
-const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat", ...posterCovers]);
+// Real webpage captures get one clean frame, without ambient duplicates.
+const webPageCovers = new Set(["warta", "kuis"]);
+const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat", ...webPageCovers]);
 
 const fullFrameTints: Record<string, string> = {
-  warta: "bg-[#eee9e2]/55",
-  kuis: "bg-[#09172b]/55",
   anistream: "bg-[#07070b]/58",
   arunika: "bg-[#1a110c]/52",
   roomly: "bg-[#081a31]/52",
@@ -180,18 +179,22 @@ function ProjectCard({
   const coverWidth = coverWidths[project.variant] ?? 1600;
   const responsiveCover = cover && smallCover !== cover ? `${smallCover} 700w, ${cover} ${coverWidth}w` : undefined;
   const showFullFrame = fullFrameCovers.has(project.variant);
-  const showSideFrames = stacked && !posterCovers.has(project.variant);
+  const showWebPage = webPageCovers.has(project.variant);
+  const showSideFrames = stacked && !showWebPage;
   const projectHref = project.demo ?? project.links.at(0)?.[1];
   const destinationLabel = translate(project.statusLabel ?? (project.demo ? copy.projectLiveStatus : copy.projectSourceStatus));
   const ArtContainer = projectHref ? "a" : "div";
   const artSize = stacked
     ? "h-full min-h-0"
-    : "h-[min(56vw,770px)] min-h-[520px] max-md:h-[clamp(220px,72vw,310px)] max-md:min-h-0 max-[361px]:h-[clamp(188px,64vw,216px)]";
+    : showWebPage
+      ? "h-[min(56vw,770px)] min-h-[520px] max-md:h-[clamp(228px,75vw,340px)] max-md:min-h-0"
+      : "h-[min(56vw,770px)] min-h-[520px] max-md:h-[clamp(220px,72vw,310px)] max-md:min-h-0 max-[361px]:h-[clamp(188px,64vw,216px)]";
 
   return (
     <motion.article
       data-card-index={index}
       data-project-state={state}
+      data-cover-layout={stacked && showWebPage ? "webpage" : undefined}
       className={`project-card group/art relative min-w-0 overflow-hidden border-2 border-ink bg-paper ${
         stacked ? "sticky grid grid-rows-[minmax(0,1fr)_auto]" : ""
       }`}
@@ -231,6 +234,7 @@ function ProjectCard({
           cards keep an explicit height at every breakpoint; `h-full` is only
           valid when the pinned deck gives the parent a definite height. */}
       <ArtContainer
+        data-cover-kind={showWebPage ? "webpage" : undefined}
         className={`project-art relative block touch-manipulation overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-acid ${artSize} ${artThemes[project.variant]}`}
         href={projectHref}
         target={projectHref ? "_blank" : undefined}
@@ -252,7 +256,25 @@ function ProjectCard({
           <div className="project-art-media absolute inset-0 grid place-items-center">
             {cover ? (
               <>
-              {showFullFrame ? (
+              {showWebPage ? (
+                <figure className="absolute inset-x-[2.5%] top-12 bottom-[3%] m-0 flex min-h-0 flex-col overflow-hidden border border-ink/15 bg-[#f7f7f7] max-[480px]:top-10">
+                  <div className="relative min-h-0 flex-1">
+                    <img
+                      src={cover}
+                      srcSet={responsiveCover}
+                      sizes={`(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) calc(100vw - 80px), ${stacked ? "56vw" : "90vw"}`}
+                      loading="lazy"
+                      decoding="async"
+                      alt={project.coverAlt ? translate(project.coverAlt) : ""}
+                      draggable={false}
+                      className="pointer-events-none absolute inset-0 size-full object-contain"
+                    />
+                  </div>
+                  <figcaption className="flex min-h-6 shrink-0 items-center border-t border-ink/10 bg-white/80 px-3 font-mono text-[10px] tracking-[0.06em] text-[#555d59] max-[480px]:px-2 max-[480px]:text-[9px]">
+                    <span>{translate(dual("Pratinjau UI · data contoh", "UI preview · sample data"))}</span>
+                  </figcaption>
+                </figure>
+              ) : showFullFrame ? (
                 <>
                   <img
                     src={cover}
@@ -290,7 +312,7 @@ function ProjectCard({
                     <img
                       src={cover}
                       srcSet={responsiveCover}
-                      sizes={posterCovers.has(project.variant) ? "(max-width: 767px) calc(100vw - 48px), 90vw" : "(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) calc(100vw - 80px), 50vw"}
+                      sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) calc(100vw - 80px), 50vw"
                       loading="lazy"
                       decoding="async"
                       alt=""
@@ -326,7 +348,7 @@ function ProjectCard({
                   style={{ objectPosition: project.coverPosition ?? "50% 50%" }}
                 />
               )}
-              <span
+              {!showWebPage ? <span
                 className={
                   project.variant === "glowmarket"
                     ? "absolute inset-0 bg-linear-to-t from-[#27180d]/20 via-transparent to-[#27180d]/8"
@@ -338,7 +360,7 @@ function ProjectCard({
                           ? "absolute inset-0 bg-linear-to-t from-[#071426]/30 via-transparent to-[#071426]/10"
                           : "absolute inset-0 bg-linear-to-t from-ink/42 via-ink/8 to-ink/14"
                 }
-              />
+              /> : null}
               {project.variant === "anistream" && (
                 <>
                   <motion.span
@@ -693,7 +715,7 @@ export function ProjectStack() {
   const [active, setActive] = useState(0);
   // Cards only take turns on the pinned desktop deck; on mobile every card is
   // on screen in flow and must stay reachable by keyboard.
-  const stacked = useMediaQuery("(min-width: 1024px) and (min-height: 680px) and (hover: hover) and (pointer: fine)");
+  const stacked = useMediaQuery("(min-width: 1024px) and (min-height: 720px) and (hover: hover) and (pointer: fine)");
   const deckRef = useRef<HTMLDivElement>(null);
 
   /**
