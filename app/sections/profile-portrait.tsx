@@ -341,11 +341,11 @@ export function ProfileCopy() {
           <motion.li key={skill.id} variants={profileChip}>
             <Magnetic strength={0.28}>
               <motion.span
-                className="inline-flex min-h-11 items-center gap-2.5 border border-ink/25 bg-paper px-3.5 text-[13px] tracking-[0.1em] uppercase will-change-transform max-[360px]:gap-2 max-[360px]:px-3 max-[360px]:text-[12px]"
+                className={`inline-flex min-h-11 items-center gap-2.5 border px-3.5 text-[13px] tracking-[0.1em] uppercase will-change-transform max-[360px]:gap-2 max-[360px]:px-3 max-[360px]:text-[12px] ${skill.id === "go" ? "border-cyan-800/35 bg-cyan-400/10 text-cyan-900" : "border-ink/25 bg-paper"}`}
                 whileHover={
                   reduced
                     ? undefined
-                    : { y: -4, backgroundColor: "#0b0d0c", color: "#f0efe8", borderColor: "#d8ff3e" }
+                    : { y: -4, backgroundColor: "#0b0d0c", color: "#f0efe8", borderColor: skill.id === "go" ? "#67e8f9" : "#d8ff3e" }
                 }
                 transition={{ duration: 0.22, ease }}
               >
@@ -362,11 +362,11 @@ export function ProfileCopy() {
         {t(profileAbout).map((paragraph, paragraphIndex) => (
           <motion.p className="m-0" key={paragraphIndex} variants={profileItem}>
             {paragraph.map((segment, index) => {
-              if (segment.tone === "java" || segment.tone === "react")
+              if (segment.tone === "java" || segment.tone === "go" || segment.tone === "react")
                 return (
                   <motion.strong
                     key={index}
-                    className={`profile-token font-semibold ${segment.tone === "java" ? "profile-token-java" : "profile-token-react"}`}
+                    className={`profile-token font-semibold profile-token-${segment.tone}`}
                     initial={false}
                     animate={{ backgroundSize: shown ? "100% 44%" : "0% 44%" }}
                     transition={{

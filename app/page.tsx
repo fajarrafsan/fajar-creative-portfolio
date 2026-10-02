@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type Ref } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type Ref } from "react";
 import { MotionConfig, motion, useReducedMotion, type Variants } from "motion/react";
 import {
   capabilities,
+  backendArchitectures,
   copy,
   email,
   experience,
@@ -13,6 +14,8 @@ import {
   marqueeBottom,
   marqueeTop,
   stackGroups,
+  profileSkills,
+  type BackendRuntime,
 } from "@/app/content";
 import { inViewport,
   CursorGlow,
@@ -130,7 +133,8 @@ function SectionLabel({ index, label, lively }: { index: string; label: string; 
 }
 
 const capabilityLayers = [
-  dual("Lapisan layanan", "Service layer"),
+  dual("Backend Java", "Java backend"),
+  dual("Backend Go", "Go backend"),
   dual("Jaringan sistem", "System network"),
   dual("Lapisan data", "Data layer"),
   dual("Lapisan delivery", "Delivery layer"),
@@ -138,6 +142,7 @@ const capabilityLayers = [
 
 const capabilitySignals = [
   ["REST API", "JWT", "SECURITY"],
+  ["NET/HTTP", "JWT", "SQL"],
   ["GATEWAY", "AMQP", "EVENTS"],
   ["SQL", "CACHE", "FLYWAY"],
   ["REACT 19", "PAYMENTS", "REAL-TIME"],
@@ -150,15 +155,17 @@ const workflowSupport = [
 ] as const;
 
 const capabilityCardSpans = [
-  "lg:col-span-7",
-  "lg:col-span-5",
-  "lg:col-span-5",
-  "lg:col-span-7",
+  "lg:col-span-6",
+  "lg:col-span-6",
+  "lg:col-span-4",
+  "lg:col-span-4",
+  "md:col-span-2 lg:col-span-4",
 ] as const;
 
 function CapabilityCard({ item, index }: { item: (typeof capabilities)[number]; index: number }) {
   const t = useT();
   const signals = capabilitySignals[index] ?? [];
+  const isGo = item.icons.includes("go");
 
   return (
     <motion.article
@@ -166,6 +173,7 @@ function CapabilityCard({ item, index }: { item: (typeof capabilities)[number]; 
       initial="hidden"
       whileInView="shown"
       viewport={inViewport}
+      style={isGo ? { "--color-acid": "var(--color-go)" } as CSSProperties : undefined}
       className={`group/cap relative isolate col-span-1 flex min-h-[310px] overflow-hidden bg-[#121512]/92 p-[clamp(20px,2vw,30px)] transition-[background-color,box-shadow] duration-250 hover:bg-[#171b17] hover:shadow-[inset_0_0_0_1px_rgba(216,255,62,0.48)] md:col-span-1 max-[680px]:min-h-[270px] max-[420px]:min-h-0 max-[360px]:p-4 ${capabilityCardSpans[index] ?? "lg:col-span-6"}`}
     >
       <span
@@ -271,7 +279,8 @@ function ToolchainGroup({ group, index }: { group: (typeof stackGroups)[number];
         {group.items.map((item, itemIndex) => (
           <li
             key={item.name}
-            className="group/tool relative flex min-h-[66px] min-w-0 items-center gap-3 border-b border-paper/10 px-5 transition-colors duration-200 last:border-b-0 hover:bg-acid/[0.045] max-[680px]:px-4 max-[560px]:min-h-[62px] max-[560px]:odd:border-r max-[560px]:even:border-r-0 max-[560px]:[&:nth-last-child(-n+2)]:border-b-0 max-[360px]:gap-2 max-[360px]:px-3"
+            className={`group/tool relative flex min-h-[66px] min-w-0 items-center gap-3 border-b border-paper/10 px-5 transition-colors duration-200 last:border-b-0 hover:bg-acid/[0.045] max-[680px]:px-4 max-[560px]:min-h-[62px] max-[560px]:odd:border-r max-[560px]:even:border-r-0 max-[360px]:gap-2 max-[360px]:px-3 ${group.items.length % 2 === 0 ? "max-[560px]:[&:nth-last-child(-n+2)]:border-b-0" : itemIndex === group.items.length - 1 ? "max-[560px]:col-span-2 max-[560px]:border-r-0" : ""}`}
+            style={item.icon === "go" ? { "--color-acid": "var(--color-go)" } as CSSProperties : undefined}
           >
             <span
               className="absolute inset-y-0 left-0 w-[2px] origin-bottom scale-y-0 bg-acid transition-transform duration-200 group-hover/tool:scale-y-100 motion-reduce:transition-none"
@@ -295,6 +304,8 @@ function ToolchainGroup({ group, index }: { group: (typeof stackGroups)[number];
 
 function ArchitecturePanel() {
   const t = useT();
+  const [runtime, setRuntime] = useState<BackendRuntime>("go");
+  const architecture = backendArchitectures[runtime];
   const rootRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const { reduced, shown } = useLatchedInView(rootRef, inViewport);
@@ -305,7 +316,7 @@ function ArchitecturePanel() {
   const copyInitial = copyShown ? false : copyReduced ? "shown" : "hidden";
 
   return (
-    <>
+    <div className="contents" style={{ "--color-acid": runtime === "go" ? "var(--color-go)" : "#d8ff3e" } as CSSProperties}>
       <motion.header
         ref={rootRef}
         className="relative z-[5] col-span-full min-w-0"
@@ -358,15 +369,43 @@ function ArchitecturePanel() {
             </span>
           ))}
         </h2>
+        <motion.div className="mt-7 grid max-w-[720px] grid-cols-2 gap-3 max-[360px]:mt-5 max-[360px]:gap-2" variants={archItem} role="group" aria-label={t(dual("Pilih arsitektur backend", "Choose backend architecture"))}>
+          {(["go", "spring"] as const).map((option) => {
+            const selected = option === runtime;
+            const entry = backendArchitectures[option];
+            return (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={selected}
+                aria-controls="backend-runtime-details"
+                onClick={() => setRuntime(option)}
+                className={`flex min-h-[72px] min-w-0 touch-manipulation cursor-pointer items-center gap-3 border px-4 py-3 text-left transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-acid max-[420px]:min-h-14 max-[420px]:gap-2 max-[420px]:px-2.5 ${selected ? "border-acid bg-acid text-ink" : "border-paper/20 bg-ink-soft text-paper/70 hover:border-paper/60 hover:text-paper"}`}
+              >
+                <TechIcon name={entry.icon} className={`size-7 shrink-0 max-[420px]:size-5 ${!selected && option === "go" ? "text-go" : ""}`} />
+                <span className="min-w-0">
+                  <strong className="block text-[16px] leading-tight font-semibold max-[420px]:text-[13px]">{entry.label}</strong>
+                  <span className={`mt-1 block font-mono text-[11px] uppercase tracking-[0.08em] max-[420px]:hidden ${selected ? "text-ink/65" : "text-paper/40"}`}>{selected ? t(dual("Ditampilkan", "Showing")) : t(dual("Lihat alur", "View flow"))}</span>
+                </span>
+              </button>
+            );
+          })}
+        </motion.div>
       </motion.header>
 
       <motion.div
+        id="backend-runtime-details"
         ref={copyRef}
         className="system-copy relative z-[5] flex min-w-0 flex-col border border-paper/15 bg-ink-soft/65 p-[clamp(22px,2.35vw,32px)] min-[1001px]:h-full min-[1001px]:self-stretch max-[680px]:p-5 max-[360px]:p-4"
         variants={archParent}
         initial={copyInitial}
         animate={copyEnter}
       >
+        <div className="mb-5 border-b border-paper/15 pb-5">
+          <p className="mb-2 flex items-center gap-2.5 font-mono text-[12px] tracking-[0.1em] text-acid uppercase"><TechIcon name={architecture.icon} className="size-5" />{architecture.label}</p>
+          <p className="m-0 text-[16px] leading-[1.55] text-paper/80">{t(architecture.summary)}</p>
+          <p className="mt-3 mb-0 text-[12px] leading-relaxed text-paper/45" role="status">{architecture.projects}</p>
+        </div>
         <motion.p
           variants={archItem}
           className="system-description mb-0 max-w-[58ch] text-[18px] leading-[1.65] text-[#c4c6bc] max-[680px]:leading-[1.62] max-[360px]:text-[16px] max-[360px]:leading-[1.55]"
@@ -391,11 +430,11 @@ function ArchitecturePanel() {
             <h3 id="architecture-flow-title" className="m-0 text-[12px] font-[620] tracking-[0.14em] text-paper/75 uppercase">
               {t(copy.architectureFlowLabel)}
             </h3>
-            <span className="font-mono text-[11px] tracking-[0.12em] text-acid">{t(copy.architectureFlowMode)}</span>
+            <span className="font-mono text-[11px] tracking-[0.08em] text-acid">{t(architecture.flowMode)}</span>
           </div>
 
           <ol className="m-0 grid list-none grid-cols-2 p-0 min-[1001px]:grid-cols-1">
-            {copy.architectureFlow.map((item) => (
+            {architecture.flow.map((item) => (
               <li
                 key={item.number}
                 className="grid min-h-[82px] grid-cols-[32px_minmax(0,1fr)] content-center gap-x-3 border-t border-paper/10 px-1 py-3 odd:border-r odd:border-paper/10 min-[1001px]:min-h-12 min-[1001px]:grid-cols-[34px_minmax(0,1fr)_auto] min-[1001px]:items-center min-[1001px]:py-2 min-[1001px]:odd:border-r-0 max-[360px]:min-h-[74px] max-[360px]:grid-cols-[24px_minmax(0,1fr)] max-[360px]:gap-x-2 max-[360px]:px-0.5 max-[360px]:py-2.5"
@@ -417,7 +456,7 @@ function ArchitecturePanel() {
           className="grid list-none grid-cols-3 gap-0 border-t border-paper/15 p-0"
           variants={archMetaParent}
         >
-          {t(copy.architectureMeta).map((item) => (
+          {t(architecture.meta).map((item) => (
             <motion.li
               key={item.value}
               variants={archMeta}
@@ -432,8 +471,8 @@ function ArchitecturePanel() {
         </motion.ul>
       </motion.div>
 
-      <SystemGraph />
-    </>
+      <SystemGraph runtime={runtime} />
+    </div>
   );
 }
 
@@ -578,7 +617,7 @@ function TechTicker() {
 
         <div className="ml-auto flex shrink-0 items-stretch">
           <p className="m-0 flex items-center border-l border-paper/15 px-5 font-mono text-[10px] tracking-[0.12em] text-paper/55 uppercase max-[760px]:hidden">
-            {t(copy.marqueeChannels)}
+            {marqueeTop.length + marqueeBottom.length} {t(copy.marqueeChannels)}
           </p>
           <button
             type="button"
@@ -701,6 +740,8 @@ function Portfolio() {
   const heroRef = useRef<HTMLElement>(null);
   const { gridY, systemRotate } = useHeroParallax(heroRef);
   const introReady = useIntroReady();
+  const capabilityCount = String(capabilities.length).padStart(2, "0");
+  const toolCount = stackGroups.reduce((total, group) => total + group.items.length, 0);
 
   return (
     <main className="relative min-w-0 overflow-x-clip bg-ink font-sans text-paper">
@@ -719,15 +760,15 @@ function Portfolio() {
           initial={reduced ? false : { opacity: 0, y: 20 }}
           animate={reduced || introReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: reduced ? 0 : 0.62, ease: [0.16, 1, 0.3, 1], delay: introReady ? 0.02 : 0 }}
-          className="hero-meta relative z-[2] mb-4 flex shrink-0 items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[680px]:mb-5 max-[680px]:items-start max-[420px]:flex-col max-[420px]:items-start max-[420px]:gap-3 max-[360px]:mb-4 max-[360px]:gap-2 max-[360px]:text-[11px]">
-          <div className="hero-kicker flex max-w-[calc(100%-14rem)] items-center gap-3 whitespace-nowrap leading-[1.45] max-[680px]:max-w-none max-[680px]:whitespace-normal max-[360px]:gap-2">
+          className="hero-meta relative z-[2] mb-4 flex shrink-0 items-end justify-between text-[11px] tracking-[0.09em] uppercase max-[1200px]:flex-col max-[1200px]:items-start max-[1200px]:gap-3 max-[680px]:mb-5 max-[360px]:mb-4 max-[360px]:gap-2 max-[360px]:text-[11px]">
+          <div className="hero-kicker flex max-w-[calc(100%-14rem)] items-center gap-3 whitespace-nowrap leading-[1.45] max-[1200px]:max-w-full max-[1200px]:whitespace-normal max-[360px]:gap-2">
             <span className="status-dot size-[9px] shrink-0 animate-pulse-dot rounded-full bg-acid shadow-[0_0_0_5px_rgba(216,255,62,0.13)]" aria-hidden="true" />
             <span className="max-[420px]:hidden">{t(copy.availability)}</span>
             <span className="hidden max-[420px]:inline">{t(copy.availableBandung)}</span>
           </div>
-          <p className="m-0 shrink-0 text-right leading-[1.35] max-[420px]:text-left">
-            <span className="max-[420px]:hidden">Java · Spring · React · TypeScript<br />© 2026</span>
-            <span className="hidden max-[420px]:inline">Java · React · 2026</span>
+          <p className="m-0 shrink-0 text-right leading-[1.35] max-[1200px]:text-left">
+            <span className="max-[420px]:hidden"><span className="text-go">Go</span> · Java · Spring · React · TypeScript<br />© 2026</span>
+            <span className="hidden max-[420px]:inline"><span className="text-go">Go</span> · Java · React · 2026</span>
           </p>
         </motion.div>
 
@@ -773,6 +814,8 @@ function Portfolio() {
                       {segment.text}
                     </em>
                   );
+                if (segment.kind === "go")
+                  return <em key={index} className="hero-lede-token hero-lede-token-go font-semibold text-go not-italic">{segment.text}</em>;
                 if (segment.kind === "dim")
                   return (
                     <span key={index} className="text-paper/50">
@@ -789,18 +832,13 @@ function Portfolio() {
               className="mb-5 grid grid-cols-2 gap-2 min-[681px]:mb-5 min-[681px]:flex min-[681px]:flex-wrap min-[681px]:items-center max-[420px]:mb-4 max-[360px]:mb-3.5 max-[360px]:gap-1.5"
               aria-label={t(copy.heroStackAria)}
             >
-              {[
-                ["java", "Java"],
-                ["springboot", "Spring"],
-                ["react", "React"],
-                ["typescript", "TypeScript"],
-              ].map(([icon, label]) => (
+              {profileSkills.map(({ icon, label }) => (
                 <motion.span
                   key={label}
                   variants={heroChip}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 border border-paper/25 bg-ink px-3 text-[11px] tracking-[0.1em] uppercase will-change-transform min-[681px]:justify-start max-[360px]:gap-1.5 max-[360px]:px-2"
+                  className={`inline-flex min-h-11 items-center justify-center gap-2 border bg-ink px-3 text-[12px] tracking-[0.08em] uppercase will-change-transform min-[681px]:justify-start max-[360px]:gap-1.5 max-[360px]:px-2 ${icon === "go" ? "border-go/50 text-go max-[680px]:col-span-2" : "border-paper/25"}`}
                 >
-                  <TechIcon name={icon} className="size-3.5 shrink-0 text-acid max-[360px]:size-3" />
+                  <TechIcon name={icon} className={`size-4 shrink-0 ${icon === "go" ? "text-go" : "text-acid"}`} />
                   {label}
                 </motion.span>
               ))}
@@ -918,7 +956,7 @@ function Portfolio() {
           className="font-display pointer-events-none absolute -bottom-[0.24em] left-[1.4vw] -z-[2] text-[clamp(220px,31vw,520px)] leading-none font-[790] tracking-[-0.1em] text-paper/[0.018] select-none max-[1000px]:hidden"
           aria-hidden="true"
         >
-          04
+          {capabilityCount}
         </span>
 
         <div className="relative mx-auto max-w-[1760px]">
@@ -928,9 +966,9 @@ function Portfolio() {
             <div className="max-w-[290px] border-l border-acid/45 pl-4 max-[1000px]:hidden">
               <p className="m-0 font-mono text-[10px] tracking-[0.16em] text-paper/42 uppercase">SYSTEM / CAPABILITY</p>
               <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-4 border-t border-paper/12 pt-4">
-                <strong className="font-display text-[64px] leading-[0.78] font-[620] tracking-[-0.08em] text-acid">04</strong>
+                <strong className="font-display text-[64px] leading-[0.78] font-[620] tracking-[-0.08em] text-acid">{capabilityCount}</strong>
                 <div className="pb-0.5 font-mono text-[10px] leading-[1.65] tracking-[0.12em] text-paper/52 uppercase">
-                  <span className="block">Layers / online</span>
+                  <span className="block">Capability areas</span>
                   <span className="block text-paper/78">API <i className="mx-1.5 text-acid not-italic" aria-hidden="true">→</i> UI</span>
                 </div>
               </div>
@@ -943,7 +981,7 @@ function Portfolio() {
                 <i className="size-1.5 rounded-full bg-acid shadow-[0_0_12px_rgba(216,255,62,0.5)] not-italic" aria-hidden="true" />
                 {t(dual("Peta kemampuan aktif", "Active capability map"))}
               </span>
-              <span className="text-acid">04 {t(dual("lapisan", "layers"))} / 08 nodes</span>
+              <span className="text-acid">{capabilityCount} {t(dual("bidang", "areas"))} / 02 backend</span>
             </div>
             <h2 id="capabilities-title" className="font-display mb-5 max-w-[16ch] text-[clamp(44px,6.2vw,94px)] leading-[0.88] font-[560] tracking-[-0.076em] max-[680px]:text-[clamp(36px,11vw,58px)] max-[420px]:text-[clamp(30px,9.4vw,38px)] max-[360px]:leading-[0.94]">
               {t(copy.capabilitiesTitle)}
@@ -954,8 +992,8 @@ function Portfolio() {
               </p>
               <dl className="m-0 flex shrink-0 border border-paper/12 bg-ink/60">
                 <div className="min-w-[92px] border-r border-paper/12 p-3 max-[360px]:min-w-0 max-[360px]:flex-1">
-                  <dt className="font-mono text-[9px] tracking-[0.13em] text-paper/38 uppercase">LAYERS</dt>
-                  <dd className="font-display m-0 mt-2 text-[24px] leading-none text-acid">04</dd>
+                  <dt className="font-mono text-[9px] tracking-[0.13em] text-paper/38 uppercase">AREAS</dt>
+                  <dd className="font-display m-0 mt-2 text-[24px] leading-none text-acid">{capabilityCount}</dd>
                 </div>
                 <div className="min-w-[92px] p-3 max-[360px]:min-w-0 max-[360px]:flex-1">
                   <dt className="font-mono text-[9px] tracking-[0.13em] text-paper/38 uppercase">FOCUS</dt>
@@ -972,7 +1010,7 @@ function Portfolio() {
               <i className="h-px w-6 bg-acid not-italic" aria-hidden="true" />
               Capability matrix
             </span>
-            <span className="text-paper/32">SYS.CORE / 04</span>
+            <span className="text-paper/32">SYS.CORE / {capabilityCount}</span>
           </div>
           <div className="grid grid-cols-1 gap-px bg-paper/12 md:grid-cols-2 lg:grid-cols-12">
             {capabilities.map((item, index) => (
@@ -1000,10 +1038,10 @@ function Portfolio() {
               <div className="max-w-[290px] border-l border-acid/45 pl-4 max-[1000px]:hidden">
                 <p className="m-0 font-mono text-[10px] tracking-[0.16em] text-paper/42 uppercase">DAILY / TOOL RACK</p>
                 <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-end gap-4 border-t border-paper/12 pt-4">
-                  <strong className="font-display text-[64px] leading-[0.78] font-[620] tracking-[-0.08em] text-acid">16</strong>
+                  <strong className="font-display text-[64px] leading-[0.78] font-[620] tracking-[-0.08em] text-acid">{toolCount}</strong>
                   <div className="pb-0.5 font-mono text-[10px] leading-[1.65] tracking-[0.12em] text-paper/52 uppercase">
                     <span className="block">Daily tools</span>
-                    <span className="block text-paper/78">04 / groups</span>
+                    <span className="block text-paper/78">{String(stackGroups.length).padStart(2, "0")} / groups</span>
                   </div>
                 </div>
               </div>
@@ -1034,7 +1072,7 @@ function Portfolio() {
                 <i className="h-px w-6 bg-acid not-italic" aria-hidden="true" />
                 Tool matrix / production
               </span>
-              <span className="text-acid">16 units · online</span>
+              <span className="text-acid">{toolCount} tools · in use</span>
             </div>
             <div className="grid grid-cols-4 gap-px bg-paper/12 max-[1000px]:grid-cols-2 max-[560px]:grid-cols-1">
               {stackGroups.map((group, index) => (

@@ -283,6 +283,15 @@ export function IntroGate({ children }: { children: ReactNode }) {
   // stays inert until the last shutter has cleared, so the handoff is visually
   // continuous without exposing controls underneath the overlay too early.
   useEffect(() => {
+    // Fast Refresh can replay this effect after the intro has already exited.
+    // Do not lock the page again: completeIntro is intentionally idempotent,
+    // so a second lock would otherwise leave every portfolio control inert.
+    if (completedRef.current) {
+      document.documentElement.dataset.intro = "revealed";
+      releasePage();
+      return;
+    }
+
     lockPageScroll(true);
     const main = document.querySelector<HTMLElement>("main");
     mainRef.current = main;

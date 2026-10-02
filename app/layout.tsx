@@ -11,7 +11,7 @@ import "./globals.css";
 
 const title = "Fajar Rafsan — Fullstack Developer";
 const description =
-  "Portofolio Fajar Rafsan, Fullstack Developer yang merancang API Java/Spring Boot dan interface React/TypeScript — dari data sampai layar.";
+  "Portofolio Fajar Rafsan, Fullstack Developer yang merancang API Go dan Java/Spring Boot serta interface React/TypeScript — dari data sampai layar.";
 
 export const viewport: Viewport = {
   themeColor: "#0b0d0c",
@@ -47,6 +47,8 @@ export async function generateMetadata(): Promise<Metadata> {
       "Fajar Rafsan",
       "Fullstack Developer",
       "Java Developer",
+      "Go Developer",
+      "Golang",
       "Spring Boot",
       "React",
       "TypeScript",

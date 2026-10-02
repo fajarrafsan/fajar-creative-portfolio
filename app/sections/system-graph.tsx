@@ -67,9 +67,12 @@ type ArchitectureGraphProps = {
   nodes: GraphNode[];
   activeId?: string;
   className?: string;
+  runtime?: BackendRuntime;
 };
 
-const backendNodes: GraphNode[] = [
+export type BackendRuntime = "spring" | "go";
+
+const springNodes: GraphNode[] = [
   { id: "client", index: "01", title: "Client", sub: "React 19 SPA", proto: "HTTPS", x: 500, y: 140, flow: "in" },
   { id: "gateway", index: "02", title: "Gateway", sub: dual("Rute & amankan", "Route & secure"), proto: "HTTP", x: 245, y: 245, flow: "in" },
   { id: "auth", index: "03", title: "Auth", sub: "JWT / OAuth2", proto: "Bearer", x: 755, y: 245, flow: "both" },
@@ -78,6 +81,17 @@ const backendNodes: GraphNode[] = [
   { id: "payments", index: "06", title: "Payments", sub: "Xendit", proto: "Webhook", x: 500, y: 860, flow: "in" },
   { id: "events", index: "07", title: "Events", sub: "RabbitMQ", proto: "AMQP", x: 245, y: 755, flow: "out" },
   { id: "cache", index: "08", title: "Cache", sub: "Redis", proto: "RESP", x: 140, y: 500, flow: "both" },
+];
+
+const goNodes: GraphNode[] = [
+  { id: "client", index: "01", title: "Client", sub: "React 19 SPA", proto: "HTTPS", x: 500, y: 140, flow: "in" },
+  { id: "router", index: "02", title: "Router", sub: "net/http", proto: "HTTP", x: 245, y: 245, flow: "in" },
+  { id: "auth", index: "03", title: "Auth", sub: "JWT / Session", proto: "Auth", x: 755, y: 245, flow: "both" },
+  { id: "service", index: "04", title: "Service", sub: dual("Logika bisnis Go", "Go business logic"), proto: "Go", x: 860, y: 500, flow: "both" },
+  { id: "data", index: "05", title: "Data", sub: dual("Penyimpanan SQL", "SQL storage"), proto: "SQL", x: 755, y: 755, flow: "both" },
+  { id: "content", index: "06", title: "Content", sub: "Markdown CRUD", proto: "CRUD", x: 500, y: 860, flow: "both" },
+  { id: "jobs", index: "07", title: "Jobs", sub: "Outbox / retry", proto: "HTTP webhook", x: 245, y: 755, flow: "out" },
+  { id: "middleware", index: "08", title: "Middleware", sub: "CORS / logging", proto: "HTTP", x: 140, y: 500, flow: "both" },
 ];
 
 const frontendNodes: GraphNode[] = [
@@ -196,7 +210,7 @@ function MobileArchitectureMap({
     <div className="relative z-10 hidden p-4 max-[680px]:block max-[360px]:p-3">
       <div className="flex items-center justify-between gap-4 border-b border-paper/15 pb-3 text-[12px] tracking-[0.14em] uppercase">
         <span className="text-paper/65">{t(dual("Peta sistem", "System map"))}</span>
-        <span className="font-mono tabular-nums text-acid">08 {t(dual("node", "nodes"))}</span>
+        <span className="font-mono tabular-nums text-acid">{String(nodes.length).padStart(2, "0")} {t(dual("node", "nodes"))}</span>
       </div>
 
       <div className="relative mt-3 flex min-h-[88px] items-center justify-between gap-4 overflow-hidden bg-acid px-4 py-3.5 text-ink max-[360px]:mt-2.5 max-[360px]:min-h-[72px] max-[360px]:gap-2 max-[360px]:px-3 max-[360px]:py-2.5">
@@ -219,7 +233,7 @@ function MobileArchitectureMap({
           const direction = node.flow === "both" ? "I/O" : node.flow === "in" ? "IN" : "OUT";
           return (
             <motion.li
-              key={node.id}
+              key={node.index}
               variants={graphNode}
               className="relative flex min-h-[92px] flex-col justify-between overflow-hidden border border-paper/18 bg-ink/92 p-3 max-[360px]:min-h-[80px] max-[360px]:p-2.5"
             >
@@ -253,6 +267,7 @@ function ArchitectureGraph({
   nodes,
   activeId,
   className,
+  runtime,
 }: ArchitectureGraphProps) {
   // Matches the section's own `max-[1000px]:grid-cols-1` breakpoint, so the
   // diagram switches to the roomier card at exactly the point its layout
@@ -271,14 +286,25 @@ function ArchitectureGraph({
   const dimSiblings = finePointer && !reduced && hoveredId !== null;
   const haloId = `${idPrefix}-halo`;
   const strokeId = `${idPrefix}-leg`;
+  // Keep the palette local to this diagram. All existing acid utilities and
+  // SVG strokes inherit the same accent, including the compact mobile map.
+  const graphPalette = {
+    "--color-acid": runtime === "go" ? "#67e8f9" : "#d8ff3e",
+    "--graph-accent-rgb": runtime === "go" ? "103,232,249" : "216,255,62",
+    "--graph-active-bg": runtime === "go" ? "rgba(8,27,32,0.95)" : "rgba(20,26,16,0.95)",
+    "--graph-hover-bg": runtime === "go" ? "rgba(8,24,28,0.95)" : "rgba(18,21,15,0.95)",
+  } as CSSProperties;
 
   return (
     <motion.div
       variants={graphParent}
-      initial="hidden"
+      initial={reduced ? "shown" : "hidden"}
       whileInView="shown"
       viewport={graphViewport}
       className={`graph-frame relative isolate aspect-square overflow-hidden border border-paper/15 bg-ink-soft/85 max-[680px]:aspect-auto ${className ?? ""}`}
+      style={graphPalette}
+      data-runtime={runtime ?? "frontend"}
+      role="group"
       aria-label={ariaLabel}
     >
       <motion.div variants={graphFormationShell} className="absolute inset-0 -z-[2]">
@@ -289,26 +315,26 @@ function ArchitectureGraph({
         />
         <motion.div
           variants={graphSurface}
-          className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(216,255,62,0.1),transparent_50%)]"
+          className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(var(--graph-accent-rgb),0.1),transparent_50%)]"
           aria-hidden="true"
         />
       </motion.div>
 
       <div className="absolute top-3 right-3 left-3 z-10 flex items-center justify-between gap-4 font-mono text-[11px] tracking-[0.13em] uppercase max-[680px]:hidden" aria-hidden="true">
         <span className="text-paper/45">{t(dual("Peta sistem", "System map"))}</span>
-        <span className="text-acid/80">08 · {t(dual("node", "nodes"))}</span>
+        <span className="text-acid/80">{String(nodes.length).padStart(2, "0")} · {t(dual("node", "nodes"))}</span>
       </div>
 
       <svg viewBox="0 0 1000 1000" preserveAspectRatio="none" className="absolute inset-0 z-[2] size-full max-[680px]:hidden" aria-hidden="true">
         <defs>
           <linearGradient id={strokeId} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#d8ff3e" stopOpacity="0.15" />
-            <stop offset="55%" stopColor="#d8ff3e" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#d8ff3e" stopOpacity="0.3" />
+            <stop offset="0%" stopColor="var(--color-acid)" stopOpacity="0.15" />
+            <stop offset="55%" stopColor="var(--color-acid)" stopOpacity="0.85" />
+            <stop offset="100%" stopColor="var(--color-acid)" stopOpacity="0.3" />
           </linearGradient>
           <radialGradient id={haloId}>
-            <stop offset="60%" stopColor="#d8ff3e" stopOpacity="0" />
-            <stop offset="100%" stopColor="#d8ff3e" stopOpacity="0.14" />
+            <stop offset="60%" stopColor="var(--color-acid)" stopOpacity="0" />
+            <stop offset="100%" stopColor="var(--color-acid)" stopOpacity="0.14" />
           </radialGradient>
         </defs>
 
@@ -327,14 +353,14 @@ function ArchitectureGraph({
             width="996"
             height="996"
             fill="none"
-            stroke="#d8ff3e"
+            stroke="var(--color-acid)"
             strokeOpacity="0.4"
             strokeWidth="1.5"
             vectorEffect="non-scaling-stroke"
           />
 
           {corners.map((d, index) => (
-            <motion.path key={d} variants={graphCornerMark} custom={index} d={d} stroke="#d8ff3e" strokeOpacity="0.7" strokeWidth="2" fill="none" vectorEffect="non-scaling-stroke" />
+            <motion.path key={d} variants={graphCornerMark} custom={index} d={d} stroke="var(--color-acid)" strokeOpacity="0.7" strokeWidth="2" fill="none" vectorEffect="non-scaling-stroke" />
           ))}
 
           {ticks.map((t) => (
@@ -373,7 +399,7 @@ function ArchitectureGraph({
           <motion.g variants={graphFormationShell}>
             {legs.map(({ node, d, to }, index) => (
               <g
-                key={node.id}
+                key={node.index}
                 className="graph-leg transition-opacity duration-300"
                 style={{ opacity: dimSiblings && hoveredId !== node.id ? 0.42 : 1 }}
               >
@@ -387,8 +413,8 @@ function ArchitectureGraph({
                   strokeWidth={activeId === node.id ? "2.4" : "1.5"}
                   vectorEffect="non-scaling-stroke"
                 />
-                <circle cx={to.x} cy={to.y} r="3.5" fill="#d8ff3e" fillOpacity="0.8" />
-                <circle className="data-packet" r="4.5" fill="#d8ff3e">
+                <circle cx={to.x} cy={to.y} r="3.5" fill="var(--color-acid)" fillOpacity="0.8" />
+                <circle className="data-packet" r="4.5" fill="var(--color-acid)">
                   <animateMotion
                     dur={`${2.8 + index * 0.3}s`}
                     repeatCount="indefinite"
@@ -415,7 +441,7 @@ function ArchitectureGraph({
         <motion.div
           variants={graphCore}
           style={{ x: "-50%", y: "-50%" }}
-          className="graph-core absolute top-1/2 left-1/2 z-[5] flex aspect-square w-[26%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_20px_rgba(216,255,62,0.06),0_0_80px_rgba(216,255,62,0.26)]"
+          className="graph-core absolute top-1/2 left-1/2 z-[5] flex aspect-square w-[26%] flex-col items-center justify-center rounded-full bg-acid text-ink shadow-[0_0_0_20px_rgba(var(--graph-accent-rgb),0.06),0_0_80px_rgba(var(--graph-accent-rgb),0.26)]"
         >
           <small className="font-mono text-[10px] tracking-[0.16em] uppercase opacity-70">{t(copy.graphCore)}</small>
           <strong className="font-display my-[2px] -mb-0.5 text-[clamp(17px,2.4vw,38px)] font-[780] leading-[0.88] tracking-[-0.065em] uppercase max-[420px]:text-[13px]">
@@ -430,7 +456,7 @@ function ArchitectureGraph({
         <motion.div variants={graphFormationShell} className="contents">
           {legs.map(({ node, mid }) => (
             <motion.span
-              key={`${node.id}-proto`}
+              key={`${node.index}-proto`}
               variants={graphProto}
               className="pointer-events-none absolute z-[4] -translate-x-1/2 -translate-y-1/2 border border-acid/25 bg-ink/90 px-1.5 py-0.5 font-mono text-[9px] tracking-[0.12em] text-acid/80 uppercase max-[1000px]:hidden"
               style={{ left: pct(mid.x), top: pct(mid.y) }}
@@ -453,7 +479,10 @@ function ArchitectureGraph({
             // applies, leaving every card offset from its true point (this
             // is what made the octagon look lopsided even with correct math).
             <div
-              key={node.id}
+              // Keep the eight layout slots mounted when runtime changes.
+              // Remounting by semantic ID can strand new Motion children in
+              // "hidden" after the parent's one-shot entrance has finished.
+              key={node.index}
               className={`absolute transition-opacity duration-300 ${hoveredId === node.id ? "z-[8]" : "z-[6]"}`}
               style={
                 {
@@ -476,12 +505,12 @@ function ArchitectureGraph({
             >
               <motion.div
                 variants={graphNode}
-                whileHover={finePointer ? { y: -3 } : undefined}
+                whileHover={finePointer && !reduced ? { y: -3 } : undefined}
                 transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 className={`graph-node flex size-full flex-col justify-center gap-1.5 overflow-hidden border px-2.5 py-2 backdrop-blur-sm transition-colors duration-250 max-[420px]:gap-1 max-[420px]:px-1.5 max-[420px]:py-1 ${
                   active || hoveredId === node.id
-                    ? "border-acid bg-[#141a10]/95 text-acid"
-                    : "border-paper/40 bg-ink/92 text-paper [@media(pointer:fine)]:hover:border-acid/45 [@media(pointer:fine)]:hover:bg-[#12150f]/95"
+                    ? "border-acid bg-[var(--graph-active-bg)] text-acid"
+                    : "border-paper/40 bg-ink/92 text-paper [@media(pointer:fine)]:hover:border-acid/45 [@media(pointer:fine)]:hover:bg-[var(--graph-hover-bg)]"
                 }`}
               >
                 <div className="flex min-w-0 items-baseline gap-1.5">
@@ -511,19 +540,23 @@ function ArchitectureGraph({
   );
 }
 
-export function SystemGraph() {
+export function SystemGraph({ runtime = "spring" }: { runtime?: BackendRuntime } = {}) {
   const t = useT();
+  const isGo = runtime === "go";
   return (
     <ArchitectureGraph
-      idPrefix="be"
-      coreTitle="SPRING"
-      coreSub="BOOT"
-      nodes={backendNodes}
+      idPrefix={`be-${runtime}`}
+      coreTitle={isGo ? "GO" : "SPRING"}
+      coreSub={isGo ? "net/http" : "BOOT"}
+      nodes={isGo ? goNodes : springNodes}
+      runtime={runtime}
       // On a stacked layout the grid gap already separates copy from diagram;
       // a second margin created a large dead zone. Keep the frame centred and
       // let it use the full available measure without pushing past the gutter.
       className="relative z-[3] w-[min(100%,720px)] justify-self-end min-[1001px]:max-[1200px]:w-[min(100%,620px)] max-[1000px]:w-full max-[1000px]:justify-self-center"
-      ariaLabel={t(copy.backendGraphAria)}
+      ariaLabel={t(isGo
+        ? dual("Pola backend Go dari Warta dan Kuis Akademik: net/http, JWT atau sesi, SQL, Markdown CRUD, webhook outbox, dan middleware CORS/logging.", "Go backend patterns from Warta and Kuis Akademik: net/http, JWT or sessions, SQL, Markdown CRUD, outbox webhooks, and CORS/logging middleware.")
+        : copy.backendGraphAria)}
     />
   );
 }

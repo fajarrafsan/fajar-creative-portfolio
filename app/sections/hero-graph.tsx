@@ -17,8 +17,8 @@ import { useIntroReady } from "./intro";
 import { copy } from "@/app/content";
 import { dual, useT } from "@/app/lib/i18n";
 
-const CORE = { x: 500, y: 500, r: 128 };
-const CARD = { w: 248, h: 76 };
+const CORE = { x: 500, y: 500, r: 145 };
+const CARD = { w: 260, h: 90 };
 const MAX_TILT = 6;
 
 type Node = {
@@ -28,17 +28,25 @@ type Node = {
   sub: string;
   icon: string;
   protocol: string;
+  role: "backend" | "frontend";
+  accent: "acid" | "cyan";
   x: number;
   y: number;
   flow: "in" | "out";
 };
 
 const nodes: Node[] = [
-  { id: "java", label: "Java", mobileLabel: "Java", sub: "SE / EE", icon: "java", protocol: "JVM", x: 220, y: 500, flow: "in" },
-  { id: "spring", label: "Spring", mobileLabel: "Spring", sub: "Boot API", icon: "springboot", protocol: "API", x: 500, y: 220, flow: "in" },
-  { id: "react", label: "React", mobileLabel: "React", sub: "19 SPA", icon: "react", protocol: "UI", x: 780, y: 500, flow: "out" },
-  { id: "ts", label: "TypeScript", mobileLabel: "TypeScript", sub: "Contracts", icon: "typescript", protocol: "Types", x: 500, y: 780, flow: "out" },
+  { id: "java", label: "Java", mobileLabel: "Java", sub: "SE / EE", icon: "java", protocol: "JVM", role: "backend", accent: "acid", x: 500, y: 140, flow: "in" },
+  { id: "go", label: "Go", mobileLabel: "Go", sub: "net/http", icon: "go", protocol: "HTTP", role: "backend", accent: "cyan", x: 200, y: 350, flow: "in" },
+  { id: "spring", label: "Spring", mobileLabel: "Spring", sub: "Boot API", icon: "springboot", protocol: "API", role: "backend", accent: "acid", x: 800, y: 350, flow: "in" },
+  { id: "react", label: "React", mobileLabel: "React", sub: "19 SPA", icon: "react", protocol: "UI", role: "frontend", accent: "acid", x: 300, y: 780, flow: "out" },
+  { id: "ts", label: "TypeScript", mobileLabel: "TypeScript", sub: "Contracts", icon: "typescript", protocol: "Types", role: "frontend", accent: "acid", x: 700, y: 780, flow: "out" },
 ];
+
+const backendNodes = nodes.filter((node) => node.role === "backend");
+const frontendNodes = nodes.filter((node) => node.role === "frontend");
+const nodeCount = (group: Node[]) => String(group.length).padStart(2, "0");
+const nodeColor = (node: Node) => node.accent === "cyan" ? "var(--color-cyan-300)" : "var(--color-acid)";
 
 const mobileGraphCore: Variants = {
   hidden: { scale: 0.72, opacity: 0, filter: "blur(7px)" },
@@ -91,12 +99,20 @@ type HeroGraphProps = {
   y?: MotionValue<string>;
 };
 
-function MobileFork() {
+function MobileFork({ group }: { group: Node[] }) {
+  const first = 50 / group.length;
+  const last = 100 - first;
+
   return (
     <div className="relative h-5 max-[360px]:h-3" aria-hidden="true">
-      <span className="absolute top-0 bottom-1/2 left-1/4 w-px bg-acid/40" />
-      <span className="absolute top-0 right-1/4 bottom-1/2 w-px bg-acid/40" />
-      <span className="absolute top-1/2 right-1/4 left-1/4 h-px bg-acid/40" />
+      {group.map((node, index) => (
+        <span
+          key={node.id}
+          className={`absolute top-0 bottom-1/2 w-px ${node.accent === "cyan" ? "bg-cyan-300/55" : "bg-acid/40"}`}
+          style={{ left: `${((index + 0.5) / group.length) * 100}%` }}
+        />
+      ))}
+      <span className="absolute top-1/2 h-px bg-acid/40" style={{ left: `${first}%`, right: `${100 - last}%` }} />
       <span className="absolute top-1/2 bottom-0 left-1/2 w-px bg-acid/65" />
       <span className="absolute top-[calc(50%_-_2px)] left-[calc(50%_-_2px)] size-1 bg-acid" />
     </div>
@@ -104,18 +120,21 @@ function MobileFork() {
 }
 
 function MobileNodeCard({ node }: { node: Node }) {
+  const backend = node.role === "backend";
+  const go = node.accent === "cyan";
+
   return (
     <motion.div
       variants={mobileGraphNode}
-      className="relative flex min-h-[68px] min-w-0 items-center gap-2.5 overflow-hidden border border-paper/18 bg-ink/92 px-3 py-2.5 max-[360px]:min-h-14 max-[360px]:gap-2 max-[360px]:px-2 max-[360px]:py-2"
+      className={`relative flex min-w-0 items-center overflow-hidden border bg-ink/92 ${go ? "border-cyan-300/35" : "border-paper/18"} ${backend ? "min-h-[86px] flex-col justify-center gap-1.5 px-1.5 py-2.5 text-center max-[360px]:min-h-[76px] max-[360px]:gap-1 max-[360px]:py-2" : "min-h-[68px] gap-2.5 px-3 py-2.5 max-[360px]:min-h-14 max-[360px]:gap-2 max-[360px]:px-2 max-[360px]:py-2"}`}
     >
-      <span className="pointer-events-none absolute top-0 left-0 h-px w-8 bg-acid" aria-hidden="true" />
-      <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/8 text-acid max-[360px]:size-6">
+      <span className={`pointer-events-none absolute top-0 left-0 h-px w-8 ${go ? "bg-cyan-300" : "bg-acid"}`} aria-hidden="true" />
+      <span className={`grid size-7 shrink-0 place-items-center border max-[360px]:size-6 ${go ? "border-cyan-300/35 bg-cyan-300/10 text-cyan-300" : "border-acid/30 bg-acid/8 text-acid"}`}>
         <TechIcon name={node.icon} className="size-3.5 max-[360px]:size-3" />
       </span>
       <span className="min-w-0">
         <strong className="block text-[13px] leading-tight font-semibold tracking-[-0.025em] text-paper max-[360px]:text-[12px]">{node.mobileLabel}</strong>
-        <small className="mt-1 block text-[11px] leading-tight tracking-[0.07em] text-paper/55 uppercase max-[360px]:text-[10px]">{node.sub}</small>
+        <small className={`mt-1 block whitespace-nowrap text-[11px] leading-tight tracking-[0.07em] max-[360px]:text-[10px] ${go ? "text-cyan-300/80" : "text-paper/55 uppercase"}`}>{node.sub}</small>
       </span>
     </motion.div>
   );
@@ -123,8 +142,6 @@ function MobileNodeCard({ node }: { node: Node }) {
 
 function MobileHeroGraph({ introReady, reduced }: { introReady: boolean; reduced: boolean }) {
   const t = useT();
-  const backend = nodes.slice(0, 2);
-  const frontend = nodes.slice(2);
 
   return (
     <motion.div
@@ -132,6 +149,7 @@ function MobileHeroGraph({ introReady, reduced }: { introReady: boolean; reduced
       initial={reduced ? false : "hidden"}
       animate={introReady ? "shown" : "hidden"}
       className="relative hidden w-full overflow-hidden border border-paper/15 bg-ink-soft/78 max-[680px]:block"
+      aria-hidden="true"
     >
       <div
         className="pointer-events-none absolute inset-0 bg-[image:linear-gradient(rgba(240,239,232,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(240,239,232,0.055)_1px,transparent_1px),radial-gradient(circle_at_50%_48%,rgba(216,255,62,0.13),transparent_58%)] bg-[size:48px_48px,48px_48px,100%_100%]"
@@ -140,15 +158,15 @@ function MobileHeroGraph({ introReady, reduced }: { introReady: boolean; reduced
 
       <div className="relative flex items-center justify-between gap-4 border-b border-paper/12 px-3 py-2.5 font-mono text-[11px] tracking-[0.12em] uppercase max-[360px]:px-2.5 max-[360px]:py-2 max-[360px]:text-[10px]">
         <span className="text-paper/55">{t(dual("Topologi stack", "Stack topology"))}</span>
-        <span className="text-acid">04 · {t(dual("Node", "Nodes"))}</span>
+        <span className="text-acid">{nodeCount(nodes)} · {t(dual("Node", "Nodes"))}</span>
       </div>
 
       <div className="relative p-3 max-[360px]:p-2.5">
-        <div className="grid grid-cols-2 gap-2">
-          {backend.map((node) => <MobileNodeCard key={node.id} node={node} />)}
+        <div className="grid grid-cols-3 gap-2 max-[360px]:gap-1.5">
+          {backendNodes.map((node) => <MobileNodeCard key={node.id} node={node} />)}
         </div>
 
-        <MobileFork />
+        <MobileFork group={backendNodes} />
 
         <motion.div
           variants={mobileGraphCore}
@@ -162,17 +180,17 @@ function MobileHeroGraph({ introReady, reduced }: { introReady: boolean; reduced
           <span className="relative font-mono text-[10px] tracking-[0.12em] uppercase opacity-70">API ↔ UI</span>
         </motion.div>
 
-        <div className="rotate-180"><MobileFork /></div>
+        <div className="rotate-180"><MobileFork group={frontendNodes} /></div>
 
         <div className="grid grid-cols-2 gap-2">
-          {frontend.map((node) => <MobileNodeCard key={node.id} node={node} />)}
+          {frontendNodes.map((node) => <MobileNodeCard key={node.id} node={node} />)}
         </div>
       </div>
 
       <div className="relative flex items-center justify-between gap-3 border-t border-paper/12 px-3 py-2.5 font-mono text-[11px] tracking-[0.08em] uppercase max-[360px]:hidden">
-        <span className="text-paper/45">Backend · 02</span>
+        <span className="text-paper/45">Backend · {nodeCount(backendNodes)}</span>
         <span className="text-acid/80">{t(dual("Alur bertipe", "Typed flow"))}</span>
-        <span className="text-paper/45">{t(dual("Antarmuka", "Interface"))} · 02</span>
+        <span className="text-paper/45">{t(dual("Antarmuka", "Interface"))} · {nodeCount(frontendNodes)}</span>
       </div>
     </motion.div>
   );
@@ -248,11 +266,13 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
     <div
       ref={rootRef}
       className="hero-system pointer-events-none relative z-0 aspect-square w-[min(100%,42vw,640px,68vh)] max-[1000px]:w-[min(76vw,420px)] max-[680px]:aspect-auto max-[680px]:w-full max-[680px]:max-w-[430px]"
-      aria-hidden="true"
+      role="img"
+      aria-label={t(copy.heroGraphAria)}
     >
       <motion.div
         className="size-full origin-center will-change-transform max-[680px]:hidden"
         style={wideLayout ? { rotate, y } : { rotate: mobileRotate }}
+        aria-hidden="true"
       >
         <motion.div
           className="relative size-full will-change-transform"
@@ -273,16 +293,16 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
             variants={heroGraphParent}
             initial={reduced ? false : "hidden"}
             animate={graphReady ? "shown" : "hidden"}
-            className="absolute inset-[1%] origin-center overflow-hidden border border-paper/15 bg-ink/18 shadow-[0_24px_90px_rgba(0,0,0,0.28)]"
+            className="@container/graph absolute inset-[1%] origin-center overflow-hidden border border-paper/15 bg-ink/18 shadow-[0_24px_90px_rgba(0,0,0,0.28)]"
             style={tilt ? { rotateX: tiltX, rotateY: tiltY } : undefined}
           >
             <div className="absolute top-3 right-3 left-3 z-10 flex items-center justify-between gap-4 font-mono text-[11px] tracking-[0.12em] uppercase">
               <span className="text-paper/45">{t(dual("Topologi stack", "Stack topology"))}</span>
-              <span className="text-acid/85">04 · {t(dual("Node", "Nodes"))}</span>
+              <span className="text-acid/85">{nodeCount(nodes)} · {t(dual("Node", "Nodes"))}</span>
             </div>
             <div className="absolute right-3 bottom-3 left-3 z-10 flex items-center justify-between gap-4 font-mono text-[9px] tracking-[0.1em] uppercase">
-              <span className="text-paper/35">Backend · 02</span>
-              <span className="text-paper/35">{t(dual("Antarmuka", "Interface"))} · 02</span>
+              <span className="text-paper/35">Backend · {nodeCount(backendNodes)}</span>
+              <span className="text-paper/35">{t(dual("Antarmuka", "Interface"))} · {nodeCount(frontendNodes)}</span>
             </div>
             <span className="absolute top-0 left-0 z-10 size-3 border-t border-l border-acid" aria-hidden="true" />
             <span className="absolute top-0 right-0 z-10 size-3 border-t border-r border-acid" aria-hidden="true" />
@@ -299,6 +319,10 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               <motion.div
                 variants={graphSurface}
                 className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(216,255,62,0.16),transparent_52%)]"
+              />
+              <motion.div
+                variants={graphSurface}
+                className="absolute inset-0 bg-[radial-gradient(circle_at_20%_35%,rgba(103,232,249,0.1),transparent_27%)]"
               />
               <motion.span variants={graphRing} className="absolute inset-0 rounded-full border border-acid/30" />
               <motion.span variants={graphRing} className="absolute inset-[11%] rounded-full border border-paper/10" />
@@ -333,6 +357,11 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
                   <stop offset="55%" stopColor="#d8ff3e" stopOpacity="0.9" />
                   <stop offset="100%" stopColor="#ff613c" stopOpacity="0.45" />
                 </linearGradient>
+                <linearGradient id="hero-leg-go" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="var(--color-cyan-300)" stopOpacity="0.35" />
+                  <stop offset="55%" stopColor="var(--color-cyan-300)" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="var(--color-acid)" stopOpacity="0.6" />
+                </linearGradient>
               </defs>
 
               {legs.map(({ node, d, from, to }, index) => (
@@ -345,14 +374,14 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
                     }}
                     d={d}
                     fill="none"
-                    stroke="url(#hero-leg)"
+                    stroke={node.accent === "cyan" ? "url(#hero-leg-go)" : "url(#hero-leg)"}
                     strokeWidth="1.6"
                     vectorEffect="non-scaling-stroke"
                   />
-                  <circle cx={from.x} cy={from.y} r="4" fill="#d8ff3e" />
-                  <circle cx={to.x} cy={to.y} r="3" fill="#d8ff3e" fillOpacity="0.6" />
+                  <circle cx={from.x} cy={from.y} r="4" fill={nodeColor(node)} />
+                  <circle cx={to.x} cy={to.y} r="3" fill={nodeColor(node)} fillOpacity="0.6" />
                   {!reduced ? (
-                    <circle className="hero-packet" r="5" fill={index % 2 ? "#ff613c" : "#d8ff3e"}>
+                    <circle className="hero-packet" r="5" fill={node.accent === "cyan" ? nodeColor(node) : index % 2 ? "#ff613c" : "#d8ff3e"}>
                       <animateMotion
                         dur={`${2.6 + index * 0.35}s`}
                         repeatCount="indefinite"
@@ -375,15 +404,15 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               ))}
             </motion.svg>
 
-            {nodes.map((node) => (
+            {legs.map(({ node, from, to }) => (
               <div
                 key={`${node.id}-protocol`}
                 className="absolute z-[3]"
-                style={{ left: pct((node.x + CORE.x) / 2), top: pct((node.y + CORE.y) / 2), transform: "translate(-50%, -50%)" }}
+                style={{ left: pct((from.x + to.x) / 2), top: pct((from.y + to.y) / 2), transform: "translate(-50%, -50%)" }}
               >
                 <motion.span
                   variants={wideLayout ? graphNode : mobileGraphNode}
-                  className="block border border-acid/25 bg-ink/92 px-1.5 py-1 font-mono text-[10px] leading-none tracking-[0.1em] text-acid uppercase"
+                  className={`block border bg-ink/92 px-1 py-1 font-mono text-[9px] leading-none tracking-[0.1em] uppercase @[520px]/graph:px-1.5 @[520px]/graph:text-[10px] @max-[380px]/graph:hidden ${node.accent === "cyan" ? "border-cyan-300/35 text-cyan-300" : "border-acid/25 text-acid"}`}
                 >
                   {node.protocol}
                 </motion.span>
@@ -415,14 +444,17 @@ export function HeroGraph({ rotate, y }: HeroGraphProps) {
               >
                 <motion.div
                   variants={wideLayout ? graphNode : mobileGraphNode}
-                  className="flex size-full items-center gap-2.5 border border-paper/22 bg-ink/94 px-2.5 backdrop-blur-sm"
+                  className={`relative flex size-full items-center gap-1.5 border bg-ink/94 px-2 backdrop-blur-sm @[520px]/graph:gap-2.5 @[520px]/graph:px-2.5 ${node.accent === "cyan" ? "border-cyan-300/45 shadow-[0_0_24px_rgba(103,232,249,0.09)]" : "border-paper/22"}`}
                 >
-                  <span className="grid size-7 shrink-0 place-items-center border border-acid/30 bg-acid/10 text-acid max-[820px]:size-6">
-                    <TechIcon name={node.icon} className="size-3.5 max-[820px]:size-3" />
+                  {node.accent === "cyan" ? <span className="absolute top-0 left-0 h-px w-8 bg-cyan-300" /> : null}
+                  <span className={`grid size-5 shrink-0 place-items-center border @[520px]/graph:size-7 ${node.accent === "cyan" ? "border-cyan-300/35 bg-cyan-300/10 text-cyan-300" : "border-acid/30 bg-acid/10 text-acid"}`}>
+                    <TechIcon name={node.icon} className="size-3 @[520px]/graph:size-3.5" />
                   </span>
                   <span className="min-w-0">
-                    <strong className="block truncate text-[14px] leading-none tracking-[-0.03em] max-[820px]:text-[12px]">{node.label}</strong>
-                    <small className="mt-1 block truncate text-[10px] tracking-[0.09em] text-[#a7a99f] uppercase max-[820px]:text-[9px]">{node.sub}</small>
+                    <strong className="block truncate text-[12px] leading-none tracking-[-0.03em] @[520px]/graph:text-[14px]">
+                      {node.id === "ts" ? <><span className="@max-[519px]/graph:hidden">{node.label}</span><span className="hidden @max-[519px]/graph:inline">TS</span></> : node.label}
+                    </strong>
+                    <small className={`mt-1 block truncate text-[9px] tracking-[0.09em] @[520px]/graph:text-[10px] ${node.accent === "cyan" ? "text-cyan-300/80" : "text-[#a7a99f] uppercase"}`}>{node.sub}</small>
                   </span>
                 </motion.div>
               </div>

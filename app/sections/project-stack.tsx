@@ -11,6 +11,8 @@ import roomlyCover from "@/app/covers/roomly.webp";
 import siaCover from "@/app/covers/sia.webp";
 import shopifyCCover from "@/app/covers/shopify-c.webp";
 import tiketKilatCover from "@/app/covers/tiket-kilat.webp";
+import wartaCover from "@/app/covers/warta.webp";
+import kuisCover from "@/app/covers/kuis-akademik.webp";
 import anistreamSm from "@/app/covers/anistream-sm.webp";
 import arunikaSm from "@/app/covers/arunika-sm.webp";
 import glowmarketSm from "@/app/covers/glowmarket-sm.webp";
@@ -19,6 +21,8 @@ import roomlySm from "@/app/covers/roomly-sm.webp";
 import shopifyCSm from "@/app/covers/shopify-c-sm.webp";
 import siaSm from "@/app/covers/sia-sm.webp";
 import tiketKilatSm from "@/app/covers/tiket-kilat-sm.webp";
+import wartaSm from "@/app/covers/warta-sm.webp";
+import kuisSm from "@/app/covers/kuis-akademik-sm.webp";
 import { inViewport, reveal, ease, useMediaQuery } from "@/app/lib/motion";
 import { useT, dual } from "@/app/lib/i18n";
 import { PaperField } from "@/app/components/paper-field";
@@ -29,6 +33,8 @@ function bundledSrc(image: string | { src: string }) {
 }
 
 const bundledCovers: Record<string, string> = {
+  warta: bundledSrc(wartaCover),
+  kuis: bundledSrc(kuisCover),
   anistream: bundledSrc(anistreamCover),
   arunika: bundledSrc(arunikaCover),
   glowmarket: bundledSrc(glowmarketCover),
@@ -48,6 +54,8 @@ const bundledCovers: Record<string, string> = {
  * paint thumbnails. These come to 99KB for the same four.
  */
 const smallCovers: Record<string, string> = {
+  warta: bundledSrc(wartaSm),
+  kuis: bundledSrc(kuisSm),
   anistream: bundledSrc(anistreamSm),
   arunika: bundledSrc(arunikaSm),
   glowmarket: bundledSrc(glowmarketSm),
@@ -59,6 +67,8 @@ const smallCovers: Record<string, string> = {
 };
 
 const coverWidths: Record<string, number> = {
+  warta: 1600,
+  kuis: 1600,
   anistream: 1600,
   arunika: 1600,
   glowmarket: 1600,
@@ -76,9 +86,12 @@ const coverWidths: Record<string, number> = {
 // ~3.1 ratio, so it fills without help. Left in the set it was letterboxed and
 // the ambient copies tiled either side of it — three visible console frames,
 // the outer two sliced through the middle of the table.
-const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat"]);
+const posterCovers = new Set(["warta", "kuis"]);
+const fullFrameCovers = new Set(["anistream", "arunika", "roomly", "glowmarket", "sia", "tiketkilat", ...posterCovers]);
 
 const fullFrameTints: Record<string, string> = {
+  warta: "bg-[#eee9e2]/55",
+  kuis: "bg-[#09172b]/55",
   anistream: "bg-[#07070b]/58",
   arunika: "bg-[#1a110c]/52",
   roomly: "bg-[#081a31]/52",
@@ -167,8 +180,10 @@ function ProjectCard({
   const coverWidth = coverWidths[project.variant] ?? 1600;
   const responsiveCover = cover && smallCover !== cover ? `${smallCover} 700w, ${cover} ${coverWidth}w` : undefined;
   const showFullFrame = fullFrameCovers.has(project.variant);
+  const showSideFrames = stacked && !posterCovers.has(project.variant);
   const projectHref = project.demo ?? project.links.at(0)?.[1];
-  const destinationLabel = project.demo ? translate(copy.projectLiveStatus) : translate(copy.projectSourceStatus);
+  const destinationLabel = translate(project.statusLabel ?? (project.demo ? copy.projectLiveStatus : copy.projectSourceStatus));
+  const ArtContainer = projectHref ? "a" : "div";
   const artSize = stacked
     ? "h-full min-h-0"
     : "h-[min(56vw,770px)] min-h-[520px] max-md:h-[clamp(220px,72vw,310px)] max-md:min-h-0 max-[361px]:h-[clamp(188px,64vw,216px)]";
@@ -215,17 +230,17 @@ function ProjectCard({
           the cover just as well and hands the height back to the words. Flow
           cards keep an explicit height at every breakpoint; `h-full` is only
           valid when the pinned deck gives the parent a definite height. */}
-      <a
+      <ArtContainer
         className={`project-art relative block touch-manipulation overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-acid ${artSize} ${artThemes[project.variant]}`}
         href={projectHref}
         target={projectHref ? "_blank" : undefined}
         rel={projectHref ? "noreferrer" : undefined}
-        aria-label={translate(
+        aria-label={projectHref ? translate(
           dual(
-            `Buka ${project.title} — ${project.demo ? "demo live" : "repositori"} di tab baru`,
-            `Open ${project.title} — ${project.demo ? "live demo" : "repository"} in a new tab`,
+            `Buka ${project.title} — ${project.demo ? (project.demoLabel?.id ?? "demo live") : "repositori"} di tab baru`,
+            `Open ${project.title} — ${project.demo ? (project.demoLabel?.en ?? "live demo") : "repository"} in a new tab`,
           ),
-        )}
+        ) : undefined}
         data-cursor={projectHref ? "" : undefined}
       >
         <motion.div
@@ -252,13 +267,13 @@ function ProjectCard({
                   />
                   <span className={`absolute inset-0 ${fullFrameTints[project.variant] ?? "bg-ink/55"}`} />
                   <div
-                    className={`absolute inset-[5%_2.5%] grid gap-[clamp(6px,1vw,14px)] ${
-                      stacked
+                    className={`absolute inset-[5%_2.5%] grid min-h-0 grid-rows-[minmax(0,1fr)] gap-[clamp(6px,1vw,14px)] ${
+                      showSideFrames
                         ? "grid-cols-[minmax(0,0.65fr)_minmax(0,1.5fr)_minmax(0,0.65fr)]"
                         : "grid-cols-1"
                     }`}
                   >
-                    {stacked ? (
+                    {showSideFrames ? (
                       <span className="relative overflow-hidden border border-current/20 bg-ink/20">
                         <img
                           src={cover}
@@ -275,14 +290,14 @@ function ProjectCard({
                     <img
                       src={cover}
                       srcSet={responsiveCover}
-                      sizes="(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) calc(100vw - 80px), 50vw"
+                      sizes={posterCovers.has(project.variant) ? "(max-width: 767px) calc(100vw - 48px), 90vw" : "(max-width: 767px) calc(100vw - 48px), (max-width: 1023px) calc(100vw - 80px), 50vw"}
                       loading="lazy"
                       decoding="async"
                       alt=""
                       draggable={false}
-                      className="pointer-events-none relative size-full object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.38)]"
+                      className="pointer-events-none relative size-full min-h-0 min-w-0 object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.38)]"
                     />
-                    {stacked ? (
+                    {showSideFrames ? (
                       <span className="relative overflow-hidden border border-current/20 bg-ink/20">
                         <img
                           src={cover}
@@ -393,10 +408,10 @@ function ProjectCard({
         <i className="absolute top-[3.5%] left-[2%] z-[6] text-[clamp(15px,1.6vw,22px)] leading-none font-light not-italic">
           +
         </i>
-        <span className="project-view-mark pointer-events-none absolute right-[2%] bottom-[3.5%] z-[9] grid size-10 place-items-center border border-paper/25 bg-ink/88 text-acid backdrop-blur-md max-[480px]:right-[3%] max-[480px]:size-9" aria-hidden="true">
+        {projectHref ? <span className="project-view-mark pointer-events-none absolute right-[2%] bottom-[3.5%] z-[9] grid size-10 place-items-center border border-paper/25 bg-ink/88 text-acid backdrop-blur-md max-[480px]:right-[3%] max-[480px]:size-9" aria-hidden="true">
           <ArrowOut className="size-4" />
-        </span>
-      </a>
+        </span> : null}
+      </ArtContainer>
 
       <div className="project-meta">
         <motion.div className="project-main">
@@ -411,12 +426,12 @@ function ProjectCard({
             </div>
             <h3 className="font-display m-0 flex min-w-0 items-center gap-3 text-[clamp(36px,11vw,60px)] leading-[0.86] font-bold tracking-[-0.07em] md:text-[clamp(40px,4.2vw,68px)] max-[420px]:text-[clamp(28px,8.8vw,36px)]">
               {project.title}
-              <span
+              {projectHref ? <span
                 className="hidden size-[0.34em] shrink-0 place-items-center border-2 border-current p-[0.08em] opacity-70 transition-transform duration-250 group-hover/art:translate-x-[3px] group-hover/art:-translate-y-[3px] md:grid"
                 aria-hidden="true"
               >
                 <ArrowOut className="size-full" />
-              </span>
+              </span> : null}
             </h3>
           </motion.div>
           <motion.div
@@ -466,7 +481,7 @@ function ProjectCard({
                     className="size-[7px] shrink-0 animate-pulse-dot rounded-full bg-current not-italic"
                     aria-hidden="true"
                   />
-                  {translate(copy.liveDemo)}
+                  {translate(project.demoLabel ?? copy.liveDemo)}
                   <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
                 </span>
                 <span
@@ -512,6 +527,7 @@ function ProjectCard({
               })}
             </div>
             ) : null}
+            {project.sourceNotice ? <p className="m-0 border border-ink/25 bg-ink/5 p-3 text-sm leading-relaxed text-[#3a3b36]">{translate(project.sourceNotice)}</p> : null}
           </div>
         </motion.div>
       </div>
@@ -643,7 +659,7 @@ function ProjectIndexRow({ project }: { project: Project }) {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Demo <ArrowOut className="size-3" />
+                      {translate(project.demoLabel ?? copy.liveDemo)} <ArrowOut className="size-3" />
                       <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
                     </a>
                   ) : null}
@@ -662,6 +678,7 @@ function ProjectIndexRow({ project }: { project: Project }) {
                   ))}
                 </div>
               ) : null}
+              {project.sourceNotice ? <p className="mt-4 mb-0 border border-ink/25 bg-ink/5 p-3 text-sm leading-relaxed text-[#3a3b36]">{translate(project.sourceNotice)}</p> : null}
             </div>
           </motion.div>
         ) : null}
@@ -912,7 +929,7 @@ function UtilityProjectCard({ project }: { project: UtilityProject }) {
             >
               <span className="relative flex items-center gap-2">
                 <i className="size-[7px] shrink-0 animate-pulse-dot rounded-full bg-current not-italic" aria-hidden="true" />
-                {translate(copy.liveDemo)}
+                {translate(project.demoLabel ?? copy.liveDemo)}
                 <span className="sr-only"> — {translate(copy.opensNewTab)}</span>
               </span>
               <ArrowOut className="size-3.5 shrink-0" />

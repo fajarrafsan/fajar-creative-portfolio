@@ -12,7 +12,7 @@ export const profileRole = "Fullstack Developer";
 export const profileLocation = "Bandung, ID";
 export const profilePhotoSrc = "/profile.jpeg";
 
-export type AboutTone = "java" | "react" | "strong";
+export type AboutTone = "java" | "go" | "react" | "strong";
 
 export type AboutSegment = {
   text: string;
@@ -27,6 +27,8 @@ export const profileAbout = dual<AboutSegment[][]>(
     [
       { text: "Saya merancang sistem ujung ke ujung: " },
       { text: "API Java/Spring", tone: "java" },
+      { text: " dan " },
+      { text: "Go", tone: "go" },
       { text: " yang andal di belakang, " },
       { text: "interface React 19 / TypeScript", tone: "react" },
       { text: " yang jelas di depan." },
@@ -45,6 +47,8 @@ export const profileAbout = dual<AboutSegment[][]>(
     [
       { text: "I design systems end to end: reliable " },
       { text: "Java/Spring APIs", tone: "java" },
+      { text: " and " },
+      { text: "Go", tone: "go" },
       { text: " behind a clear " },
       { text: "React 19 / TypeScript interface", tone: "react" },
       { text: "." },
@@ -62,6 +66,7 @@ export const profileAbout = dual<AboutSegment[][]>(
 );
 
 export const profileSkills = [
+  { id: "go", label: "Go", icon: "go" },
   { id: "java", label: "Java", icon: "java" },
   { id: "spring", label: "Spring", icon: "springboot" },
   { id: "react", label: "React 19", icon: "react" },
@@ -99,7 +104,7 @@ export const copy = {
   scrollToProjects: dual("Gulir ke proyek pilihan", "Scroll to selected projects"),
   marqueeAria: dual("Teknologi dan praktik utama", "Core technologies and practices"),
   marqueeSignal: dual("Sinyal stack", "Stack signal"),
-  marqueeChannels: dual("24 modul · 02 kanal", "24 modules · 02 channels"),
+  marqueeChannels: dual("modul · 02 kanal", "modules · 02 channels"),
   marqueeCore: dual("Runtime inti", "Core runtime"),
   marqueeDelivery: dual("Praktik delivery", "Delivery practice"),
   marqueeTools: dual("alat", "tools"),
@@ -117,8 +122,8 @@ export const copy = {
   sectionStack: dual("Inti stack", "Core stack"),
   capabilitiesTitle: dual("Dari endpoint pertama sampai layar.", "From the first endpoint to the screen."),
   capabilitiesBody: dual(
-    "Empat lapisan yang saya pakai membangun sistem: service, jaringan service, data, dan interface.",
-    "Four layers I use to build systems: services, the service network, data, and the interface.",
+    "Dua pendekatan backend — Java/Spring dan Go — terhubung dengan arsitektur service, data, dan interface React.",
+    "Two backend approaches — Java/Spring and Go — connected through service architecture, data, and React interfaces.",
   ),
   sectionToolchain: dual("Perangkat kerja", "Toolchain"),
   toolchainTitle: dual("Alat yang saya pakai setiap hari.", "The tools I use every day."),
@@ -184,14 +189,16 @@ export const copy = {
   introWork: dual("KARYA", "WORK"),
   introSr: dual("Lihat karya.", "See work."),
   introByline: dual(
-    "Fajar Rafsan — fullstack, Java & React. Bandung.",
-    "Fajar Rafsan — fullstack, Java & React. Bandung.",
+    "Fajar Rafsan — fullstack, Go, Java & React. Bandung.",
+    "Fajar Rafsan — fullstack, Go, Java & React. Bandung.",
   ),
   heroLede: dual(
     [
       { kind: "name" as const, text: "Saya Fajar Rafsan." },
       { text: " Fullstack developer: " },
       { kind: "token" as const, text: "API Java" },
+      { text: " dan " },
+      { kind: "go" as const, text: "Go" },
       { text: " yang andal " },
       { kind: "dim" as const, text: "di belakang," },
       { text: " " },
@@ -203,6 +210,8 @@ export const copy = {
       { kind: "name" as const, text: "I'm Fajar Rafsan." },
       { text: " Fullstack developer: reliable " },
       { kind: "token" as const, text: "Java APIs" },
+      { text: " and " },
+      { kind: "go" as const, text: "Go" },
       { text: " " },
       { kind: "dim" as const, text: "behind," },
       { text: " a clear " },
@@ -283,15 +292,129 @@ export const copy = {
     "Diagram arsitektur: klien, gateway, autentikasi, service, data, cache, events, dan pembayaran mengelilingi inti Spring Boot",
     "Architecture diagram: client, gateway, auth, service, data, cache, events, and payments around a Spring Boot core",
   ),
+  heroGraphAria: dual(
+    "Topologi fullstack: Java, Go, Spring Boot, React, dan TypeScript terhubung ke inti API dan UI",
+    "Fullstack topology: Java, Go, Spring Boot, React, and TypeScript connected to the API and UI core",
+  ),
   frontendGraphAria: dual(
     "Diagram arsitektur front-end: views, komponen, tipe, styling, bundler, auth, realtime, dan checkout mengelilingi inti Front End",
     "Front-end architecture diagram: views, components, types, styling, bundler, auth, realtime, and checkout around a Front End core",
   ),
 };
 
-export const projects = [
+export type Project = {
+  number: string;
+  title: string;
+  type: Dual;
+  year: string;
+  note: Dual;
+  stack: string[];
+  metrics: [string | Dual, string | Dual][];
+  variant: string;
+  mark: string;
+  cover: string;
+  coverPosition?: string;
+  demo: string | null;
+  demoLabel?: Dual;
+  statusLabel?: Dual;
+  sourceNotice?: Dual;
+  links: [string, string][];
+};
+
+export type BackendRuntime = "go" | "spring";
+
+// Representative patterns across the projects, not one combined application.
+export const backendArchitectures = {
+  go: {
+    label: "Go / net/http",
+    icon: "go",
+    projects: "Warta · Kuis Akademik",
+    summary: dual(
+      "HTTP eksplisit, service yang terpisah, dan data SQL. Pola dari Warta dan Kuis Akademik — dari publikasi artikel hingga penilaian kuis.",
+      "Explicit HTTP, separated services, and SQL data. Patterns from Warta and Kuis Akademik — from article publishing to quiz grading.",
+    ),
+    flowMode: dual("HTTP → service → SQL", "HTTP → service → SQL"),
+    flow: [
+      { number: "01", stage: dual("Masuk", "Ingress"), route: "React → Router", protocol: "HTTPS" },
+      { number: "02", stage: dual("Verifikasi", "Trust"), route: "Router → Auth", protocol: "JWT / Session" },
+      { number: "03", stage: dual("Eksekusi", "Execute"), route: "Handler → Service", protocol: "Go" },
+      { number: "04", stage: dual("Persistensi", "Persist"), route: "Service → Data", protocol: "SQL" },
+      { number: "05", stage: dual("Konten", "Content"), route: "Service → Content", protocol: "CRUD" },
+      { number: "06", stage: dual("Distribusi", "Delivery"), route: "Service → Jobs", protocol: "Webhook" },
+    ],
+    meta: dual(
+      [{ value: "02", label: "proyek Go" }, { value: "net/http", label: "routing" }, { value: "SQL", label: "persistensi" }],
+      [{ value: "02", label: "Go projects" }, { value: "net/http", label: "routing" }, { value: "SQL", label: "persistence" }],
+    ),
+  },
+  spring: {
+    label: "Java / Spring",
+    icon: "springboot",
+    projects: "TiketKilat · Roomly · GlowMarket",
+    summary: dual(
+      "Service modular, transaksi, dan integrasi event. Pola dari TiketKilat, Roomly, dan GlowMarket — dengan security dan pembayaran di backend.",
+      "Modular services, transactions, and event integrations. Patterns from TiketKilat, Roomly, and GlowMarket — with backend-owned security and payments.",
+    ),
+    flowMode: copy.architectureFlowMode,
+    flow: copy.architectureFlow,
+    meta: copy.architectureMeta,
+  },
+};
+
+export const projects: Project[] = [
   {
     number: "01",
+    title: "WARTA",
+    type: dual("Platform publikasi · Go & React", "Publishing platform · Go & React"),
+    year: "2026",
+    note: dual(
+      "Platform artikel dan berita dengan situs baca bergaya majalah dan ruang redaksi berbasis peran. Editor Markdown, analitik pembaca, moderasi komentar, dan autentikasi JWT terhubung melalui API Go dan React. Demo online menampilkan UI; API masih dijalankan lokal.",
+      "An article and news platform with a magazine-style reading experience and a role-based newsroom. Markdown editing, readership analytics, comment moderation, and JWT authentication connect through a Go API and React. The online demo showcases the UI; the API still runs locally.",
+    ),
+    stack: ["Go", "React 19", "MySQL", "JWT", "Markdown", "Tailwind 4", "Vitest"],
+    metrics: [
+      [dual("Redaksi", "Newsroom"), "Reader · Author · Admin"],
+      ["API", "Go · net/http"],
+      [dual("Editor", "Editor"), "Markdown · Preview"],
+    ],
+    variant: "warta",
+    mark: "WRT",
+    cover: "/projects/warta.webp",
+    coverPosition: "50% 50%",
+    demo: "https://sharing-vision-frontend-ivory.vercel.app",
+    demoLabel: dual("Demo tampilan", "UI demo"),
+    statusLabel: dual("UI demo", "UI demo"),
+    links: [
+      ["Front-end", "https://github.com/fajarrafsan/warta-frontend"],
+      ["Go API", "https://github.com/fajarrafsan/warta-backend"],
+    ],
+  },
+  {
+    number: "02",
+    title: "KUIS AKADEMIK",
+    type: dual("Platform kuis · Go & TypeScript", "Quiz platform · Go & TypeScript"),
+    year: "2026",
+    note: dual(
+      "Platform kuis untuk sekolah dan kursus: kelas, bank soal, review dan snapshot versi soal, penugasan, serta buku nilai dengan ekspor CSV. Backend Go menangani autosave dengan deteksi konflik dan penilaian otomatis; React + TypeScript menjadi antarmukanya. Masih dalam pengembangan, dengan repositori privat.",
+      "A quiz platform for schools and courses: classes, a question bank, reviewed and versioned question snapshots, assignments, and a gradebook with CSV export. The Go backend handles conflict-aware autosave and automatic grading, with a React + TypeScript interface. In active development with a private repository.",
+    ),
+    stack: ["Go", "React 19", "TypeScript", "PostgreSQL", "SQLite", "Vite", "Docker"],
+    metrics: [
+      [dual("Soal", "Questions"), "Review · Snapshot"],
+      [dual("Penilaian", "Grading"), dual("Otomatis · CSV", "Automatic · CSV")],
+      ["Autosave", dual("Deteksi konflik", "Conflict detection")],
+    ],
+    variant: "kuis",
+    mark: "KUI",
+    cover: "/projects/kuis-akademik.webp",
+    coverPosition: "50% 50%",
+    demo: null,
+    statusLabel: dual("Pengembangan", "In development"),
+    sourceNotice: dual("Repositori privat. Demo publik belum tersedia.", "Private repository. No public demo yet."),
+    links: [],
+  },
+  {
+    number: "03",
     title: "TIKETKILAT",
     type: dual("Reservasi penerbangan · end-to-end", "Flight reservation · end-to-end"),
     year: "2026",
@@ -316,7 +439,7 @@ export const projects = [
     ],
   },
   {
-    number: "02",
+    number: "04",
     title: "ANISTREAM",
     type: dual("Platform streaming · Node & Redis", "Streaming platform · Node & Redis"),
     year: "2026",
@@ -341,7 +464,7 @@ export const projects = [
     ],
   },
   {
-    number: "03",
+    number: "05",
     title: "ARUNIKA",
     type: dual("Landing kopi specialty · HTML murni", "Specialty coffee landing · vanilla HTML"),
     year: "2026",
@@ -365,7 +488,7 @@ export const projects = [
     ],
   },
   {
-    number: "04",
+    number: "06",
     title: "ROOMLY",
     type: dual("Microservices event-driven", "Event-driven microservices"),
     year: "2026",
@@ -390,7 +513,7 @@ export const projects = [
     ],
   },
   {
-    number: "05",
+    number: "07",
     title: "GLOWMARKET",
     type: dual("Sistem commerce & keuangan", "Commerce & financial system"),
     year: "2026",
@@ -415,7 +538,7 @@ export const projects = [
     ],
   },
   {
-    number: "06",
+    number: "08",
     title: "SIA",
     type: dual("Sistem informasi akuntansi", "Accounting information system"),
     year: "2024",
@@ -441,7 +564,7 @@ export const projects = [
     ],
   },
   {
-    number: "07",
+    number: "09",
     title: "SHOPIFY",
     type: dual("Toko berbasis konsol · C", "Console storefront · C"),
     year: "2024",
@@ -467,12 +590,11 @@ export const projects = [
 ];
 
 /**
- * Independent public systems. Kept off `projects` so the flagship stack, the
- * "05 systems" stat, and "Tiga SPA" copy stay accurate.
+ * Independent systems presented after the flagship deck.
  */
-export const utilityProjects = [
+export const utilityProjects: Project[] = [
   {
-    number: "08",
+    number: "10",
     title: "AURUMKALA",
     type: dual(
       "Monitor harga emas resmi · Spring Boot",
@@ -509,7 +631,7 @@ export const utilityProjects = [
   },
 ];
 
-export type UtilityProject = (typeof utilityProjects)[number];
+export type UtilityProject = Project;
 
 export const capabilities = [
   {
@@ -523,6 +645,15 @@ export const capabilities = [
   },
   {
     number: "02",
+    title: dual("Go & HTTP services", "Go & HTTP services"),
+    detail: dual(
+      "API net/http, JWT atau sesi, SQL, alur publikasi Warta, serta autosave dan penilaian kuis di Kuis Akademik.",
+      "net/http APIs, JWT or sessions, SQL, Warta's publishing workflow, and quiz autosave and grading in Kuis Akademik.",
+    ),
+    icons: ["go"],
+  },
+  {
+    number: "03",
     title: dual("Microservices", "Microservices"),
     detail: dual(
       "Eureka, API Gateway, RabbitMQ, Docker, dan arsitektur event-driven.",
@@ -531,7 +662,7 @@ export const capabilities = [
     icons: ["docker", "rabbitmq"],
   },
   {
-    number: "03",
+    number: "04",
     title: dual("Data & performa", "Data & performance"),
     detail: dual(
       "PostgreSQL, MySQL, Redis, transaksi, migrasi Flyway, caching, dan konsistensi data.",
@@ -540,7 +671,7 @@ export const capabilities = [
     icons: ["postgresql", "redis"],
   },
   {
-    number: "04",
+    number: "05",
     title: dual("Full-stack delivery", "Full-stack delivery"),
     detail: dual(
       "React 19, TypeScript, Tailwind, integrasi payment gateway, dan fitur real-time.",
@@ -550,10 +681,10 @@ export const capabilities = [
   },
 ];
 
-// Repository count is the live figure from the public GitHub profile.
+// Public GitHub repository count verified on 2026-10-02; excludes private work.
 export const profileStats = [
-  { value: "19", label: dual("Repositori publik", "Public repositories") },
-  { value: "07", label: dual("Sistem unggulan", "Flagship systems") },
+  { value: "23", label: dual("Repositori publik", "Public repositories") },
+  { value: String(projects.length).padStart(2, "0"), label: dual("Sistem unggulan", "Flagship systems") },
   { value: "10", label: dual("Sertifikat pelatihan", "Training certificates") },
   { value: "3.64", label: dual("IPK", "GPA") },
 ];
@@ -563,6 +694,7 @@ export const stackGroups = [
   {
     label: dual("Inti back-end", "Core back-end"),
     items: [
+      { icon: "go", name: "Go" },
       { icon: "java", name: "Java" },
       { icon: "springboot", name: "Spring Boot" },
       { icon: "spring", name: "Spring Security" },
@@ -1055,27 +1187,35 @@ export const frontendArchitecture = {
       icons: ["react", "javascript"],
       body: dual<RichText>(
         [
-          { text: "Empat SPA di GitHub: " },
+          { text: "React untuk dua keluarga backend: " },
+          { text: "Warta", tone: "strong" },
+          { text: " (publikasi artikel) dan " },
+          { text: "Kuis Akademik", tone: "strong" },
+          { text: " (bank soal dan sesi ujian) terhubung ke Go. " },
           { text: "TiketKilatFE", tone: "strong" },
-          { text: " (pencarian penerbangan, peta kursi, e-tiket), " },
-          { text: "ANISTREAM-FE", tone: "strong" },
-          { text: " (katalog, multi-server player, Google OAuth), " },
+          { text: ", " },
           { text: "GLOWMARKET", tone: "strong" },
-          { text: " (katalog emas, checkout, admin), dan " },
+          { text: ", dan " },
           { text: "RoomlyHotel", tone: "strong" },
-          { text: " (dashboard reservasi dwibahasa). Satu pola: " },
+          { text: " melengkapi sisi Java/Spring; " },
+          { text: "ANISTREAM-FE", tone: "strong" },
+          { text: " terhubung ke Node.js. Satu pola: " },
           { text: "komponen yang jelas, state yang tidak bocor ke API.", tone: "acid" },
         ],
         [
-          { text: "Four SPAs on GitHub: " },
+          { text: "React for two backend families: " },
+          { text: "Warta", tone: "strong" },
+          { text: " (article publishing) and " },
+          { text: "Kuis Akademik", tone: "strong" },
+          { text: " (question banks and exam sessions) connect to Go. " },
           { text: "TiketKilatFE", tone: "strong" },
-          { text: " (flight search, seat map, e-tickets), " },
-          { text: "ANISTREAM-FE", tone: "strong" },
-          { text: " (catalogue, multi-server player, Google OAuth), " },
+          { text: ", " },
           { text: "GLOWMARKET", tone: "strong" },
-          { text: " (gold catalogue, checkout, admin), and " },
+          { text: ", and " },
           { text: "RoomlyHotel", tone: "strong" },
-          { text: " (bilingual reservation dashboard). One pattern: " },
+          { text: " cover the Java/Spring side; " },
+          { text: "ANISTREAM-FE", tone: "strong" },
+          { text: " connects to Node.js. One pattern: " },
           { text: "components that are clear, state that does not leak into the API.", tone: "acid" },
         ],
       ),
@@ -1088,7 +1228,11 @@ export const frontendArchitecture = {
       body: dual<RichText>(
         [
           { text: "RoomlyHotel", tone: "strong" },
-          { text: " ditulis TypeScript. " },
+          { text: " dan " },
+          { text: "Kuis Akademik", tone: "strong" },
+          { text: " ditulis TypeScript; " },
+          { text: "Warta", tone: "strong" },
+          { text: " memakai React + JavaScript. " },
           { text: "GlowMarket", tone: "strong" },
           { text: " dan " },
           { text: "ANISTREAM-FE", tone: "strong" },
@@ -1097,7 +1241,11 @@ export const frontendArchitecture = {
         ],
         [
           { text: "RoomlyHotel", tone: "strong" },
-          { text: " is written in TypeScript. " },
+          { text: " and " },
+          { text: "Kuis Akademik", tone: "strong" },
+          { text: " use TypeScript; " },
+          { text: "Warta", tone: "strong" },
+          { text: " uses React + JavaScript. " },
           { text: "GlowMarket", tone: "strong" },
           { text: " and " },
           { text: "ANISTREAM-FE", tone: "strong" },
@@ -1117,9 +1265,11 @@ export const frontendArchitecture = {
           { text: "ANISTREAM", tone: "strong" },
           { text: ", JWT di " },
           { text: "Roomly", tone: "strong" },
-          { text: " dan " },
+          { text: ", " },
           { text: "GlowMarket", tone: "strong" },
-          { text: ". Token tinggal di browser; keputusan otorisasi tetap di gateway dan service Java. " },
+          { text: ", dan " },
+          { text: "Warta", tone: "strong" },
+          { text: ". Keputusan otorisasi tetap di backend Java/Go. " },
           { text: "Front end hanya membawa identitas, tidak menghakimi hak akses.", tone: "acid" },
         ],
         [
@@ -1127,9 +1277,11 @@ export const frontendArchitecture = {
           { text: "ANISTREAM", tone: "strong" },
           { text: ", JWT on " },
           { text: "Roomly", tone: "strong" },
-          { text: " and " },
+          { text: ", " },
           { text: "GlowMarket", tone: "strong" },
-          { text: ". Tokens live in the browser; authorization decisions stay at the gateway and the Java services. " },
+          { text: ", and " },
+          { text: "Warta", tone: "strong" },
+          { text: ". Authorization decisions stay in the Java/Go backend. " },
           { text: "The front end only carries identity, it does not judge access rights.", tone: "acid" },
         ],
       ),
@@ -1194,6 +1346,8 @@ export const frontendArchitecture = {
 };
 
 export const artThemes: Record<string, string> = {
+  warta: "bg-[#eee9e2] text-[#c85070]",
+  kuis: "bg-[#09172b] text-[#67e8f9]",
   anistream: "bg-[#0b0d12] text-[#e11d2e]",
   arunika: "bg-[#1a110c] text-[#e4c9a0]",
   roomly: "bg-[#174846] text-acid",
@@ -1204,8 +1358,6 @@ export const artThemes: Record<string, string> = {
   shopifyc: "bg-[#f8f3f8] text-[#aa0ea2]",
 };
 
-export type Project = (typeof projects)[number] | UtilityProject;
-
 /**
  * Ticker words.
  *
@@ -1214,7 +1366,7 @@ export type Project = (typeof projects)[number] | UtilityProject;
  * twice at once — which reads as a short loop rather than a running feed.
  */
 export const marqueeTop = [
-  "JAVA", "SPRING BOOT", "REACT", "TYPESCRIPT", "POSTGRESQL", "REDIS",
+  "GO", "JAVA", "SPRING BOOT", "REACT", "TYPESCRIPT", "POSTGRESQL", "REDIS",
   "HIBERNATE", "NODE.JS", "TAILWIND", "VITE", "MYSQL", "EXPRESS",
 ];
 export const marqueeBottom = [

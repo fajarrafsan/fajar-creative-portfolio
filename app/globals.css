@@ -7,6 +7,7 @@
   --color-paper: #f0efe8;
   --color-paper-deep: #dad9d0;
   --color-acid: #d8ff3e;
+  --color-go: #67e8f9;
   --color-java: #ff613c;
   --color-violet: #8d73ff;
   --color-blue: #397cff;
@@ -375,6 +376,12 @@
   filter: blur(26px);
   mix-blend-mode: screen;
   will-change: transform;
+}
+
+.hero-atmosphere--hero .hero-atmosphere-bloom {
+  background:
+    radial-gradient(ellipse at 30% 38%, rgba(103, 232, 249, 0.12), transparent 48%),
+    radial-gradient(ellipse at 70% 55%, rgba(216, 255, 62, 0.14), transparent 62%);
 }
 
 .hero-atmosphere-floor-wrap {
@@ -1194,7 +1201,11 @@
   -webkit-box-decoration-break: clone;
 }
 
-/* Profile body marks — java for backend, acid for frontend. Weight + color
+.hero-lede-token-go {
+  background-image: linear-gradient(transparent 58%, rgba(103, 232, 249, 0.16) 58%);
+}
+
+/* Profile body marks — Java and Go for backend, acid for frontend. Weight + color
    so meaning does not rely on hue alone. */
 .profile-token {
   padding-inline: 4px;
@@ -1388,6 +1399,11 @@
   .project-active-edge {
     height: 2px;
   }
+}
+
+.profile-token-go {
+  color: var(--color-ink);
+  background-image: linear-gradient(transparent 56%, rgba(6, 182, 212, 0.3) 56%);
 }
 
 @media (hover: none), (pointer: coarse) {
